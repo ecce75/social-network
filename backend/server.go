@@ -1,15 +1,23 @@
-package backend
+package main
 
 import (
+	"backend/pkg/db/sqlite"
 	"fmt"
 	"log"
 	"net/http"
-	"/pkg/db/sqlite"
+	//"os"
 )
 
 func main() {
+    // //working directory check
+    // wd, err := os.Getwd()
+    // if err != nil {
+    //     log.Fatal(err)
+    // }
+    // log.Println("Current working directory:", wd)
+    // //check end
 
-	dbPath := "path/to/your/database/file.sqlite"
+	dbPath := "./pkg/db/database.db"
     migrationsPath := "pkg/db/migrations/sqlite"
 
     // Connect to the database and apply migrations
@@ -18,6 +26,8 @@ func main() {
         log.Fatal("Failed to connect to the database:", err)
     }
     defer db.Close()
+
+
     http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
         fmt.Fprintf(w, "Hello, world!")
     })
