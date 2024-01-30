@@ -8,6 +8,7 @@ brrt
 
 This directory contains the core logic of your application and is where most of your code will reside.
 
+```bash
 ./backend
 ├── pkg
 │   │   ├── db
@@ -24,6 +25,8 @@ This directory contains the core logic of your application and is where most of 
 │   │   │   └── # Data access layer
 │   │   └── handler
 │   │       └──  # Handlers call into repositories to fetch and store data
+```
+
 
 #### db
 
@@ -45,9 +48,11 @@ Handlers should also validate and sanitize the input data.
 
 ### api
 
+```bash
 ./backend
 ├── api
 │   └── router.go # HTTP handlers and routing
+```
 
 This is where you define your HTTP handlers and routing. It's the layer that interacts with the outside world, translating HTTP requests into actions on your services and ultimately your models and database.
 
@@ -57,6 +62,7 @@ A place for utility functions that don't naturally fit elsewhere. These might in
 
 - Session Token Generation
 
+------
 ## Functionalities
 
 ### Session
