@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+    "backend/api"
+	"github.com/gorilla/mux"
 	//"os"
 )
 
@@ -17,6 +19,9 @@ func main() {
     // log.Println("Current working directory:", wd)
     // //check end
 
+    mux := mux.NewRouter()
+    api.Router(mux)
+
 	dbPath := "./pkg/db/database.db"
     migrationsPath := "pkg/db/migrations/sqlite"
 
@@ -26,11 +31,6 @@ func main() {
         log.Fatal("Failed to connect to the database:", err)
     }
     defer db.Close()
-
-
-    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-        fmt.Fprintf(w, "Hello, world!")
-    })
 
     fmt.Println("Server is running on http://localhost:8080")
     http.ListenAndServe(":8080", nil)
