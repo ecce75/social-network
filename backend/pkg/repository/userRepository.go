@@ -12,8 +12,8 @@ func GetUserByEmailOrNickname(db *sql.DB, emailOrNickname string) (model.User, e
 	query := "SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1"
 	var user model.User
 	err := db.QueryRow(query, emailOrNickname, emailOrNickname).Scan(
-		&user.UserID, &user.Email, &user.Password, &user.FirstName, &user.LastName, 
-		&user.DOB, &user.AvatarURL, &user.Nickname, &user.About)
+		&user.UserID, &user.Username, &user.Email, &user.Password, &user.FirstName, &user.LastName, 
+		&user.DOB, &user.AvatarURL, &user.About)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			fmt.Println("User not found in database")

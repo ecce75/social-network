@@ -4,13 +4,13 @@ package model
 
 type User struct {
 	UserID 		int
+	Username 	string
 	Email 		string
 	Password 	string
 	FirstName 	string
 	LastName 	string
 	DOB 		string
 	AvatarURL 	string
-	Nickname 	string
 	About 		string
 }
 
