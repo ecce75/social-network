@@ -20,3 +20,7 @@ func CreatePost(db *sql.DB, post model.CreatePostRequest, UserID int) (int64, er
 	}
 	return lastInsertID, nil
 }
+
+func GetAllPostsWithUserIDAccess(db *sql.DB, userID int) ([]model.Post, error) {
+	query := `SELECT * FROM posts WHERE user_id = ? OR privacy_setting = 'public' OR `
+}

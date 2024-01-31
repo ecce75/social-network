@@ -111,6 +111,7 @@ mux.HandleFunc("/api/users/check-auth", handler.CheckAuth)
 
 This endpoint will perform an auth check of the user and return a boolean value.
 
+-----
 ### Posts
 
 ```go
@@ -118,5 +119,6 @@ mux.HandleFunc("/post", handler.CreatePostHandler).Methods("POST")
 ```
 
 This endpoint requires post title, content, imageurl(may be empty) and privacy
-setting.
+setting('public', 'private', 'custom').
+
 The request then is processed and user authentication is double checked via cookie and userID attached to the create post request. After request data is decoded and stored it will return the id of the post.

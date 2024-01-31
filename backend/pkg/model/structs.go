@@ -31,7 +31,7 @@ type RegistrationData struct {
 	LastName 	string `json:"last_name"`
 	DOB 		string `json:"dob"`
 	AvatarURL 	string `json:"avatar_url,omitempty"`
-	About 		string `json:"about"`
+	About 		string `json:"about,omitempty"`
 }
 
 type AuthResponse struct {
@@ -61,3 +61,11 @@ type CreatePostRequest struct {
 	ImageURL 		string `json:"image_url,omitempty"`
 	PrivacySetting 	string `json:"privacy_setting"`
 }
+
+type Comment struct {
+	PostID int `json:"post_id"`
+	UserID int `json:"user_id"`
+	Content string `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+}
+

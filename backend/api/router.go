@@ -20,6 +20,8 @@ func Router(mux *mux.Router) {
 	// Posts
 
 	mux.HandleFunc("/post", handler.CreatePostHandler).Methods("POST")
+	mux.HandleFunc("/post/{id}", handler.EditPostHandler).Methods("PUT")    // Edit a post
+	mux.HandleFunc("/post/{id}", handler.DeletePostHandler).Methods("DELETE") // Delete a post
 
 	// Comments
 
