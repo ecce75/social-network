@@ -20,6 +20,16 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
     // Authentication and authorization logic goes here
     // Assuming you have a function to check the user's session and get the user ID
 	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			// If the session cookie doesn't exist, set isAuthenticated to false
+			http.Error(w, "User not authenticated", http.StatusUnauthorized)
+			return
+		} else {
+			http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
     userID, err := confirmAuthentication(cookie)
     if err != nil {
         http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
@@ -53,6 +63,10 @@ func GetCommentByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	intid, err := strconv.Atoi(id)
+	if err != nil {
+		http.Error(w, "Error converting id to int: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 	comments, err := repository.GetCommentsByID(sqlite.Dbase, intid)
 	if err != nil {
 		http.Error(w, "Error retrieving comments: "+ err.Error(), http.StatusInternalServerError)

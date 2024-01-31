@@ -64,7 +64,7 @@ func confirmAuthentication(cookie *http.Cookie) (int, error) {
 		return 0, err
 	}
 	if time.Now().After(session.ExpiresAt) {
-		return 0, fmt.Errorf("Session token expired: %v", session.ExpiresAt)
+		return 0, fmt.Errorf("session token expired: %v", session.ExpiresAt)
 	}
 	return session.UserID, nil
 }
@@ -90,7 +90,12 @@ func EditPostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
+	// Confirm user auth and get userid
 	userID, err := confirmAuthentication(cookie)
+	if err != nil {
+		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		return
+	}
 
 	// Update the post in the database
 	err = repository.UpdatePost(sqlite.Dbase, request.Id, userID, request)
@@ -124,7 +129,7 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		http.Error(w, "Error authenticating user", http.StatusBadRequest)
+		http.Error(w, "Error authenticating user: " +err.Error(), http.StatusBadRequest)
 		return
 	}
 	userId, err := confirmAuthentication(cookie)
@@ -164,6 +169,10 @@ func GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	userID, err := confirmAuthentication(cookie)
+	if err != nil {
+		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		return
+	}
 
 	posts, err := repository.GetAllPostsWithUserIDAccess(sqlite.Dbase, userID)
 	if err != nil {
