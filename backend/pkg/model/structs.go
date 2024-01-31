@@ -62,6 +62,14 @@ type CreatePostRequest struct {
 	PrivacySetting 	string `json:"privacy_setting"`
 }
 
+type UpdatePostRequest struct {
+	Id int `json:"id"`
+	Title string `json:"title"`
+	Content string `json:"content,omitempty"`
+	ImageURL string `json:"image_url,omitempty"`
+	PrivacySetting string `json:"privacy_setting"`
+}
+
 type Comment struct {
 	PostID int `json:"post_id"`
 	UserID int `json:"user_id"`

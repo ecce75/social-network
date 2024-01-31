@@ -7,8 +7,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
-
 	"github.com/gorilla/mux"
 )
 
@@ -70,14 +70,6 @@ func confirmAuthentication(cookie *http.Cookie) (int, error) {
 }
 
 func EditPostHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the post ID from the URL
-	vars := mux.Vars(r)
-	postID, ok := vars["id"]
-	if !ok {
-		http.Error(w, "Post ID is missing in parameters", http.StatusBadRequest)
-		return
-	}
-
 	// Decode the request body for updating the post
 	var request model.UpdatePostRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
@@ -86,15 +78,22 @@ func EditPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Assume a function to check user authentication and authorization
-	userID, err := confirmAuthenticationAndAuthorization(r, postID)
+	// check auth and get userid from cookie
+	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
+		if err == http.ErrNoCookie {
+			// If the session cookie doesn't exist, set isAuthenticated to false
+			http.Error(w, "User not authenticated", http.StatusUnauthorized)
+			return
+		} else {
+			http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
+			return
+		}
 	}
+	userID, err := confirmAuthentication(cookie)
 
 	// Update the post in the database
-	err = repository.UpdatePost(sqlite.Dbase, postID, userID, request)
+	err = repository.UpdatePost(sqlite.Dbase, request.Id, userID, request)
 	if err != nil {
 		http.Error(w, "Failed to update the post: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -113,20 +112,30 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the post ID from the URL
 	vars := mux.Vars(r)
 	postID, ok := vars["id"]
+	intpostID, err := strconv.Atoi(postID)
+	if err != nil {
+		http.Error(w, "Failed to parse post ID: " +err.Error(), http.StatusInternalServerError)
+		return
+	}
 	if !ok {
 		http.Error(w, "Post ID is missing in parameters", http.StatusBadRequest)
 		return
 	}
 
-	// Assume a function to check user authentication and authorization
-	userID, err := confirmAuthenticationAndAuthorization(r, postID)
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Error(w, "Error authenticating user", http.StatusBadRequest)
+		return
+	}
+	userId, err := confirmAuthentication(cookie)
+
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	// Delete the post from the database
-	err = repository.DeletePost(sqlite.Dbase, postID, userID)
+	err = repository.DeletePost(sqlite.Dbase, intpostID, userId)
 	if err != nil {
 		http.Error(w, "Failed to delete the post: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -141,7 +150,7 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func GetAllPostsThisWeekHandler(w http.ResponseWriter, r *http.Request) {
+func GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
 	// check auth and get userid from cookie
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
@@ -156,5 +165,12 @@ func GetAllPostsThisWeekHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	userID, err := confirmAuthentication(cookie)
 
-	posts, err := 
+	posts, err := repository.GetAllPostsWithUserIDAccess(sqlite.Dbase, userID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(posts)
 }
