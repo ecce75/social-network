@@ -21,29 +21,45 @@ func CreatePost(db *sql.DB, post model.CreatePostRequest, userID int) (int64, er
 	return lastInsertID, nil
 }
 
+
+// GetAllPostsWithUserIDAccess retrieves all posts with the given user ID access.
+// It queries the database to fetch posts that meet the following conditions:
+// - Posts with the specified user ID
+// - Posts with privacy setting set to 'public'
+// - Posts with privacy setting set to 'private' and the user is a friend (status = 'accepted')
+// The function returns a slice of model.Post and an error if any occurred during the query.
 func GetAllPostsWithUserIDAccess(db *sql.DB, userID int) ([]model.Post, error) {
-	// TODO: implement friends relationship check and private posts
-	query := `SELECT * FROM posts WHERE user_id = ? OR privacy_setting = 'public'`
+    query := `
+    SELECT posts.* 
+    FROM posts 
+    WHERE posts.user_id = ? 
+    OR posts.privacy_setting = 'public' 
+    OR (posts.privacy_setting = 'private' AND posts.user_id IN (
+        SELECT user_id1 FROM friends WHERE user_id2 = ? AND status = 'accepted'
+        UNION
+        SELECT user_id2 FROM friends WHERE user_id1 = ? AND status = 'accepted'
+    ))
+    `
 
-	rows, err := db.Query(query, userID)
-	if err != nil {
-		return []model.Post{}, err
-	}
-	defer rows.Close()
+    rows, err := db.Query(query, userID, userID, userID)
+    if err != nil {
+        return []model.Post{}, err
+    }
+    defer rows.Close()
 
-	var posts []model.Post
-	for rows.Next() {
-		var post model.Post
-		if err := rows.Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
-			return nil, err
-		}
-		posts = append(posts, post)
-	}
+    var posts []model.Post
+    for rows.Next() {
+        var post model.Post
+        if err := rows.Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+            return nil, err
+        }
+        posts = append(posts, post)
+    }
 
-	if err = rows.Err(); err != nil {
-		return nil, err
-	}
-	return posts, nil
+    if err = rows.Err(); err != nil {
+        return nil, err
+    }
+    return posts, nil
 }
 
 func DeletePost(db *sql.DB, postID int, userID int) error {
