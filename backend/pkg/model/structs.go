@@ -71,9 +71,61 @@ type UpdatePostRequest struct {
 }
 
 type Comment struct {
+	Id int `json:"id"`
 	PostID int `json:"post_id"`
 	UserID int `json:"user_id"`
 	Content string `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type UpdateCommentRequest struct {
+	Id int `json:"id"`
+	PostID int `json:"post_id"`
+	UserID int `json:"user_id"`
+	Content string `json:"content"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+type Group struct {
+    Id          int
+    CreatorId   int
+    Title       string
+    Description string
+    CreatedAt   time.Time
+}
+
+type GroupMember struct {
+    GroupId  int
+    UserId   int
+    JoinedAt time.Time
+}
+
+type Friend struct {
+    Id            int
+    UserId1       int
+    UserId2       int
+    Status        string
+    ActionUserId  int
+    CreatedAt     time.Time
+    UpdatedAt     time.Time
+}
+
+type Notification struct {
+    Id        int
+    UserId    int
+    Type      string
+    Message   string
+    IsRead    bool
+    CreatedAt time.Time
+}
+
+type Event struct {
+    Id          int
+    CreatorId   int
+    Title       string
+    Description string
+    Location    string
+    StartTime   time.Time
+    EndTime     time.Time
+    CreatedAt   time.Time
+}

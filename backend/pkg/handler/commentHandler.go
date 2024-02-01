@@ -7,6 +7,8 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,4 +76,96 @@ func GetCommentByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(comments)
+}
+
+func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
+	// Parse the post ID from the URL
+	vars := mux.Vars(r)
+	commentID, ok := vars["id"]
+	intcommentID, err := strconv.Atoi(commentID)
+	if err != nil {
+		http.Error(w, "Failed to parse comment ID: " +err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		http.Error(w, "Comment ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Error(w, "Error authenticating user: " +err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	// Confirm user auth and get userid
+	userID, err := confirmAuthentication(cookie)
+	if err != nil {
+		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	// Delete the comment from the database
+	err = repository.DeleteComment(sqlite.Dbase, intcommentID, userID)
+	if err != nil {
+		http.Error(w, "Failed to delete the comment: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Successful response
+	response := map[string]string{
+		"message": "Comment deleted successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func EditCommentHandler(w http.ResponseWriter, r *http.Request) {
+	// Parse the post ID from the URL
+	vars := mux.Vars(r)
+	commentID, ok := vars["id"]
+	intcommentID, err := strconv.Atoi(commentID)
+	if err != nil {
+		http.Error(w, "Failed to parse comment ID: " +err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		http.Error(w, "Comment ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
+
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Error(w, "Error authenticating user: " +err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	// Confirm user auth and get userid
+	userID, err := confirmAuthentication(cookie)
+	if err != nil {
+		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		return
+	}
+
+	// Parse the comment data from the request body
+	var commentData model.UpdateCommentRequest
+	err = json.NewDecoder(r.Body).Decode(&commentData)
+	if err != nil {
+		http.Error(w, "Error decoding request body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Update the comment in the database
+	err = repository.UpdateComment(sqlite.Dbase, intcommentID, userID, commentData)
+	if err != nil {
+		http.Error(w, "Failed to update the comment: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Successful response
+	response := map[string]string{
+		"message": "Comment updated successfully",
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }

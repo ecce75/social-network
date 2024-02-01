@@ -122,3 +122,45 @@ This endpoint requires post title, content, imageurl(may be empty) and privacy
 setting('public', 'private', 'custom').
 
 The request then is processed and user authentication is double checked via cookie and userID attached to the create post request. After request data is decoded and stored it will return the id of the post.
+
+-----
+
+```go
+mux.HandleFunc("/post/{id}", handler.DeletePostHandler).Methods("DELETE")
+```
+
+This endpoint deletes a post by its ID. It requires the ID as a URL parameter.
+
+-----
+
+```go
+mux.HandleFunc("/post/{id}", handler.UpdatePostHandler).Methods("PUT")
+```
+
+This endpoint updates a post by its ID. It requires the ID as a URL parameter and the new post data in the request body.
+
+-----
+
+### Comments
+
+```go
+mux.HandleFunc("/post/{id}/comments", handler.GetCommentsByUserIDorPostID).Methods("GET")
+```
+
+This endpoint retrieves all comments for a post by its ID. It requires the ID as a URL parameter.
+
+-----
+
+```go
+mux.HandleFunc("/comment", handler.CreateCommentHandler).Methods("POST")
+```
+
+This endpoint creates a new comment. It requires the comment data in the request body. The user authentication is double checked via cookie and userID attached to the create comment request. After request data is decoded and stored it will return the id of the comment.
+
+-----
+
+```go
+mux.HandleFunc("/comment/{id}", handler.DeleteCommentHandler).Methods("DELETE")
+```
+
+This endpoint deletes a comment by its ID. It requires the ID as a URL parameter. The user authentication is double checked via cookie and userID attached to the delete comment request. If the user is authorized, the comment will be deleted.
