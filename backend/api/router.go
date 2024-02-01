@@ -1,14 +1,17 @@
 package api
 
 import (
-    "fmt"
-    "net/http"
-    "backend/pkg/handler"
-    "github.com/gorilla/mux"
+	"backend/pkg/handler"
+	"fmt"
+	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 )
 
 // API layer, handlers, and routing
 func Router(mux *mux.Router) {
+
     // User registration requires input in the form like RegistrationData struct at /pkg/model/stucts.go
     mux.HandleFunc("/api/users/register", handler.UserRegisterHandler).Methods("POST")
     
@@ -71,5 +74,6 @@ func Router(mux *mux.Router) {
         http.ServeFile(w, r, "../frontend/public/index.html")
         fmt.Println("route called successfully")
     })
-    http.Handle("/", mux)
+    mux_cors := cors.Default().Handler(mux)
+    http.Handle("/", mux_cors)
 }

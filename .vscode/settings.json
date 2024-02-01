@@ -1,3 +1,10 @@
 {
-  "sqltools.connections": []
+  "sqltools.connections": [
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "database": "${workspaceFolder:social-network}/backend/pkg/db/database.db",
+      "name": "db"
+    }
+  ]
 }

@@ -23,6 +23,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing login JSON data: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+	fmt.Println("Login data: ", logData)
 	user, err := repository.GetUserByEmailOrNickname(sqlite.Dbase, logData.Username)
 	if err != nil {
 		fmt.Printf("Error getting user by email of nickname: %v <> error: %v \n", logData.Username, err)

@@ -29,7 +29,6 @@ func UserRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Change variable password data to hashed variant
 	regData.Password = string(hashedPassword)
-
 	// Store user in database
 	userID, err := repository.RegisterUser(sqlite.Dbase, regData)
 	if err != nil {

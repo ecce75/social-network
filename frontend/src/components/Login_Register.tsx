@@ -12,13 +12,37 @@ interface LoginValues {
 interface RegisterValues {
 	email: string;
 	password: string;
-	firstName: string;
-	lastName: string;
+	first_name: string;
+	last_name: string;
 	dob: string;
-	avatar: null;
-	nickname: string;
-	aboutMe: string;
+	avatar_url: string;
+	username: string;
+	about: string;
 }
+
+const handleLogin = (
+	values: LoginValues,
+	{ setSubmitting }: FormikHelpers<LoginValues>
+  ) => {
+	console.log(values);
+	// Handle form submission logic here
+	fetch('http://localhost:8080/api/users/login', {
+	  method: 'POST',
+	  headers: {
+		'Content-Type': 'application/json'
+	  },
+	  body: JSON.stringify(values)
+	})
+	.then(response => response.json())
+	.then(data => {
+	  console.log(data);
+	  setSubmitting(false);
+	})
+	.catch(error => {
+	  console.error('Error:', error);
+	  setSubmitting(false);
+	});
+  };
 
 const LoginForm = ({ }) => {
 	return (
@@ -27,15 +51,7 @@ const LoginForm = ({ }) => {
 				username: "",
 				password: "",
 			}}
-			onSubmit={(
-				values: LoginValues,
-				{ setSubmitting }: FormikHelpers<LoginValues>
-			) => {
-				setTimeout(() => {
-					alert(JSON.stringify(values, null, 2));
-					setSubmitting(false);
-				}, 500);
-			}}
+			onSubmit={handleLogin}
 		>
 			<Form className="flex items-center">
 				<div className="mr-2">
@@ -71,28 +87,47 @@ const LoginForm = ({ }) => {
 	);
 };
 
+const handleRegister = (
+	values: RegisterValues,
+	{ setSubmitting }: FormikHelpers<RegisterValues>
+  ) => {
+	console.log(values);
+	values.avatar_url = "values.avatar.name";
+	// Handle form submission logic here
+	// TODO: change localhost to iriesphere url
+	fetch('http://localhost:8080/api/users/register', {
+	  method: 'POST',
+	  headers: {
+		'Content-Type': 'application/json'
+	  },
+	  body: JSON.stringify(values)
+	})
+	.then(response => response.json())
+	.then(data => {
+	  console.log(data);
+	  setSubmitting(false);
+	})
+	.catch(error => {
+	  console.error('Error:', error);
+	  setSubmitting(false);
+	});
+  };
+
+  
 const RegisterForm = ({ }) => {
 	return (
-		
 		<Formik
 			initialValues={{
 				email: "",
 				password: "",
-				firstName: "",
-				lastName: "",
+				first_name: "",
+				last_name: "",
 				dob: "",
-				avatar: null,
-				nickname: "",
-				aboutMe: "",
+				avatar_url: "null",
+				username: "",
+				about: "",
 			}}
-			onSubmit={(
-				values: RegisterValues,
-				{ setSubmitting }: FormikHelpers<RegisterValues>
-			) => {
-				// Handle form submission logic here
-				console.log(values);
-				setSubmitting(false);
-			}}
+			onSubmit={handleRegister}
 		>
 			{({ values, setFieldValue }) => (
 				<Form>
@@ -108,16 +143,16 @@ const RegisterForm = ({ }) => {
 						</div>
 						<div className="mb-4">
 							<label className="labelStyle">First Name</label>
-							<Field type="text" name="firstName" className="inputStyle" />
+							<Field type="text" name="first_name" className="inputStyle" />
 						</div>
 						<div className="mb-4">
 							<label className="labelStyle">Last Name</label>
-							<Field type="text" name="lastName" className="inputStyle" />
+							<Field type="text" name="last_name" className="inputStyle" />
 						</div>
 						<div className="mb-4">
 							<label className="labelStyle">Date of Birth</label>
 							<Field type="date" name="dob" className="inputStyle" />
-						</div>
+						</div>–
 						<div className="mb-4">
 							<label className="labelStyle">Avatar/Image</label>
 							<Field name="avatar">
@@ -137,12 +172,12 @@ const RegisterForm = ({ }) => {
 						</Field>
 					</div>
 					<div>
-						<label className="labelStyle">Nickname</label>
-						<Field type="text" name="nickname" className="inputStyle" />
+						<label className="labelStyle">Username</label>
+						<Field type="text" name="username" className="inputStyle" />
 					</div>
 					<div>
 						<label className="labelStyle">About Me</label>
-						<Field as="textarea" name="aboutMe" className="inputStyle" />
+						<Field as="textarea" name="about" className="inputStyle" />
 					</div>
 					<button type="submit" className= "buttonStyle">
 						Register

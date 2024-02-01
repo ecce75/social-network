@@ -16,6 +16,8 @@ type User struct {
 	DOB 		string
 	AvatarURL 	string
 	About 		string
+	CreatedAt 	string
+	UpdatedAt 	string
 }
 
 type LoginData struct {
