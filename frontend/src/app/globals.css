@@ -2,6 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Rasa';
+  font-style: normal;
+  font-weight: 400;
+  src: local(''), url('../public/fonts/Rasa-VariableFont_wght.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Rasa';
+  font-style: italic;
+  font-weight: 400;
+  src: local(''), url('../public/fonts/Rasa-Italic-VariableFont_wght.ttf') format('truetype');
+}
+
+input {
+  color: black !important;
+  background-color: white !important;
+}
+
 :root {
   --foreground-rgb: 0, 0, 0;
   --background-start-rgb: 214, 219, 220;
