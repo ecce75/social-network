@@ -12,7 +12,8 @@ import (
 )
 
 func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
-    var newComment model.Comment
+    // TODO: id may not come from request and will cause error
+	var newComment model.Comment 
     err := json.NewDecoder(r.Body).Decode(&newComment)
     if err != nil {
         http.Error(w, "Error decoding request body: "+err.Error(), http.StatusBadRequest)
