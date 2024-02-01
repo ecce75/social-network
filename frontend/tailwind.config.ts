@@ -13,8 +13,23 @@ const config: Config = {
         'gradient-conic':
           'conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))',
       },
+      fontFamily: {
+        rasa: ['Rasa'],
+        sans: ['Rasa', 'sans-serif'],
+      },
     },
   },
+
+  variants: {
+    extend: {
+      fontFamily: ['hover', 'focus'],
+      boxShadow: ['focus'],
+    },
+  },
+
   plugins: [],
+  corePlugins: {
+    fontFamily: true,
+  },
 }
 export default config
