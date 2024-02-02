@@ -12,14 +12,22 @@ import (
 )
 
 func UserRegisterHandler(w http.ResponseWriter, r *http.Request) {
-	var regData model.RegistrationData // variable based on struct fields for storing registration data
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&regData) // decodes json data from request to the variable
-	if err != nil {
-		http.Error(w, "Error parsing JSON: "+ err.Error(), http.StatusBadRequest)
+	// 1. Parse the multipart form data from the request
+	err1 := r.ParseMultipartForm(10 << 20) // Maximum memory 10MB, change this based on your requirements
+	if err1 != nil {
+		http.Error(w, "Error parsing form data: "+err1.Error(), http.StatusBadRequest)
 		return
 	}
+	var regData model.RegistrationData // variable based on struct fields for storing registration data
+
+	regData.Username = r.FormValue("username")
+	regData.Email = r.FormValue("email")
+	regData.Password = r.FormValue("password")
+	regData.FirstName = r.FormValue("first_name")
+	regData.LastName = r.FormValue("last_name")
+	regData.DOB = r.FormValue("dob")
+	regData.About = r.FormValue("about")
+	
 
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(regData.Password), bcrypt.DefaultCost)
@@ -29,6 +37,8 @@ func UserRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// Change variable password data to hashed variant
 	regData.Password = string(hashedPassword)
+
+	util.ImageParser(w, r, &regData) // parses image data from request to the variable
 	// Store user in database
 	userID, err := repository.RegisterUser(sqlite.Dbase, regData)
 	if err != nil {

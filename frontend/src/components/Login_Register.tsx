@@ -10,12 +10,13 @@ interface LoginValues {
 }
 
 interface RegisterValues {
+	[key: string]: any;
 	email: string;
 	password: string;
 	first_name: string;
 	last_name: string;
 	dob: string;
-	avatar_url: string;
+	avatar: File | null;
 	username: string;
 	about: string;
 }
@@ -24,7 +25,6 @@ const handleLogin = (
 	values: LoginValues,
 	{ setSubmitting }: FormikHelpers<LoginValues>
   ) => {
-	console.log(values);
 	// Handle form submission logic here
 	fetch('http://localhost:8080/api/users/login', {
 	  method: 'POST',
@@ -91,16 +91,22 @@ const handleRegister = (
 	values: RegisterValues,
 	{ setSubmitting }: FormikHelpers<RegisterValues>
   ) => {
-	console.log(values);
-	values.avatar_url = "values.avatar.name";
+	const formData = new FormData();
+
+      // Append all form fields to formData
+      Object.keys(values).forEach((key) => {
+        formData.append(key, values[key]);
+      });
+	console.log(typeof values.avatar);
+	console.log(values.avatar)
+	console.log(values)
+	console.log(formData)
+	// values.avatar_url = "values.avatar.name";
 	// Handle form submission logic here
 	// TODO: change localhost to iriesphere url
 	fetch('http://localhost:8080/api/users/register', {
 	  method: 'POST',
-	  headers: {
-		'Content-Type': 'application/json'
-	  },
-	  body: JSON.stringify(values)
+	  body: formData
 	})
 	.then(response => response.json())
 	.then(data => {
@@ -123,7 +129,7 @@ const RegisterForm = ({ }) => {
 				first_name: "",
 				last_name: "",
 				dob: "",
-				avatar_url: "null",
+				avatar: null as File | null,
 				username: "",
 				about: "",
 			}}
@@ -164,7 +170,7 @@ const RegisterForm = ({ }) => {
 										onChange={(event) => {
 											if (event.currentTarget.files) {
 											const file = event.currentTarget.files[0];
-											form.setFieldValue(field.name, file);
+											setFieldValue("avatar", file);
 										}
 									}}
 								/>
