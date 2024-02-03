@@ -11,8 +11,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type GroupHandler struct {
+    repo *repository.GroupRepository
+}
+
+func NewGroupHandler(repo *repository.GroupRepository) *GroupHandler {
+    return &GroupHandler{repo: repo}
+}
+
 // Group Handlers
-func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
     // check auth and get userid from cookie
     cookie, err := r.Cookie("session_token")
     if err != nil {
@@ -40,7 +48,7 @@ func GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(groups)
 }
 
-func CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
     // TODO: Implement logic for creating a group
     var newGroup model.Group
     err := json.NewDecoder(r.Body).Decode(&newGroup)
@@ -79,7 +87,7 @@ func CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func GetGroupByIDHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Request) {
     // TODO: Implement logic for getting a group by ID
     vars := mux.Vars(r)
     id, err := strconv.Atoi(vars["id"])
@@ -97,7 +105,7 @@ func GetGroupByIDHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(group)
 }
 
-func EditGroupHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) EditGroupHandler(w http.ResponseWriter, r *http.Request) {
     // TODO: Implement logic for editing a group
     var updatedGroup model.Group
     err := json.NewDecoder(r.Body).Decode(&updatedGroup)
@@ -121,7 +129,7 @@ func EditGroupHandler(w http.ResponseWriter, r *http.Request) {
 // If any errors occur during the process, appropriate HTTP error responses are returned.
 // TODO: implement notification to all group members that the group has been deleted, and remove all group members;
 // implement logging of the deletion or add bool field "deleted"
-func DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
     // check auth and get userid from cookie
     cookie, err := r.Cookie("session_token")
     if err != nil {
@@ -168,4 +176,95 @@ func DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+// AddMemberToGroup adds a user to a group. It takes two parameters: the ID of the group
+// and the ID of the user. It inserts a new row into the group_members table in the database,
+// which represents the user being a member of the group. If the operation is successful,
+// it returns nil. If there is an error, it returns the error.
+func (h *GroupHandler) AddMemberHandler(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    groupId, ok := vars["groupId"]
+    if !ok {
+        http.Error(w, "Missing group ID", http.StatusBadRequest)
+        return
+    }
+    intGroupId, err := strconv.Atoi(groupId); if err != nil {
+        http.Error(w, "Failed to convert groupid string to int: " + err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    userId, ok := vars["userId"]
+    if !ok {
+        http.Error(w, "Missing user ID", http.StatusBadRequest)
+        return
+    }
+    intUserId, err := strconv.Atoi(userId); if err != nil {
+        http.Error(w, "Failed to convert userid string to int: " + err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    err = h.repo.AddMemberToGroup(intGroupId, intUserId); if err != nil {
+        http.Error(w, "Failed to add member to group: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+}
+
+// RemoveMemberFromGroup removes a user from a group. It takes two parameters: the ID of the group
+// and the ID of the user. It deletes the row from the group_members table in the database that
+// represents the user being a member of the group. If the operation is successful, it returns nil.
+// If there is an error, it returns the error.
+func (h *GroupHandler) RemoveMemberHandler(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    groupId, ok := vars["groupId"]
+    if !ok {
+        http.Error(w, "Missing group ID", http.StatusBadRequest)
+        return
+    }
+    intGroupId, err := strconv.Atoi(groupId); if err != nil {
+        http.Error(w, "Failed to convert groupid string to int: " + err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    userId, ok := vars["userId"]
+    if !ok {
+        http.Error(w, "Missing user ID", http.StatusBadRequest)
+        return
+    }
+    intUserId, err := strconv.Atoi(userId); if err != nil {
+        http.Error(w, "Failed to convert userid string to int: " + err.Error(), http.StatusBadRequest)
+        return
+    }
+
+    err = h.repo.RemoveMemberFromGroup(intGroupId, intUserId)
+    if err != nil {
+        http.Error(w, "Failed to remove member from group: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+}
+
+// RequestMembershipHandler allows a user to request membership in a group.
+// It creates a membership request in the database that can be approved or denied by the group's admin.
+func (h *GroupHandler) RequestMembershipHandler(w http.ResponseWriter, r *http.Request) {
+    // TODO: Implement logic for a user requesting membership in a group
+}
+
+// ApproveMembershipHandler allows the group's admin to approve a membership request.
+// It changes the status of the membership request in the database to "approved".
+func (h *GroupHandler) ApproveMembershipHandler(w http.ResponseWriter, r *http.Request) {
+    // TODO: Implement logic for approving a membership request
+}
+
+// DeclineMembershipHandler allows the group's admin to decline a membership request.
+// It changes the status of the membership request in the database to "declined".
+func (h *GroupHandler) DeclineMembershipHandler(w http.ResponseWriter, r *http.Request) {
+    // TODO: Implement logic for declining a membership request
+}
+
+// InviteMemberHandler sends an invitation to a user to join a group.
+// It creates an invitation in the database that can be accepted or declined by the user.
+func (h *GroupHandler) InviteMemberHandler(w http.ResponseWriter, r *http.Request) {
+    // TODO: Implement logic for inviting a member to a group
 }

@@ -1,14 +1,17 @@
 package api
 
 import (
-    "fmt"
-    "net/http"
-    "backend/pkg/handler"
-    "github.com/gorilla/mux"
+	"backend/pkg/handler"
+	"backend/pkg/repository"
+	"database/sql"
+	"fmt"
+	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 // API layer, handlers, and routing
-func Router(mux *mux.Router) {
+func Router(mux *mux.Router, db *sql.DB) {
     // User registration requires input in the form like RegistrationData struct at /pkg/model/stucts.go
     mux.HandleFunc("/api/users/register", handler.UserRegisterHandler).Methods("POST")
     
@@ -30,18 +33,22 @@ func Router(mux *mux.Router) {
     mux.HandleFunc("/comment/{id}", handler.DeleteCommentHandler).Methods("DELETE")
 
     // TODO: Groups
-    mux.HandleFunc("/groups", handler.GetAllGroupsHandler).Methods("GET")
-    mux.HandleFunc("/groups", handler.CreateGroupHandler).Methods("POST")
-    mux.HandleFunc("/groups/{id}", handler.GetGroupByIDHandler).Methods("GET")
-    mux.HandleFunc("/groups/{id}", handler.EditGroupHandler).Methods("PUT")
-    mux.HandleFunc("/groups/{id}", handler.DeleteGroupHandler).Methods("DELETE")
+    groupRepo := repository.NewGroupRepository(db)
+    groupHandler := handler.NewGroupHandler(groupRepo)
+    mux.HandleFunc("/groups", groupHandler.GetAllGroupsHandler).Methods("GET")
+    mux.HandleFunc("/groups", groupHandler.CreateGroupHandler).Methods("POST")
+    mux.HandleFunc("/groups/{id}", groupHandler.GetGroupByIDHandler).Methods("GET")
+    mux.HandleFunc("/groups/{id}", groupHandler.EditGroupHandler).Methods("PUT")
+    mux.HandleFunc("/groups/{id}", groupHandler.DeleteGroupHandler).Methods("DELETE")
 
     // TODO: Invitations
-    mux.HandleFunc("/invitations", handler.GetAllInvitationsHandler).Methods("GET")
-    mux.HandleFunc("/invitations", handler.CreateInvitationHandler).Methods("POST")
-    mux.HandleFunc("/invitations/{id}", handler.GetInvitationByIDHandler).Methods("GET")
-    mux.HandleFunc("/invitations/{id}", handler.AcceptInvitationHandler).Methods("PUT")
-    mux.HandleFunc("/invitations/{id}", handler.DeclineInvitationHandler).Methods("PUT")
+    invitationRepo := repository.NewInvitationRepository(db)
+    invitationHandler := handler.NewInvitationHandler(invitationRepo)
+    mux.HandleFunc("/invitations", invitationHandler.GetAllInvitationsHandler).Methods("GET")
+    mux.HandleFunc("/invitations", invitationHandler.CreateInvitationHandler).Methods("POST")
+    mux.HandleFunc("/invitations/{id}", invitationHandler.GetInvitationByIDHandler).Methods("GET")
+    mux.HandleFunc("/invitations/{id}", invitationHandler.AcceptGroupInvitationHandler).Methods("PUT")
+    mux.HandleFunc("/invitations/{id}", invitationHandler.DeclineGroupInvitationHandler).Methods("PUT")
 
     // TODO: Events
     mux.HandleFunc("/events", handler.GetAllEventsHandler).Methods("GET")

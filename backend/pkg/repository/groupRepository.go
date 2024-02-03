@@ -3,6 +3,7 @@ package repository
 import (
 	"backend/pkg/model"
 	"database/sql"
+	"time"
 )
 type GroupRepository struct {
     db *sql.DB
@@ -64,13 +65,27 @@ func (r *GroupRepository) GetGroupByID(id int) (model.Group, error) {
 }
 
 func (r *GroupRepository) UpdateGroup(group model.Group) error {
-    query := `UPDATE groups SET creator_id = ?, title = ?, description = ? WHERE id = ?`
-    _, err := r.db.Exec(query, group.CreatorId, group.Title, group.Description, group.Id)
+    query := `UPDATE groups SET creator_id = ?, title = ?, description = ?, updated_at = ? WHERE id = ?`
+    _, err := r.db.Exec(query, group.CreatorId, group.Title, group.Description, time.Now(), group.Id)
     return err
 }
 
 func (r *GroupRepository) DeleteGroup(id int) error {
     query := `DELETE FROM groups WHERE id = ?`
     _, err := r.db.Exec(query, id)
+    return err
+}
+
+// group members
+
+func (r *GroupRepository) AddMemberToGroup(groupId, userId int) error {
+    query := `INSERT INTO group_members (group_id, user_id) VALUES (?, ?)`
+    _, err := r.db.Exec(query, groupId, userId)
+    return err
+}
+
+func (r *GroupRepository) RemoveMemberFromGroup(groupId, userId int) error {
+    query := `DELETE FROM group_members WHERE group_id = ? AND user_id = ?`
+    _, err := r.db.Exec(query, groupId, userId)
     return err
 }
