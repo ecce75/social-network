@@ -42,6 +42,7 @@ func ConnectAndMigrate(dbPath string, migrationsPath string) (*sql.DB, error) {
         return nil, err
     }
 
+    // Switch to m.Down() to drop all tables and then up to create them
     err = m.Up()
     if err != nil && err != migrate.ErrNoChange {
         fmt.Println("Failed to apply migrations:", err)
