@@ -15,8 +15,16 @@ type GroupHandler struct {
     repo *repository.GroupRepository
 }
 
+type InvitationHandler struct {
+    repo *repository.InvitationRepository
+}
+
 func NewGroupHandler(repo *repository.GroupRepository) *GroupHandler {
     return &GroupHandler{repo: repo}
+}
+
+func NewInvitationHandler(repo *repository.InvitationRepository) *InvitationHandler {
+    return &InvitationHandler{repo: repo}
 }
 
 // Group Handlers
@@ -245,26 +253,91 @@ func (h *GroupHandler) RemoveMemberHandler(w http.ResponseWriter, r *http.Reques
     w.WriteHeader(http.StatusOK)
 }
 
+// ----------------- Group Membership/Invitation/Request Handlers ----------------- 
+
 // RequestMembershipHandler allows a user to request membership in a group.
 // It creates a membership request in the database that can be approved or denied by the group's admin.
-func (h *GroupHandler) RequestMembershipHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) RequestGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
     // TODO: Implement logic for a user requesting membership in a group
 }
 
 // ApproveMembershipHandler allows the group's admin to approve a membership request.
 // It changes the status of the membership request in the database to "approved".
-func (h *GroupHandler) ApproveMembershipHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) ApproveGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
     // TODO: Implement logic for approving a membership request
 }
 
 // DeclineMembershipHandler allows the group's admin to decline a membership request.
 // It changes the status of the membership request in the database to "declined".
-func (h *GroupHandler) DeclineMembershipHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) DeclineGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
     // TODO: Implement logic for declining a membership request
 }
 
 // InviteMemberHandler sends an invitation to a user to join a group.
 // It creates an invitation in the database that can be accepted or declined by the user.
-func (h *GroupHandler) InviteMemberHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *http.Request) {
     // TODO: Implement logic for inviting a member to a group
+}
+
+// GetAllInvitationsHandler gets all invitations
+func (h *InvitationHandler) GetAllGroupInvitationsHandler(w http.ResponseWriter, r *http.Request) {
+    invitations, err := h.repo.GetAllGroupInvitations()
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+    json.NewEncoder(w).Encode(invitations)
+}
+
+// CreateInvitationHandler creates a new invitation
+func (h *InvitationHandler) CreateGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
+    var newInvitation model.GroupInvitation
+    err := json.NewDecoder(r.Body).Decode(&newInvitation)
+    if err != nil {
+        http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
+        return
+    }
+    err = h.repo.CreateGroupInvitation(newInvitation)
+    if err != nil {
+        http.Error(w, "Failed to create invitation: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusCreated)
+    json.NewEncoder(w).Encode(newInvitation)
+}
+
+// GetInvitationByIDHandler gets an invitation by ID
+func (h *InvitationHandler) GetGroupInvitationByIDHandler(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    id := vars["id"]
+    invitation, err := h.repo.GetGroupInvitationByID(id)
+    if err != nil {
+        http.Error(w, "Failed to get invitation: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+    json.NewEncoder(w).Encode(invitation)
+}
+
+// AcceptGroupInvitationHandler allows a user to accept an invitation to join a group.
+func (h *InvitationHandler) AcceptGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    id := vars["id"]
+    err := h.repo.AcceptGroupInvitation(id)
+    if err != nil {
+        http.Error(w, "Failed to accept invitation: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
+}
+
+// DeclineGroupInvitationHandler allows a user to decline an invitation to join a group.
+func (h *InvitationHandler) DeclineGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
+    vars := mux.Vars(r)
+    id := vars["id"]
+    err := h.repo.DeclineGroupInvitation(id)
+    if err != nil {
+        http.Error(w, "Failed to decline invitation: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+    w.WriteHeader(http.StatusOK)
 }

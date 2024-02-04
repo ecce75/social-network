@@ -4,9 +4,7 @@ import (
 	"backend/pkg/handler"
 	"backend/pkg/repository"
 	"database/sql"
-	"fmt"
 	"net/http"
-
 	"github.com/gorilla/mux"
 )
 
@@ -41,12 +39,12 @@ func Router(mux *mux.Router, db *sql.DB) {
     mux.HandleFunc("/groups/{id}", groupHandler.EditGroupHandler).Methods("PUT")
     mux.HandleFunc("/groups/{id}", groupHandler.DeleteGroupHandler).Methods("DELETE")
 
-    // TODO: Invitations
+    // TODO: Group invitations & requests
     invitationRepo := repository.NewInvitationRepository(db)
     invitationHandler := handler.NewInvitationHandler(invitationRepo)
-    mux.HandleFunc("/invitations", invitationHandler.GetAllInvitationsHandler).Methods("GET")
-    mux.HandleFunc("/invitations", invitationHandler.CreateInvitationHandler).Methods("POST")
-    mux.HandleFunc("/invitations/{id}", invitationHandler.GetInvitationByIDHandler).Methods("GET")
+    mux.HandleFunc("/invitations", invitationHandler.GetAllGroupInvitationsHandler).Methods("GET")
+    mux.HandleFunc("/invitations", invitationHandler.CreateGroupInvitationHandler).Methods("POST")
+    mux.HandleFunc("/invitations/{id}", invitationHandler.GetGroupInvitationByIDHandler).Methods("GET")
     mux.HandleFunc("/invitations/{id}", invitationHandler.AcceptGroupInvitationHandler).Methods("PUT")
     mux.HandleFunc("/invitations/{id}", invitationHandler.DeclineGroupInvitationHandler).Methods("PUT")
 
@@ -64,7 +62,6 @@ func Router(mux *mux.Router, db *sql.DB) {
     mux.HandleFunc("/notifications/{id}", handler.MarkNotificationAsReadHandler).Methods("PUT")
 
 	// TODO: Friends
-
 	mux.HandleFunc("/friends/request", handler.SendFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/accept", handler.AcceptFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/decline", handler.DeclineFriendRequestHandler).Methods("POST")
@@ -72,11 +69,6 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/friends/unblock", handler.UnblockUserHandler).Methods("POST")
 	mux.HandleFunc("/friends", handler.GetFriendsHandler).Methods("GET")
 
-    // Catch-all route to serve index.html for all other routes
-	// TODO: remove
-    mux.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        http.ServeFile(w, r, "../frontend/public/index.html")
-        fmt.Println("route called successfully")
-    })
+    // ----
     http.Handle("/", mux)
 }
