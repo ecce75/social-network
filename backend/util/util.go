@@ -20,7 +20,7 @@ func GenerateSessionToken() string {
 	return hex.EncodeToString(b)
 }
 
-func ImageParser(w http.ResponseWriter, r *http.Request, regData *model.RegistrationData) {
+func ImageSave(w http.ResponseWriter, r *http.Request, regData *model.RegistrationData) {
 
     // 2. Extract the image file from the form data
     file, _, err := r.FormFile("avatar") 

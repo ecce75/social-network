@@ -38,7 +38,7 @@ func UserRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// Change variable password data to hashed variant
 	regData.Password = string(hashedPassword)
 
-	util.ImageParser(w, r, &regData) // parses image data from request to the variable
+	util.ImageSave(w, r, &regData) // parses image data from request to the variable
 	// Store user in database
 	userID, err := repository.RegisterUser(sqlite.Dbase, regData)
 	if err != nil {

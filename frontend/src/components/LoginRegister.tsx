@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Formik, Field, Form, FormikHelpers, useFormikContext, FieldProps } from "formik";
-import "../public/styles.css";
+import "../../styles/styles.css";
+import { useRouter} from 'next/navigation';
 
 interface LoginValues {
 	username: string;
@@ -21,38 +22,54 @@ interface RegisterValues {
 	about: string;
 }
 
+
 const handleLogin = (
 	values: LoginValues,
-	{ setSubmitting }: FormikHelpers<LoginValues>
+	formikHelpers: FormikHelpers<LoginValues>,
+	router: any
   ) => {
-	// Handle form submission logic here
+
+	// Form submission logic
 	fetch('http://localhost:8080/api/users/login', {
 	  method: 'POST',
 	  headers: {
 		'Content-Type': 'application/json'
 	  },
-	  body: JSON.stringify(values)
+	  body: JSON.stringify(values),
+	  credentials: 'include' // Send cookies with the request
 	})
-	.then(response => response.json())
+	.then(response => {
+		if (!response.ok) {
+			return response.text().then(text => {
+				throw new Error(text);
+			  });
+		  }
+		return response.json()
+	})
 	.then(data => {
 	  console.log(data);
-	  setSubmitting(false);
+	  formikHelpers.setSubmitting(false);
+	  router.push('/');
 	})
 	.catch(error => {
-	  console.error('Error:', error);
-	  setSubmitting(false);
+	  formikHelpers.setSubmitting(false);
+	  console.error('Catch Error:', error);
+	  alert("Invalid username or password")
 	});
   };
+ 
 
-const LoginForm = ({ }) => {
-	return (
+const LoginForm = (({}) => {
+	const router = useRouter();
+	return ( 
 		<Formik
 			initialValues={{
 				username: "",
 				password: "",
 			}}
-			onSubmit={handleLogin}
-		>
+			onSubmit={(values, formikHelpers) => handleLogin(values, formikHelpers, router)}
+		>	
+
 			<Form className="flex items-center">
 				<div className="mr-2">
 					<Field
@@ -85,42 +102,50 @@ const LoginForm = ({ }) => {
 			</Form>
 		</Formik>
 	);
-};
+});
 
 const handleRegister = (
 	values: RegisterValues,
-	{ setSubmitting }: FormikHelpers<RegisterValues>
+	formikHelpers: FormikHelpers<RegisterValues>,
+	router: any
   ) => {
 	const formData = new FormData();
 
-      // Append all form fields to formData
-      Object.keys(values).forEach((key) => {
-        formData.append(key, values[key]);
-      });
-	console.log(typeof values.avatar);
-	console.log(values.avatar)
-	console.log(values)
-	console.log(formData)
-	// values.avatar_url = "values.avatar.name";
-	// Handle form submission logic here
+	// Append all form fields to formData
+	Object.keys(values).forEach((key) => {
+	formData.append(key, values[key]);
+	});
+
+	// Form submission logic
 	// TODO: change localhost to iriesphere url
 	fetch('http://localhost:8080/api/users/register', {
 	  method: 'POST',
-	  body: formData
+	  body: formData,
+	  credentials: 'include' // Send cookies with the request
 	})
-	.then(response => response.json())
+	.then(response => {
+		if (!response.ok) {
+			return response.text().then(text => {
+				throw new Error(text);
+			  });
+		  }
+		return response.json()
+	})
 	.then(data => {
 	  console.log(data);
-	  setSubmitting(false);
+	  formikHelpers.setSubmitting(false);
+	  router.push('/');
 	})
 	.catch(error => {
-	  console.error('Error:', error);
-	  setSubmitting(false);
+	  formikHelpers.setSubmitting(false);
+	  console.error('Catch Error:', error);
+	  alert("Invalid username or password")
 	});
   };
 
   
 const RegisterForm = ({ }) => {
+	const router = useRouter();
 	return (
 		<Formik
 			initialValues={{
@@ -133,7 +158,7 @@ const RegisterForm = ({ }) => {
 				username: "",
 				about: "",
 			}}
-			onSubmit={handleRegister}
+			onSubmit={(values, formikHelpers) => handleRegister(values, formikHelpers, router)}
 		>
 			{({ values, setFieldValue }) => (
 				<Form>
@@ -158,7 +183,7 @@ const RegisterForm = ({ }) => {
 						<div className="mb-4">
 							<label className="labelStyle">Date of Birth</label>
 							<Field type="date" name="dob" className="inputStyle" />
-						</div>–
+						</div>
 						<div className="mb-4">
 							<label className="labelStyle">Avatar/Image</label>
 							<Field name="avatar">
@@ -196,3 +221,7 @@ const RegisterForm = ({ }) => {
 };
 
 export { LoginForm, RegisterForm };
+	
+
+
+

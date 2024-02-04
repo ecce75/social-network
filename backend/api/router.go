@@ -2,7 +2,6 @@ package api
 
 import (
 	"backend/pkg/handler"
-	"fmt"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -70,10 +69,18 @@ func Router(mux *mux.Router) {
 
     // Catch-all route to serve index.html for all other routes
 	// TODO: remove
-    mux.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-        http.ServeFile(w, r, "../frontend/public/index.html")
-        fmt.Println("route called successfully")
-    })
-    mux_cors := cors.Default().Handler(mux)
+    // mux.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    //     http.ServeFile(w, r, "../frontend/public/index.html")
+    //     fmt.Println("route called successfully")
+    // })
+    //mux_cors := cors.Default().Handler(mux)
+    corsOptions := cors.New(cors.Options{
+		AllowedOrigins:   []string{"http://localhost:3000"}, // Replace with your frontend's origin
+		AllowCredentials: true, // Important for cookies, authorization headers with HTTPS
+		AllowedHeaders:   []string{"Authorization", "Content-Type"}, // You can adjust this based on your needs
+		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // Adjust the methods based on your requirements
+		// You can include other settings like ExposedHeaders, MaxAge, etc., according to your needs
+	})
+    mux_cors := corsOptions.Handler(mux)
     http.Handle("/", mux_cors)
 }

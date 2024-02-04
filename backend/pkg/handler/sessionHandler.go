@@ -23,21 +23,13 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing login JSON data: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	fmt.Println("Login data: ", logData)
 	user, err := repository.GetUserByEmailOrNickname(sqlite.Dbase, logData.Username)
 	if err != nil {
-		fmt.Printf("Error getting user by email of nickname: %v <> error: %v \n", logData.Username, err)
-		return
-	}
-
-	if user.Id == 0 {
-		// User not found
-		http.Error(w, "User not found", http.StatusInternalServerError)
+		http.Error(w, "user not found", http.StatusNotFound)
 		return
 	}
 
 	// Compare hashed password with provided password
-
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(logData.Password))
 	if err != nil { // Wrong password
 		fmt.Println("Error comparing password: ", err)
@@ -92,7 +84,6 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 func CheckAuth(w http.ResponseWriter, r *http.Request) {
 	isAuthenticated := true
-
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		if err == http.ErrNoCookie {
