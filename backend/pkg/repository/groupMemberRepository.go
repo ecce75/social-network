@@ -48,15 +48,6 @@ func (r *InvitationRepository) CreateGroupInvitation(invitation model.GroupInvit
 	return err
 }
 
-// UpdateGroupInvitation updates the status of an invitation in the database.
-// It returns an error if any.
-// DEPRECATED: use AcceptGroupInvitation and DeclineGroupInvitation instead
-func (r *InvitationRepository) UpdateGroupInvitation(invitation model.GroupInvitation) error {
-	query := `UPDATE group_invitations SET status = ? WHERE id = ?`
-	_, err := r.db.Exec(query, invitation.Status, invitation.Id)
-	return err
-}
-
 // DeleteGroupInvitation deletes an invitation from the database.
 // It returns an error if any.
 func (r *InvitationRepository) DeleteGroupInvitation(id int) error {
@@ -64,6 +55,29 @@ func (r *InvitationRepository) DeleteGroupInvitation(id int) error {
 	_, err := r.db.Exec(query, id)
 	return err
 }
+
+// AcceptGroupInvitation updates the status of an invitation to "accepted" in the database.
+// It returns an error if any.
+func (r *GroupMemberRepository) AcceptGroupInvitationAndRequest(id string) error {
+	query := `UPDATE group_invitations SET status = 'accepted' WHERE id = ?`
+	_, err := r.db.Exec(query, id)
+	return err
+}
+
+// DeclineGroupInvitation updates the status of an invitation to "declined" in the database.
+// It returns an error if any.
+func (r *InvitationRepository) DeclineGroupInvitation(id string) error {
+	query := `UPDATE group_invitations SET status = 'declined' WHERE id = ?`
+	_, err := r.db.Exec(query, id)
+	return err
+}
+
+func (r *GroupMemberRepository) CreateGroupRequest(request model.GroupInvitation) error {
+	query := `INSERT INTO group_invitations (group_id, join_user_id, invite_user_id, status) VALUES (?, ?, ?, ?)`
+	_, err := r.db.Exec(query, request.GroupId, request.JoinUserId, request.InviteUserId, "pending")
+	return err
+}
+
 
 // GetAllGroupInvitations retrieves all group invitations from the database.
 // It returns a slice of GroupInvitation objects and an error if any.
@@ -101,24 +115,27 @@ func (r *InvitationRepository) GetGroupInvitationByID(id string) (model.GroupInv
 	return invitation, nil
 }
 
-// AcceptGroupInvitation updates the status of an invitation to "accepted" in the database.
-// It returns an error if any.
-func (r *GroupMemberRepository) AcceptGroupInvitationAndRequest(id string) error {
-	query := `UPDATE group_invitations SET status = 'accepted' WHERE id = ?`
-	_, err := r.db.Exec(query, id)
-	return err
+// GetGroupInvitationByID retrieves an invitation by ID from the database.
+// It returns the GroupInvitation object and an error if any.
+func (r *GroupMemberRepository) GetGroupInvitationByID(id string) (model.GroupInvitation, error) {
+	query := `SELECT * FROM group_invitations WHERE id = ?`
+	row := r.db.QueryRow(query, id)
+
+	var invitation model.GroupInvitation
+	if err := row.Scan(&invitation.Id, &invitation.GroupId, &invitation.JoinUserId, &invitation.InviteUserId, &invitation.Status); err != nil {
+		return model.GroupInvitation{}, err
+	}
+	return invitation, nil
 }
 
-// DeclineGroupInvitation updates the status of an invitation to "declined" in the database.
-// It returns an error if any.
-func (r *InvitationRepository) DeclineGroupInvitation(id string) error {
-	query := `UPDATE group_invitations SET status = 'declined' WHERE id = ?`
-	_, err := r.db.Exec(query, id)
-	return err
-}
+func (r *GroupMemberRepository) IsUserGroupOwner(userId, groupId int) (bool, error) {
+	query := `SELECT creator_id FROM groups WHERE id = ?`
+	row := r.db.QueryRow(query, groupId)
 
-func (r *GroupMemberRepository) CreateGroupRequest(request model.GroupInvitation) error {
-	query := `INSERT INTO group_invitations (group_id, join_user_id, invite_user_id, status) VALUES (?, ?, ?, ?)`
-	_, err := r.db.Exec(query, request.GroupId, request.JoinUserId, request.InviteUserId, "pending")
-	return err
+	var creatorId int
+	err := row.Scan(&creatorId)
+	if err != nil {
+		return false, err
+	}
+	return creatorId == userId, nil
 }
