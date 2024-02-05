@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-
 	"github.com/gorilla/mux"
 )
 
@@ -22,7 +21,7 @@ func NewGroupMemberHandler(repo *repository.GroupMemberRepository) *GroupMemberH
 // and the ID of the user. It inserts a new row into the group_members table in the database,
 // which represents the user being a member of the group. If the operation is successful,
 // it returns nil. If there is an error, it returns the error.
-func (h *GroupHandler) AddMemberHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupMemberHandler) AddMemberHandler(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     groupId, ok := vars["groupId"]
     if !ok {
@@ -55,7 +54,7 @@ func (h *GroupHandler) AddMemberHandler(w http.ResponseWriter, r *http.Request) 
 // and the ID of the user. It deletes the row from the group_members table in the database that
 // represents the user being a member of the group. If the operation is successful, it returns nil.
 // If there is an error, it returns the error.
-func (h *GroupHandler) RemoveMemberHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupMemberHandler) RemoveMemberHandler(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     groupId, ok := vars["groupId"]
     if !ok {
@@ -76,6 +75,7 @@ func (h *GroupHandler) RemoveMemberHandler(w http.ResponseWriter, r *http.Reques
         http.Error(w, "Failed to convert userid string to int: " + err.Error(), http.StatusBadRequest)
         return
     }
+    // TODO: implement logic to check if the user trying to remove the member is the owner of the group
 
     err = h.repo.RemoveMemberFromGroup(intGroupId, intUserId)
     if err != nil {
@@ -89,7 +89,7 @@ func (h *GroupHandler) RemoveMemberHandler(w http.ResponseWriter, r *http.Reques
 
 // RequestGroupMembershipHandler allows a user to request membership in a group.
 // It creates a membership request in the database that can be approved or denied by the group's admin.
-func (h *InvitationHandler) RequestGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
     // Parse the request body to get the group ID and user ID
     var request model.GroupInvitation
     err := json.NewDecoder(r.Body).Decode(&request)
@@ -97,9 +97,10 @@ func (h *InvitationHandler) RequestGroupMembershipHandler(w http.ResponseWriter,
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
     }
-
+    userID := r.Context().Value("AuthUserID").(int)
+    request.JoinUserId = userID
     // Create the membership request in the database
-    err = h.repo.CreateGroupInvitation(request)
+    err = h.repo.CreateGroupRequest(request)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -109,18 +110,26 @@ func (h *InvitationHandler) RequestGroupMembershipHandler(w http.ResponseWriter,
 }
 
 // TODO: implement logic for setting the player as group member
-func (h *InvitationHandler) ApproveGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
     // Parse the request URL to get the invitation ID
     vars := mux.Vars(r)
     id := vars["id"]
 
+    //userID := r.Context().Value("AuthUserID").(int)
     // Update the status of the membership request to "approved"
-    err := h.repo.AcceptGroupInvitation(id)
+    err := h.repo.AcceptGroupInvitationAndRequest(id)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
+    // get groupId from the request invitation that was accepted
+    //groupInvitation, err := h.repo.GetGroupInvitationByID(id)
 
+    // this should add player to group
+    //err = h.repo.AddMemberToGroup(groupInvitation.GroupId, groupInvitation.JoinUserId)
+
+    // TODO: this should notify the user that their request was approved
+    // TODO: this should delete the invitation from the database
     w.WriteHeader(http.StatusOK)
 }
 
@@ -136,28 +145,10 @@ func (h *InvitationHandler) DeclineGroupMembershipHandler(w http.ResponseWriter,
         return
     }
 
+    // TODO: this should notify the user that their request was declined
+    // TODO: this should delete the request from the database
+
     w.WriteHeader(http.StatusOK)
-}
-
-// InviteMemberHandler sends an invitation to a user to join a group.
-// It creates an invitation in the database that can be accepted or declined by the user.
-func (h *InvitationHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *http.Request) {
-    // Parse the request body to get the group ID and user ID
-    var invitation model.GroupInvitation
-    err := json.NewDecoder(r.Body).Decode(&invitation)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
-        return
-    }
-
-    // Create the invitation in the database
-    err = h.repo.CreateGroupInvitation(invitation)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    w.WriteHeader(http.StatusCreated)
 }
 
 // GetAllInvitationsHandler gets all invitations
@@ -170,9 +161,9 @@ func (h *InvitationHandler) GetAllGroupInvitationsHandler(w http.ResponseWriter,
     json.NewEncoder(w).Encode(invitations)
 }
 
-// CreateInvitationHandler creates a new invitation
-// TODO: merge with InviteGroupMemberHandler - same functionality
-func (h *InvitationHandler) CreateGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
+// InviteMemberHandler sends an invitation to a user to join a group.
+// It creates an invitation in the database that can be accepted or declined by the user.
+func (h *InvitationHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *http.Request) {
     var newInvitation model.GroupInvitation
     err := json.NewDecoder(r.Body).Decode(&newInvitation)
     if err != nil {
@@ -184,8 +175,9 @@ func (h *InvitationHandler) CreateGroupInvitationHandler(w http.ResponseWriter, 
         http.Error(w, "Failed to create invitation: "+err.Error(), http.StatusInternalServerError)
         return
     }
+    // TODO: this should notify the user that they have been invited to join a group
     w.WriteHeader(http.StatusCreated)
-    json.NewEncoder(w).Encode(newInvitation)
+    //json.NewEncoder(w).Encode(newInvitation)
 }
 
 // GetInvitationByIDHandler gets an invitation by ID
@@ -202,14 +194,17 @@ func (h *InvitationHandler) GetGroupInvitationByIDHandler(w http.ResponseWriter,
 }
 
 // AcceptGroupInvitationHandler allows a user to accept an invitation to join a group.
-func (h *InvitationHandler) AcceptGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupMemberHandler) AcceptGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     id := vars["id"]
-    err := h.repo.AcceptGroupInvitation(id)
+    err := h.repo.AcceptGroupInvitationAndRequest(id)
     if err != nil {
         http.Error(w, "Failed to accept invitation: "+err.Error(), http.StatusInternalServerError)
         return
     }
+    // TODO: this should add player to group
+
+    // FUTURE TODO: this notify the group list of the new member
     w.WriteHeader(http.StatusOK)
 }
 
@@ -222,5 +217,7 @@ func (h *InvitationHandler) DeclineGroupInvitationHandler(w http.ResponseWriter,
         http.Error(w, "Failed to decline invitation: "+err.Error(), http.StatusInternalServerError)
         return
     }
+    // TODO: this should notify the invitation sender that the invitation was declined
+    // it also then should delete the invitation from the database
     w.WriteHeader(http.StatusOK)
 }

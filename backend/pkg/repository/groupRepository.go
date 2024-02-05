@@ -13,15 +13,15 @@ type GroupRepository struct {
 	db *sql.DB
 }
 
-// InvitationRepository is a repository for managing invitations in the database.
-type InvitationRepository struct {
-	db *sql.DB
-}
+// // InvitationRepository is a repository for managing invitations in the database.
+// type InvitationRepository struct {
+// 	db *sql.DB
+// }
 
-// NewInvitationRepository creates a new instance of InvitationRepository.
-func NewInvitationRepository(db *sql.DB) *InvitationRepository {
-	return &InvitationRepository{db: db}
-}
+// // NewInvitationRepository creates a new instance of InvitationRepository.
+// func NewInvitationRepository(db *sql.DB) *InvitationRepository {
+// 	return &InvitationRepository{db: db}
+// }
 
 // NewGroupRepository creates a new instance of GroupRepository.
 func NewGroupRepository(db *sql.DB) *GroupRepository {

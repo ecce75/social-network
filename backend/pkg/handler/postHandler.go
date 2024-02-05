@@ -5,10 +5,9 @@ import (
 	"backend/pkg/model"
 	"backend/pkg/repository"
 	"encoding/json"
-	"fmt"
+	"backend/pkg/middleware"
 	"net/http"
 	"strconv"
-	"time"
 	"github.com/gorilla/mux"
 )
 
@@ -32,7 +31,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	userID, err := confirmAuthentication(cookie)
+	userID, err := middleware.ConfirmAuthentication(cookie)
 	if err != nil {
 		http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusInternalServerError)
 		return
@@ -53,20 +52,6 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
-}
-
-func confirmAuthentication(cookie *http.Cookie) (int, error) {
-	sessionToken := cookie.Value
-
-	session, err := repository.GetSessionBySessionToken(sqlite.Dbase, sessionToken)
-	if err != nil {
-		fmt.Println("Could not get session token: ", err)
-		return 0, err
-	}
-	if time.Now().After(session.ExpiresAt) {
-		return 0, fmt.Errorf("session token expired: %v", session.ExpiresAt)
-	}
-	return session.UserID, nil
 }
 
 func EditPostHandler(w http.ResponseWriter, r *http.Request) {
@@ -91,7 +76,7 @@ func EditPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	// Confirm user auth and get userid
-	userID, err := confirmAuthentication(cookie)
+	userID, err := middleware.ConfirmAuthentication(cookie)
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
 		return
@@ -132,7 +117,7 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error authenticating user: " +err.Error(), http.StatusBadRequest)
 		return
 	}
-	userId, err := confirmAuthentication(cookie)
+	userId, err := middleware.ConfirmAuthentication(cookie)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -168,7 +153,7 @@ func GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-	userID, err := confirmAuthentication(cookie)
+	userID, err := middleware.ConfirmAuthentication(cookie)
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
 		return

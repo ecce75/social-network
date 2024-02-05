@@ -122,8 +122,8 @@ type Notification struct {
 type GroupInvitation struct {
 	Id           int       `json:"id"`
 	GroupId      int       `json:"group_id"`
-	TargetUserId int       `json:"target_user_id"`
-	UserId       int       `json:"user_id"`
+	JoinUserId   int       `json:"join_user_id"`
+	InviteUserId int       `json:"invite_user_id,omitempty"`
 	Status       string    `json:"status"`
 	CreatedAt    time.Time `json:"created_at"`
 }

@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-
 	"github.com/gorilla/mux"
 )
 
@@ -29,25 +28,29 @@ func NewInvitationHandler(repo *repository.InvitationRepository) *InvitationHand
 
 // Group Handlers
 func (h *GroupHandler) GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
+
+    // DEPRECATED: auth checked as middleware
     // check auth and get userid from cookie
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        if err == http.ErrNoCookie {
-            // If the session cookie doesn't exist, set isAuthenticated to false
-            http.Error(w, "User not authenticated", http.StatusUnauthorized)
-            return
-        } else {
-            http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
-            return
-        }
-    }
-    _, err = confirmAuthentication(cookie) //(userid, err :=) when later would highlight groups user is a part of
-    if err != nil {
-        http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusUnauthorized)
-        return
-    }
+    // cookie, err := r.Cookie("session_token")
+    // if err != nil {
+    //     if err == http.ErrNoCookie {
+    //         // If the session cookie doesn't exist, set isAuthenticated to false
+    //         http.Error(w, "User not authenticated", http.StatusUnauthorized)
+    //         return
+    //     } else {
+    //         http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
+    //         return
+    //     }
+    // }
+    // _, err = middleware.ConfirmAuthentication(cookie) //(userid, err :=) when later would highlight groups user is a part of
+    // if err != nil {
+    //     http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusUnauthorized)
+    //     return
+    // }
+
+
     // TODO: Implement logic for getting all groups
-    groups, err := repository.NewGroupRepository(sqlite.Dbase).GetAllGroups()
+    groups, err := h.repo.GetAllGroups()
     if err != nil {
         http.Error(w, "Failed to get groups: "+err.Error(), http.StatusInternalServerError)
         return
@@ -64,26 +67,29 @@ func (h *GroupHandler) CreateGroupHandler(w http.ResponseWriter, r *http.Request
         http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
         return
     }
-    // check auth and get userid from cookie
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        if err == http.ErrNoCookie {
-            // If the session cookie doesn't exist, set isAuthenticated to false
-            http.Error(w, "User not authenticated", http.StatusUnauthorized)
-            return
-        } else {
-            http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
-            return
-        }
-    }
-    userid, err := confirmAuthentication(cookie)
-    if err != nil {
-        http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusUnauthorized)
-        return
-    }
-    // TODO: check if group with title already exists
 
-    newGroup.CreatorId = userid
+    // DEPRECATED: auth checked as middleware
+    // // check auth and get userid from cookie
+    // cookie, err := r.Cookie("session_token")
+    // if err != nil {
+    //     if err == http.ErrNoCookie {
+    //         // If the session cookie doesn't exist, set isAuthenticated to false
+    //         http.Error(w, "User not authenticated", http.StatusUnauthorized)
+    //         return
+    //     } else {
+    //         http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
+    //         return
+    //     }
+    // }
+    // userid, err := middleware.ConfirmAuthentication(cookie)
+    // if err != nil {
+    //     http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusUnauthorized)
+    //     return
+    // }
+
+    // TODO: check if group with title already exists
+    userID := r.Context().Value("AuthUserID").(int)
+    newGroup.CreatorId = userID
     groupRepo := repository.NewGroupRepository(sqlite.Dbase)
     createdGroup, err := groupRepo.CreateGroup(newGroup)
     if err != nil {
@@ -103,8 +109,8 @@ func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Reques
         http.Error(w, "Invalid group ID", http.StatusBadRequest)
         return
     }
-    groupRepo := repository.NewGroupRepository(sqlite.Dbase)
-    group, err := groupRepo.GetGroupByID(id)
+    
+    group, err := h.repo.GetGroupByID(id)
     if err != nil {
         http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
         return
@@ -121,8 +127,8 @@ func (h *GroupHandler) EditGroupHandler(w http.ResponseWriter, r *http.Request) 
         http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
         return
     }
-    groupRepo := repository.NewGroupRepository(sqlite.Dbase)
-    err = groupRepo.UpdateGroup(updatedGroup)
+    
+    err = h.repo.UpdateGroup(updatedGroup)
     if err != nil {
         http.Error(w, "Failed to update group: "+err.Error(), http.StatusInternalServerError)
         return
@@ -138,23 +144,27 @@ func (h *GroupHandler) EditGroupHandler(w http.ResponseWriter, r *http.Request) 
 // TODO: implement notification to all group members that the group has been deleted, and remove all group members;
 // implement logging of the deletion or add bool field "deleted"
 func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
-    // check auth and get userid from cookie
-    cookie, err := r.Cookie("session_token")
-    if err != nil {
-        if err == http.ErrNoCookie {
-            // If the session cookie doesn't exist, set isAuthenticated to false
-            http.Error(w, "User not authenticated", http.StatusUnauthorized)
-            return
-        } else {
-            http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
-            return
-        }
-    }
-    userId, err := confirmAuthentication(cookie)
-    if err != nil {
-        http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusUnauthorized)
-        return
-    }
+
+    // // DEPRECATED: auth checked as middleware
+    // // check auth and get userid from cookie
+    // cookie, err := r.Cookie("session_token")
+    // if err != nil {
+    //     if err == http.ErrNoCookie {
+    //         // If the session cookie doesn't exist, set isAuthenticated to false
+    //         http.Error(w, "User not authenticated", http.StatusUnauthorized)
+    //         return
+    //     } else {
+    //         http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
+    //         return
+    //     }
+    // }
+    // userId, err := middleware.ConfirmAuthentication(cookie)
+    // if err != nil {
+    //     http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusUnauthorized)
+    //     return
+    // }
+
+    userID := r.Context().Value("AuthUserID").(int)
 
     // TODO: Implement logic for deleting a group
     vars := mux.Vars(r)
@@ -163,17 +173,17 @@ func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request
         http.Error(w, "Invalid group ID", http.StatusBadRequest)
         return
     }
-    groupRepo := repository.NewGroupRepository(sqlite.Dbase)
-    group, err := groupRepo.GetGroupByID(id)
+    
+    group, err := h.repo.GetGroupByID(id)
     if err != nil {
         http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
         return
     }
-    if group.CreatorId != userId {
+    if group.CreatorId != userID {
         http.Error(w, "User not authorized to delete this group", http.StatusUnauthorized)
         return
     }
-    err = groupRepo.DeleteGroup(id)
+    err = h.repo.DeleteGroup(id)
     if err != nil {
         http.Error(w, "Failed to delete group: "+err.Error(), http.StatusInternalServerError)
         return

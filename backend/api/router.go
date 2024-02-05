@@ -2,6 +2,7 @@ package api
 
 import (
 	"backend/pkg/handler"
+	"backend/pkg/middleware"
 	"backend/pkg/repository"
 	"database/sql"
 	"net/http"
@@ -33,20 +34,23 @@ func Router(mux *mux.Router, db *sql.DB) {
     // TODO: Groups
     groupRepo := repository.NewGroupRepository(db)
     groupHandler := handler.NewGroupHandler(groupRepo)
-    mux.HandleFunc("/groups", groupHandler.GetAllGroupsHandler).Methods("GET")
-    mux.HandleFunc("/groups", groupHandler.CreateGroupHandler).Methods("POST")
-    mux.HandleFunc("/groups/{id}", groupHandler.GetGroupByIDHandler).Methods("GET")
-    mux.HandleFunc("/groups/{id}", groupHandler.EditGroupHandler).Methods("PUT")
-    mux.HandleFunc("/groups/{id}", groupHandler.DeleteGroupHandler).Methods("DELETE")
+    mux.Handle("/groups", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.GetAllGroupsHandler))).Methods("GET")
+    mux.Handle("/groups", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.CreateGroupHandler))).Methods("POST")
+    mux.Handle("/groups/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.GetGroupByIDHandler))).Methods("GET")
+    mux.Handle("/groups/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.EditGroupHandler))).Methods("PUT")
+    mux.Handle("/groups/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.DeleteGroupHandler))).Methods("DELETE")
 
     // TODO: Group invitations & requests
     invitationRepo := repository.NewInvitationRepository(db)
     invitationHandler := handler.NewInvitationHandler(invitationRepo)
-    mux.HandleFunc("/invitations", invitationHandler.GetAllGroupInvitationsHandler).Methods("GET")
-    mux.HandleFunc("/invitations", invitationHandler.CreateGroupInvitationHandler).Methods("POST")
-    mux.HandleFunc("/invitations/{id}", invitationHandler.GetGroupInvitationByIDHandler).Methods("GET")
-    mux.HandleFunc("/invitations/{id}", invitationHandler.AcceptGroupInvitationHandler).Methods("PUT")
-    mux.HandleFunc("/invitations/{id}", invitationHandler.DeclineGroupInvitationHandler).Methods("PUT")
+    groupMemberRepo := repository.NewGroupMemberRepository(db)
+    groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepo)
+    mux.Handle("/invitations", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.GetAllGroupInvitationsHandler))).Methods("GET")
+    mux.Handle("/invitations", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.InviteGroupMemberHandler))).Methods("POST")
+    mux.Handle("/invitations/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.GetGroupInvitationByIDHandler))).Methods("GET")
+    mux.Handle("/invitations/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.AcceptGroupInvitationHandler))).Methods("PUT")
+    mux.Handle("/invitations/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.DeclineGroupInvitationHandler))).Methods("PUT")
+    mux.Handle("/invitations/request/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.RequestGroupMembershipHandler))).Methods("POST")
 
     // TODO: Events
     mux.HandleFunc("/events", handler.GetAllEventsHandler).Methods("GET")

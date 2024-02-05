@@ -13,9 +13,19 @@ func NewGroupMemberRepository(db *sql.DB) *GroupMemberRepository {
 	return &GroupMemberRepository{db: db}
 }
 
+// InvitationRepository is a repository for managing invitations in the database.
+type InvitationRepository struct {
+	db *sql.DB
+}
+
+// NewInvitationRepository creates a new instance of InvitationRepository.
+func NewInvitationRepository(db *sql.DB) *InvitationRepository {
+	return &InvitationRepository{db: db}
+}
+
 // AddMemberToGroup adds a member to a group in the database.
 // It returns an error if any.
-func (r *GroupRepository) AddMemberToGroup(groupId, userId int) error {
+func (r *GroupMemberRepository) AddMemberToGroup(groupId, userId int) error {
 	query := `INSERT INTO group_members (group_id, user_id) VALUES (?, ?)`
 	_, err := r.db.Exec(query, groupId, userId)
 	return err
@@ -23,7 +33,7 @@ func (r *GroupRepository) AddMemberToGroup(groupId, userId int) error {
 
 // RemoveMemberFromGroup removes a member from a group in the database.
 // It returns an error if any.
-func (r *GroupRepository) RemoveMemberFromGroup(groupId, userId int) error {
+func (r *GroupMemberRepository) RemoveMemberFromGroup(groupId, userId int) error {
 	query := `DELETE FROM group_members WHERE group_id = ? AND user_id = ?`
 	_, err := r.db.Exec(query, groupId, userId)
 	return err
@@ -34,7 +44,7 @@ func (r *GroupRepository) RemoveMemberFromGroup(groupId, userId int) error {
 // TODO: implement notifications for group invitations
 func (r *InvitationRepository) CreateGroupInvitation(invitation model.GroupInvitation) error {
 	query := `INSERT INTO group_invitations (group_id, user_id, status) VALUES (?, ?, ?)`
-	_, err := r.db.Exec(query, invitation.GroupId, invitation.UserId, "pending")
+	_, err := r.db.Exec(query, invitation.GroupId, invitation.JoinUserId, &invitation.InviteUserId, "pending")
 	return err
 }
 
@@ -69,7 +79,7 @@ func (r *InvitationRepository) GetAllGroupInvitations() ([]model.GroupInvitation
 	var invitations []model.GroupInvitation
 	for rows.Next() {
 		var invitation model.GroupInvitation
-		if err := rows.Scan(&invitation.Id, &invitation.GroupId, &invitation.UserId, &invitation.Status); err != nil {
+		if err := rows.Scan(&invitation.Id, &invitation.GroupId, &invitation.JoinUserId, &invitation.InviteUserId, &invitation.Status); err != nil {
 			return nil, err
 		}
 		invitations = append(invitations, invitation)
@@ -85,7 +95,7 @@ func (r *InvitationRepository) GetGroupInvitationByID(id string) (model.GroupInv
 	row := r.db.QueryRow(query, id)
 
 	var invitation model.GroupInvitation
-	if err := row.Scan(&invitation.Id, &invitation.GroupId, &invitation.UserId, &invitation.Status); err != nil {
+	if err := row.Scan(&invitation.Id, &invitation.GroupId, &invitation.JoinUserId, &invitation.InviteUserId, &invitation.Status); err != nil {
 		return model.GroupInvitation{}, err
 	}
 	return invitation, nil
@@ -93,7 +103,7 @@ func (r *InvitationRepository) GetGroupInvitationByID(id string) (model.GroupInv
 
 // AcceptGroupInvitation updates the status of an invitation to "accepted" in the database.
 // It returns an error if any.
-func (r *InvitationRepository) AcceptGroupInvitation(id string) error {
+func (r *GroupMemberRepository) AcceptGroupInvitationAndRequest(id string) error {
 	query := `UPDATE group_invitations SET status = 'accepted' WHERE id = ?`
 	_, err := r.db.Exec(query, id)
 	return err
@@ -104,5 +114,11 @@ func (r *InvitationRepository) AcceptGroupInvitation(id string) error {
 func (r *InvitationRepository) DeclineGroupInvitation(id string) error {
 	query := `UPDATE group_invitations SET status = 'declined' WHERE id = ?`
 	_, err := r.db.Exec(query, id)
+	return err
+}
+
+func (r *GroupMemberRepository) CreateGroupRequest(request model.GroupInvitation) error {
+	query := `INSERT INTO group_invitations (group_id, join_user_id, invite_user_id, status) VALUES (?, ?, ?, ?)`
+	_, err := r.db.Exec(query, request.GroupId, request.JoinUserId, request.InviteUserId, "pending")
 	return err
 }
