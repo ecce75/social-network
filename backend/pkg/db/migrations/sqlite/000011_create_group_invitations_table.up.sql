@@ -6,6 +6,6 @@ CREATE TABLE IF NOT EXISTS group_invitations (
     status TEXT NOT NULL CHECK( status IN ('pending', 'accepted', 'declined')) DEFAULT 'pending',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (group_id) REFERENCES groups(id),
-    FOREIGN KEY (user_id) REFERENCES users(id)
-    FOREIGN KEY (target_user_id) REFERENCES users(id)
+    FOREIGN KEY (join_user_id) REFERENCES users(id)
+    FOREIGN KEY (invite_user_id) REFERENCES users(id)
 );
