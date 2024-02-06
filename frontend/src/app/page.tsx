@@ -1,27 +1,69 @@
-import Image from 'next/image'
-import Head from 'next/head'
-import Header from '../components/Header'
-import {RegisterForm}from '../components/Login_Register'
-import background from '../public/assets/background.png';
-import rastaLionImage from '../public/assets/rasta_lion.png';
+"use client"
+
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+// Your authentication hook or context
+import { useAuth } from '../util/utils';
+import MainHeader from '@/components/headers/MainHeader';
+import LeftNavBar from '@/components/leftNavbar/LeftNavBar'
+import background from '../../public/assets/background.png';
 
 export default function Home() {
-  return (
+    const router = useRouter();
+    useEffect(() => {
+        (async () => {
+            const auth = await useAuth();
+            if (!auth.is_authenticated) {
+                router.push('/auth');
+            }
+        })();
+    }, []); // Empty dependency array to run only once on mount
 
-      <div className="flex flex-col h-screen">
-          <Header/>
-          <Head>
-              <title>IrieSphere</title>
-          </Head>
-        <div style={{
-            backgroundImage: `url("${background.src}")`,
-            backgroundSize: 'cover',
-            flex: 1,
+    return (
+
+        <div>
+            {/* Header */}
+            <header>
+                <MainHeader />
+                
+                {/* User Profile */}
+                <div>
+                    <span>John Doe</span>
+                    <LeftNavBar />
+                </div>
+
+                {/* Navigation */}
+                <nav>
+                    <ul>
+                        <li>Home</li>
+                        <li>Friends</li>
+                        <li>Messages</li>
+                        {/* Add more navigation items */}
+                    </ul>
+                </nav>
+            </header>
+
+            {/* Main Content */}
+            <main>
             
-        }}>
-            <RegisterForm/>
-        </div>
-      </div>
+            
+                News Feed
+                <section>
+                    {/* Display posts from friends */}
+                </section>
 
-  )
+                {/* Sidebar */}
+                <aside>
+                    {/* Display friend suggestions */}
+                </aside>
+                
+            </main>
+
+            {/* Footer */}
+            <footer>
+                {/* Display copyright information */}
+            </footer>
+            
+        </div>
+    );
 }

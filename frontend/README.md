@@ -1,36 +1,56 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Prerequisites
 
-## Getting Started
+Make sure you have Node.js and npm (Node Package Manager) installed on your computer. If not, you can download and install them from https://nodejs.org/.
+Instructions
 
-First, run the development server:
+1. Clone the Repository:
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+`git clone https://github.com/ecce75/social-network.git`
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+2. Navigate to the Frontend Directory:
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+`cd frontend>`
 
-## Learn More
+3. Install Dependencies:
 
-To learn more about Next.js, take a look at the following resources:
+`npm install`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+This command installs all the necessary dependencies for your Next.js app.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+4. Run the Development Server:
 
-## Deploy on Vercel
+`    npm run dev`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This command starts the development server. You can also use yarn dev, pnpm dev, or bun dev based on your preferred package manager.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+5. Access the Application:
+
+Open your web browser and navigate to http://localhost:3000 to view your Next.js application.
+
+Note:
+
+    The instructions assume that the backend server (Go server) is already running at http://localhost:8080. If it's not, you'll need to start the Go server before running the Next.js app.
+
+## Components
+
+### LoginForm
+
+**Purpose**: Handles user login.
+
+**Dependencies**: Formik for form management.
+
+**Key Features**:
+    Two input fields: username and password.
+    Submits a POST request to http://localhost:8080/api/users/login upon form submission.
+
+### RegisterForm
+
+**Purpose**: Manages user registration.
+
+**Dependencies**: Formik for form management.
+
+**Key Features**:
+
+    Input fields for email, password, name, date of birth, avatar/image (with file upload), username, and "about me".
+    Submits a POST request to http://localhost:8080/api/users/register upon form submission.

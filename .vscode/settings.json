@@ -3,8 +3,8 @@
     {
       "previewLimit": 50,
       "driver": "SQLite",
-      "name": "brrt",
-      "database": "${workspaceFolder:social-network}/backend/pkg/db/database/database.db"
+      "database": "${workspaceFolder:social-network}/backend/pkg/db/database.db",
+      "name": "db"
     }
   ]
 }
