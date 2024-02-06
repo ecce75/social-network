@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../util/utils';
 import MainHeader from '@/components/headers/MainHeader';
 import LeftNavBar from '@/components/leftNavbar/LeftNavBar'
+import background from '../../public/assets/background.png';
 
 export default function Home() {
     const router = useRouter();
@@ -44,7 +45,9 @@ export default function Home() {
 
             {/* Main Content */}
             <main>
-                {/* News Feed */}
+            
+            
+                News Feed
                 <section>
                     {/* Display posts from friends */}
                 </section>
@@ -53,12 +56,14 @@ export default function Home() {
                 <aside>
                     {/* Display friend suggestions */}
                 </aside>
+                
             </main>
 
             {/* Footer */}
             <footer>
                 {/* Display copyright information */}
             </footer>
+            
         </div>
     );
 }

@@ -16,6 +16,8 @@ brrt
   - [Session](#session)
   - [Posts](#posts)
   - [Comments](#comments)
+  - [Groups](#groups)
+    - [Groups](#groups-todo)
 
 ## Backend structure
 
@@ -41,7 +43,6 @@ This directory contains the core logic of your application and is where most of 
 │   │   └── handler
 │   │       └──  # Handlers call into repositories to fetch and store data
 ```
-
 
 #### db
 
@@ -104,6 +105,7 @@ mux.HandleFunc("/api/users/register", handler.UserRegisterHandler).Methods("POST
 ```
 
 Using this endpoint requires:
+
 - username
 - email
 - password
@@ -134,7 +136,7 @@ It will then decode the request data, hash the password, store the user in datab
 mux.HandleFunc("/api/users/logout", handler.LogoutHandler).Methods("POST")
 ```
 
-Logout gets the session token from cookie and deletes it. 
+Logout gets the session token from cookie and deletes it.
 
 -----
 
@@ -143,6 +145,7 @@ mux.HandleFunc("/api/users/login", handler.LoginHandler).Methods("POST")
 ```
 
 Using this endpoint requires:
+
 - username (could aswell be email)
 - password
 
@@ -170,6 +173,7 @@ type AuthResponse struct {
 This endpoint will perform an auth check of the user and return a boolean value.
 
 -----
+
 ### Posts
 
 ```go
@@ -287,3 +291,68 @@ mux.HandleFunc("/comment/{id}", handler.DeleteCommentHandler).Methods("DELETE")
 ```
 
 This endpoint deletes a comment by its ID. It requires the ID as a URL parameter. The user authentication is double checked via cookie and userID attached to the delete comment request. If the user is authorized, the comment will be deleted.
+
+-----
+
+### Groups
+
+```go
+type Group struct {
+ Id     int   `json:"id"`
+ Name   string   `json:"name"`
+ Description   string   `json:"description,omitempty"`
+ CreatedAt   time.Time  `json:"created_at"`
+}
+```
+
+- **Delete Group:** Endpoint /group/{id} (DELETE)
+
+-----
+
+```go
+mux.HandleFunc("/group/{id}", handler.DeleteGroupHandler).Methods("DELETE")
+```
+
+This endpoint deletes a group by its ID. It requires the ID as a URL parameter. When a group is deleted, all the links to its members are also deleted. This is achieved by modifying the SQL schema to delete on cascade:
+
+```sql
+CREATE TABLE group_members (
+    group_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    joined_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (group_id, user_id),
+    FOREIGN KEY (group_id) REFERENCES groups(id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+With this modification, the database automatically deletes all the referencing records in the group_members table when the referenced record in the groups table is deleted.
+
+The DeleteGroupHandler also logs a message to the console whenever a group is successfully deleted. The message includes the ID of the deleted group.
+
+-----
+
+- **Get Group by ID**: Endpoint `/group/{id}` (GET)
+
+```go
+mux.HandleFunc("/group/{id}", handler.GetGroupHandler).Methods("GET")
+```
+
+This endpoint retrieves a group by its ID. It requires the ID as a URL parameter. If no group with the given ID exists, it returns a 404 Not Found error.
+
+-----
+
+- **Update Group:** Endpoint /group/{id} (PUT)
+
+```go
+mux.HandleFunc("/group/{id}", handler.UpdateGroupHandler).Methods("PUT")
+```
+
+This endpoint updates a group's details. It requires the ID as a URL parameter and the new details as a JSON body. If no group with the given ID exists, it returns a 404 Not Found error.
+
+-----
+
+#### Groups todo
+
+- Implement: group invitation, group members crud, logging, notifications...
+- Test: endpoint tests, sql test data.

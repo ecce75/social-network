@@ -2,15 +2,16 @@ package api
 
 import (
 	"backend/pkg/handler"
+	"backend/pkg/middleware"
+	"backend/pkg/repository"
+	"database/sql"
 	"net/http"
-
 	"github.com/gorilla/mux"
-	"github.com/rs/cors"
+    "github.com/rs/cors"
 )
 
 // API layer, handlers, and routing
-func Router(mux *mux.Router) {
-
+func Router(mux *mux.Router, db *sql.DB) {
     // User registration requires input in the form like RegistrationData struct at /pkg/model/stucts.go
     mux.HandleFunc("/api/users/register", handler.UserRegisterHandler).Methods("POST")
     
@@ -31,21 +32,32 @@ func Router(mux *mux.Router) {
     mux.HandleFunc("/comment", handler.CreateCommentHandler).Methods("POST")
     mux.HandleFunc("/comment/{id}", handler.DeleteCommentHandler).Methods("DELETE")
 
-    // TODO: Groups
-    mux.HandleFunc("/groups", handler.GetAllGroupsHandler).Methods("GET")
-    mux.HandleFunc("/groups", handler.CreateGroupHandler).Methods("POST")
-    mux.HandleFunc("/groups/{id}", handler.GetGroupByIDHandler).Methods("GET")
-    mux.HandleFunc("/groups/{id}", handler.EditGroupHandler).Methods("PUT")
-    mux.HandleFunc("/groups/{id}", handler.DeleteGroupHandler).Methods("DELETE")
+    // Groups
+    groupRepo := repository.NewGroupRepository(db)
+    groupHandler := handler.NewGroupHandler(groupRepo)
+    mux.Handle("/groups", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.GetAllGroupsHandler))).Methods("GET")
+    mux.Handle("/groups", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.CreateGroupHandler))).Methods("POST")
+    mux.Handle("/groups/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.GetGroupByIDHandler))).Methods("GET")
+    mux.Handle("/groups/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.EditGroupHandler))).Methods("PUT")
+    mux.Handle("/groups/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.DeleteGroupHandler))).Methods("DELETE")
 
-    // TODO: Invitations
-    mux.HandleFunc("/invitations", handler.GetAllInvitationsHandler).Methods("GET")
-    mux.HandleFunc("/invitations", handler.CreateInvitationHandler).Methods("POST")
-    mux.HandleFunc("/invitations/{id}", handler.GetInvitationByIDHandler).Methods("GET")
-    mux.HandleFunc("/invitations/{id}", handler.AcceptInvitationHandler).Methods("PUT")
-    mux.HandleFunc("/invitations/{id}", handler.DeclineInvitationHandler).Methods("PUT")
+    // Group invitations & requests
+    invitationRepo := repository.NewInvitationRepository(db)
+    invitationHandler := handler.NewInvitationHandler(invitationRepo)
+    groupMemberRepo := repository.NewGroupMemberRepository(db)
+    groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepo)
+    mux.Handle("/invitations", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.GetAllGroupInvitationsHandler))).Methods("GET")
+    mux.Handle("/invitations", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.InviteGroupMemberHandler))).Methods("POST")
+    mux.Handle("/invitations/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.GetGroupInvitationByIDHandler))).Methods("GET")
+    mux.Handle("/invitations/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.DeclineGroupInvitationHandler))).Methods("PUT")
+    mux.Handle("/invitations/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.AcceptGroupInvitationHandler))).Methods("PUT")
+    mux.Handle("/invitations/request/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.RequestGroupMembershipHandler))).Methods("POST")
+    mux.Handle("/groups/{groupId}/members/{userId}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.RemoveMemberHandler))).Methods("DELETE")
+    mux.Handle("/invitations/approve/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.ApproveGroupMembershipHandler))).Methods("PUT")
 
-    // TODO: Events
+    // TODO: Group posts & comments
+
+    // TODO: Group events
     mux.HandleFunc("/events", handler.GetAllEventsHandler).Methods("GET")
     mux.HandleFunc("/events", handler.CreateEventHandler).Methods("POST")
     mux.HandleFunc("/events/{id}", handler.GetEventByIDHandler).Methods("GET")
@@ -59,7 +71,6 @@ func Router(mux *mux.Router) {
     mux.HandleFunc("/notifications/{id}", handler.MarkNotificationAsReadHandler).Methods("PUT")
 
 	// TODO: Friends
-
 	mux.HandleFunc("/friends/request", handler.SendFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/accept", handler.AcceptFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/decline", handler.DeclineFriendRequestHandler).Methods("POST")

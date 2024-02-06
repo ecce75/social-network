@@ -57,12 +57,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("session_token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			http.Error(w, "User already logged out", http.StatusBadRequest)
-			return
-		}
-		// For any other error, return a bad request status
+	if err != nil && err != http.ErrNoCookie{
 		http.Error(w, "Bad request: "+ err.Error(), http.StatusBadRequest)
 		return
 	}
