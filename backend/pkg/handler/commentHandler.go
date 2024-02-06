@@ -1,8 +1,6 @@
 package handler
 
 import (
-	"backend/pkg/db/sqlite"
-	"backend/pkg/middleware"
 	"backend/pkg/model"
 	"backend/pkg/repository"
 	"encoding/json"
@@ -12,7 +10,16 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
+type CommentHandler struct {
+	commentRepo *repository.CommentRepository
+	sessionRepo *repository.SessionRepository
+}
+
+func NewCommentHandler(commentRepo *repository.CommentRepository, sessionRepo *repository.SessionRepository) *CommentHandler {
+	return &CommentHandler{commentRepo: commentRepo, sessionRepo: sessionRepo}
+}
+
+func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
     // TODO: id may not come from request and will cause error
 	var newComment model.Comment 
     err := json.NewDecoder(r.Body).Decode(&newComment)
@@ -34,7 +41,7 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-    userID, err := middleware.ConfirmAuthentication(cookie)
+    userID, err := h.sessionRepo.GetUserIDFromSessionToken(cookie.Value)
     if err != nil {
         http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
         return
@@ -42,7 +49,7 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
     newComment.UserID = userID
 
     // Insert the comment into the database
-    createdCommentId, err := repository.CreateComment(sqlite.Dbase, newComment)
+    createdCommentId, err := h.commentRepo.CreateComment(newComment)
     if err != nil {
         http.Error(w, "Failed to create comment: "+err.Error(), http.StatusInternalServerError)
         return
@@ -57,7 +64,7 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
     json.NewEncoder(w).Encode(response)
 }
 
-func GetCommentByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
+func (h *CommentHandler) GetCommentByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
 	var id string
 
 	decoder := json.NewDecoder(r.Body)
@@ -71,7 +78,7 @@ func GetCommentByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error converting id to int: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	comments, err := repository.GetCommentsByID(sqlite.Dbase, intid)
+	comments, err := h.commentRepo.GetCommentsByID(intid)
 	if err != nil {
 		http.Error(w, "Error retrieving comments: "+ err.Error(), http.StatusInternalServerError)
 		return
@@ -80,7 +87,7 @@ func GetCommentByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(comments)
 }
 
-func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
+func (h *CommentHandler) DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the post ID from the URL
 	vars := mux.Vars(r)
 	commentID, ok := vars["id"]
@@ -101,14 +108,14 @@ func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Confirm user auth and get userid
-	userID, err := middleware.ConfirmAuthentication(cookie)
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(cookie.Value)
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	// Delete the comment from the database
-	err = repository.DeleteComment(sqlite.Dbase, intcommentID, userID)
+	err = h.commentRepo.DeleteComment(intcommentID, userID)
 	if err != nil {
 		http.Error(w, "Failed to delete the comment: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -122,7 +129,7 @@ func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func EditCommentHandler(w http.ResponseWriter, r *http.Request) {
+func (h *CommentHandler) EditCommentHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the post ID from the URL
 	vars := mux.Vars(r)
 	commentID, ok := vars["id"]
@@ -143,7 +150,7 @@ func EditCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Confirm user auth and get userid
-	userID, err := middleware.ConfirmAuthentication(cookie)
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(cookie.Value)
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
 		return
@@ -158,7 +165,7 @@ func EditCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Update the comment in the database
-	err = repository.UpdateComment(sqlite.Dbase, intcommentID, userID, commentData)
+	err = h.commentRepo.UpdateComment(intcommentID, userID, commentData)
 	if err != nil {
 		http.Error(w, "Failed to update the comment: "+err.Error(), http.StatusInternalServerError)
 		return

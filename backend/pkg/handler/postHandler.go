@@ -1,17 +1,26 @@
 package handler
 
 import (
-	"backend/pkg/db/sqlite"
 	"backend/pkg/model"
 	"backend/pkg/repository"
+	"backend/util"
 	"encoding/json"
-	"backend/pkg/middleware"
 	"net/http"
 	"strconv"
+
 	"github.com/gorilla/mux"
 )
 
-func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
+type PostHandler struct {
+	postRepo *repository.PostRepository
+	sessionRepo *repository.SessionRepository
+}
+
+func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository) *PostHandler {
+	return &PostHandler{postRepo: postRepo, sessionRepo: sessionRepo}
+}
+
+func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	var request model.CreatePostRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
 	if err != nil {
@@ -19,26 +28,14 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check auth and get userid from cookie
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			// If the session cookie doesn't exist, set isAuthenticated to false
-			http.Error(w, "User not authenticated", http.StatusUnauthorized)
-			return
-		} else {
-			http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-	userID, err := middleware.ConfirmAuthentication(cookie)
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Creates the post in database
-	postID, err := repository.CreatePost(sqlite.Dbase, request, userID)
+	postID, err := h.postRepo.CreatePost(request, userID)
 	if err != nil {
 		http.Error(w, "Failed to create the post: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -54,7 +51,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-func EditPostHandler(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandler) EditPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Decode the request body for updating the post
 	var request model.UpdatePostRequest
 	err := json.NewDecoder(r.Body).Decode(&request)
@@ -63,27 +60,15 @@ func EditPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// check auth and get userid from cookie
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			// If the session cookie doesn't exist, set isAuthenticated to false
-			http.Error(w, "User not authenticated", http.StatusUnauthorized)
-			return
-		} else {
-			http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
 	// Confirm user auth and get userid
-	userID, err := middleware.ConfirmAuthentication(cookie)
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	// Update the post in the database
-	err = repository.UpdatePost(sqlite.Dbase, request.Id, userID, request)
+	err = h.postRepo.UpdatePost(request.Id, userID, request)
 	if err != nil {
 		http.Error(w, "Failed to update the post: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -98,7 +83,7 @@ func EditPostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
+func (h *PostHandler) DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the post ID from the URL
 	vars := mux.Vars(r)
 	postID, ok := vars["id"]
@@ -112,12 +97,7 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		http.Error(w, "Error authenticating user: " +err.Error(), http.StatusBadRequest)
-		return
-	}
-	userId, err := middleware.ConfirmAuthentication(cookie)
+	userId, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusUnauthorized)
@@ -125,7 +105,7 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Delete the post from the database
-	err = repository.DeletePost(sqlite.Dbase, intpostID, userId)
+	err = h.postRepo.DeletePost(intpostID, userId)
 	if err != nil {
 		http.Error(w, "Failed to delete the post: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -140,26 +120,15 @@ func DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 
-func GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
-	// check auth and get userid from cookie
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			// If the session cookie doesn't exist, set isAuthenticated to false
-			http.Error(w, "User not authenticated", http.StatusUnauthorized)
-			return
-		} else {
-			http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-	userID, err := middleware.ConfirmAuthentication(cookie)
+func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
+	
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
 		return
 	}
 
-	posts, err := repository.GetAllPostsWithUserIDAccess(sqlite.Dbase, userID)
+	posts, err := h.postRepo.GetAllPostsWithUserIDAccess(userID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
 		return

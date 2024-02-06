@@ -3,32 +3,27 @@ package handler
 import (
 	"backend/pkg/model"
 	"backend/pkg/repository"
+	"backend/util"
 	"encoding/json"
 	"net/http"
 	"strconv"
+
 	"github.com/gorilla/mux"
 )
 
 type GroupHandler struct {
-    repo *repository.GroupRepository
+    groupRepo *repository.GroupRepository
+    sessionRepo *repository.SessionRepository
 }
 
-type InvitationHandler struct {
-    repo *repository.InvitationRepository
-}
-
-func NewGroupHandler(repo *repository.GroupRepository) *GroupHandler {
-    return &GroupHandler{repo: repo}
-}
-
-func NewInvitationHandler(repo *repository.InvitationRepository) *InvitationHandler {
-    return &InvitationHandler{repo: repo}
+func NewGroupHandler(groupRepo *repository.GroupRepository, sessionRepo *repository.SessionRepository) *GroupHandler {
+    return &GroupHandler{groupRepo: groupRepo, sessionRepo: sessionRepo}
 }
 
 // Group Handlers
 func (h *GroupHandler) GetAllGroupsHandler(w http.ResponseWriter, r *http.Request) {
     // logic for getting all groups
-    groups, err := h.repo.GetAllGroups()
+    groups, err := h.groupRepo.GetAllGroups()
     if err != nil {
         http.Error(w, "Failed to get groups: "+err.Error(), http.StatusInternalServerError)
         return
@@ -46,11 +41,14 @@ func (h *GroupHandler) CreateGroupHandler(w http.ResponseWriter, r *http.Request
         return
     }
     // TODO: check if group with title already exists IN FRONTEND
-    userID := r.Context().Value("AuthUserID").(int)
-
+    userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+    if err != nil {
+        http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
     newGroup.CreatorId = userID
     // creating the group in db
-    _, err = h.repo.CreateGroup(newGroup)
+    _, err = h.groupRepo.CreateGroup(newGroup)
     if err != nil {
         http.Error(w, "Failed to create group: "+err.Error(), http.StatusInternalServerError)
         return
@@ -68,7 +66,7 @@ func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Reques
         return
     }
     
-    group, err := h.repo.GetGroupByID(id)
+    group, err := h.groupRepo.GetGroupByID(id)
     if err != nil {
         http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
         return
@@ -85,8 +83,21 @@ func (h *GroupHandler) EditGroupHandler(w http.ResponseWriter, r *http.Request) 
         http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
         return
     }
-    
-    err = h.repo.UpdateGroup(updatedGroup)
+    group, err := h.groupRepo.GetGroupByID(updatedGroup.Id)
+    if err != nil {
+        http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
+        return
+    }
+    userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+    if err != nil {
+        http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
+    if group.CreatorId != userID {
+        http.Error(w, "User not authorized to edit this group", http.StatusUnauthorized)
+        return
+    }
+    err = h.groupRepo.UpdateGroup(updatedGroup)
     if err != nil {
         http.Error(w, "Failed to update group: "+err.Error(), http.StatusInternalServerError)
         return
@@ -102,7 +113,11 @@ func (h *GroupHandler) EditGroupHandler(w http.ResponseWriter, r *http.Request) 
 // TODO: implement notification to all group members that the group has been deleted, and remove all group members;
 // implement logging of the deletion or add bool field "deleted"
 func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
-    userID := r.Context().Value("AuthUserID").(int)
+    userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+    if err != nil {
+        http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
 
     // logic for deleting a group
     vars := mux.Vars(r)
@@ -112,7 +127,7 @@ func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request
         return
     }
     
-    group, err := h.repo.GetGroupByID(id)
+    group, err := h.groupRepo.GetGroupByID(id)
     if err != nil {
         http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
         return
@@ -121,7 +136,7 @@ func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request
         http.Error(w, "User not authorized to delete this group", http.StatusUnauthorized)
         return
     }
-    err = h.repo.DeleteGroup(id)
+    err = h.groupRepo.DeleteGroup(id)
     if err != nil {
         http.Error(w, "Failed to delete group: "+err.Error(), http.StatusInternalServerError)
         return

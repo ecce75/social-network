@@ -1,9 +1,7 @@
 package handler
 
 import (
-	"backend/pkg/db/sqlite"
 	"backend/pkg/model"
-	"backend/pkg/repository"
 	"backend/util"
 	"database/sql"
 	"encoding/json"
@@ -14,7 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func LoginHandler(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var logData model.LoginData
 
 	decoder := json.NewDecoder(r.Body)
@@ -23,7 +21,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error parsing login JSON data: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	user, err := repository.GetUserByEmailOrNickname(sqlite.Dbase, logData.Username)
+	user, err := h.userRepo.GetUserByEmailOrNickname(logData.Username)
 	if err != nil {
 		http.Error(w, "user not found", http.StatusNotFound)
 		return
@@ -39,7 +37,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Generate a session token and store it in database
 	sessionToken := util.GenerateSessionToken()
-	repository.StoreSessionInDB(sqlite.Dbase, sessionToken, user.Id)
+	h.sessionRepo.StoreSessionInDB(sessionToken, user.Id)
 	
 	// Set a cookie with the session
 	http.SetCookie(w, &http.Cookie{
@@ -77,7 +75,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func CheckAuth(w http.ResponseWriter, r *http.Request) {
+func (h *UserHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 	isAuthenticated := true
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
@@ -94,7 +92,7 @@ func CheckAuth(w http.ResponseWriter, r *http.Request) {
 		sessionToken := cookie.Value
 
 		// Get the session from database by the session token
-		session, err := repository.GetSessionBySessionToken(sqlite.Dbase, sessionToken)
+		session, err := h.sessionRepo.GetSessionBySessionToken(sessionToken)
 		if err != nil {
 			if err == sql.ErrNoRows {
 				isAuthenticated = false

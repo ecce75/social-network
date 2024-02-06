@@ -11,8 +11,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
-var Dbase *sql.DB
-
 func ConnectAndMigrate(dbPath string, migrationsPath string) (*sql.DB, error) {
     // Adjusted for clarity in logging
     fmt.Printf("Connecting to SQLite database at path: %s\n", dbPath)
@@ -50,7 +48,5 @@ func ConnectAndMigrate(dbPath string, migrationsPath string) (*sql.DB, error) {
     }
 
     fmt.Println("Migrations applied successfully.")
-
-    Dbase = db
     return db, nil
 }

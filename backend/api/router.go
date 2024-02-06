@@ -2,7 +2,6 @@ package api
 
 import (
 	"backend/pkg/handler"
-	"backend/pkg/middleware"
 	"backend/pkg/repository"
 	"database/sql"
 	"net/http"
@@ -13,47 +12,47 @@ import (
 // API layer, handlers, and routing
 func Router(mux *mux.Router, db *sql.DB) {
     // User registration requires input in the form like RegistrationData struct at /pkg/model/stucts.go
-    mux.HandleFunc("/api/users/register", handler.UserRegisterHandler).Methods("POST")
-    
+    sessionRepository := repository.NewSessionRepository(db)
+    userHandler := handler.NewUserHandler(repository.NewUserRepository(db), sessionRepository)
+    mux.HandleFunc("/api/users/register", userHandler.UserRegisterHandler).Methods("POST")
     // User login and logout
     mux.HandleFunc("/api/users/logout", handler.LogoutHandler).Methods("POST")
-    mux.HandleFunc("/api/users/login", handler.LoginHandler).Methods("POST")
-    mux.HandleFunc("/api/users/check-auth", handler.CheckAuth)
+    mux.HandleFunc("/api/users/login", userHandler.LoginHandler).Methods("POST")
+    mux.HandleFunc("/api/users/check-auth", userHandler.CheckAuth)
 
     // Posts
-    mux.HandleFunc("/post", handler.GetAllPostsHandler).Methods("GET")
-    mux.HandleFunc("/post", handler.CreatePostHandler).Methods("POST")
+    postHandler := handler.NewPostHandler(repository.NewPostRepository(db), sessionRepository)
+    mux.HandleFunc("/post", postHandler.GetAllPostsHandler).Methods("GET")
+    mux.HandleFunc("/post", postHandler.CreatePostHandler).Methods("POST")
     //mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
-    mux.HandleFunc("/post/{id}", handler.EditPostHandler).Methods("PUT")    // Edit a post
-    mux.HandleFunc("/post/{id}", handler.DeletePostHandler).Methods("DELETE") // Delete a post
+    mux.HandleFunc("/post/{id}", postHandler.EditPostHandler).Methods("PUT")    // Edit a post
+    mux.HandleFunc("/post/{id}", postHandler.DeletePostHandler).Methods("DELETE") // Delete a post
 
     // Comments
-    mux.HandleFunc("/post/{id}/comments", handler.GetCommentByUserIDorPostID).Methods("GET")
-    mux.HandleFunc("/comment", handler.CreateCommentHandler).Methods("POST")
-    mux.HandleFunc("/comment/{id}", handler.DeleteCommentHandler).Methods("DELETE")
+    commentHandler := handler.NewCommentHandler(repository.NewCommentRepository(db), sessionRepository)
+    mux.HandleFunc("/post/{id}/comments", commentHandler.GetCommentByUserIDorPostID).Methods("GET")
+    mux.HandleFunc("/comment", commentHandler.CreateCommentHandler).Methods("POST")
+    mux.HandleFunc("/comment/{id}", commentHandler.DeleteCommentHandler).Methods("DELETE")
 
     // Groups
-    groupRepo := repository.NewGroupRepository(db)
-    groupHandler := handler.NewGroupHandler(groupRepo)
-    mux.Handle("/groups", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.GetAllGroupsHandler))).Methods("GET")
-    mux.Handle("/groups", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.CreateGroupHandler))).Methods("POST")
-    mux.Handle("/groups/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.GetGroupByIDHandler))).Methods("GET")
-    mux.Handle("/groups/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.EditGroupHandler))).Methods("PUT")
-    mux.Handle("/groups/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupHandler.DeleteGroupHandler))).Methods("DELETE")
+    groupHandler := handler.NewGroupHandler(repository.NewGroupRepository(db), sessionRepository)
+    mux.HandleFunc("/groups", groupHandler.GetAllGroupsHandler).Methods("GET")
+    mux.HandleFunc("/groups", groupHandler.CreateGroupHandler).Methods("POST")
+    mux.HandleFunc("/groups/{id}", groupHandler.GetGroupByIDHandler).Methods("GET")
+    mux.HandleFunc("/groups/{id}", groupHandler.EditGroupHandler).Methods("PUT")
+    mux.HandleFunc("/groups/{id}", groupHandler.DeleteGroupHandler).Methods("DELETE")
 
     // Group invitations & requests
-    invitationRepo := repository.NewInvitationRepository(db)
-    invitationHandler := handler.NewInvitationHandler(invitationRepo)
-    groupMemberRepo := repository.NewGroupMemberRepository(db)
-    groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepo)
-    mux.Handle("/invitations", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.GetAllGroupInvitationsHandler))).Methods("GET")
-    mux.Handle("/invitations", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.InviteGroupMemberHandler))).Methods("POST")
-    mux.Handle("/invitations/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.GetGroupInvitationByIDHandler))).Methods("GET")
-    mux.Handle("/invitations/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(invitationHandler.DeclineGroupInvitationHandler))).Methods("PUT")
-    mux.Handle("/invitations/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.AcceptGroupInvitationHandler))).Methods("PUT")
-    mux.Handle("/invitations/request/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.RequestGroupMembershipHandler))).Methods("POST")
-    mux.Handle("/groups/{groupId}/members/{userId}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.RemoveMemberHandler))).Methods("DELETE")
-    mux.Handle("/invitations/approve/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.ApproveGroupMembershipHandler))).Methods("PUT")
+    
+    groupMemberHandler := handler.NewGroupMemberHandler(repository.NewGroupMemberRepository(db), repository.NewInvitationRepository(db), sessionRepository)
+    mux.HandleFunc("/invitations", groupMemberHandler.GetAllGroupInvitationsHandler).Methods("GET")
+    mux.HandleFunc("/invitations", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
+    mux.HandleFunc("/invitations/{id}", groupMemberHandler.GetGroupInvitationByIDHandler).Methods("GET")
+    mux.HandleFunc("/invitations/{id}", groupMemberHandler.DeclineGroupInvitationHandler).Methods("PUT")
+    mux.HandleFunc("/invitations/{id}", groupMemberHandler.AcceptGroupInvitationHandler).Methods("PUT")
+    mux.HandleFunc("/invitations/request/{id}", groupMemberHandler.RequestGroupMembershipHandler).Methods("POST")
+    mux.HandleFunc("/groups/{groupId}/members/{userId}", groupMemberHandler.RemoveMemberHandler).Methods("DELETE")
+    mux.HandleFunc("/invitations/approve/{id}", groupMemberHandler.ApproveGroupMembershipHandler).Methods("PUT")
 
     // TODO: Group posts & comments
 
@@ -78,13 +77,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/friends/unblock", handler.UnblockUserHandler).Methods("POST")
 	mux.HandleFunc("/friends", handler.GetFriendsHandler).Methods("GET")
 
-    // Catch-all route to serve index.html for all other routes
-	// TODO: remove
-    // mux.PathPrefix("/").HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-    //     http.ServeFile(w, r, "../frontend/public/index.html")
-    //     fmt.Println("route called successfully")
-    // })
-    //mux_cors := cors.Default().Handler(mux)
+    // CORS
     corsOptions := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"}, // Replace with your frontend's origin
 		AllowCredentials: true, // Important for cookies, authorization headers with HTTPS

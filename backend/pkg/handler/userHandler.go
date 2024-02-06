@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"backend/pkg/db/sqlite"
 	"backend/pkg/model"
 	"backend/pkg/repository"
 	"backend/util"
@@ -11,7 +10,16 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func UserRegisterHandler(w http.ResponseWriter, r *http.Request) {
+type UserHandler struct {
+	userRepo *repository.UserRepository
+	sessionRepo *repository.SessionRepository
+}
+
+func NewUserHandler(uRepo *repository.UserRepository, sRepo *repository.SessionRepository) *UserHandler {
+	return &UserHandler{userRepo: uRepo, sessionRepo: sRepo}
+}
+
+func (h *UserHandler) UserRegisterHandler(w http.ResponseWriter, r *http.Request) {
 	// 1. Parse the multipart form data from the request
 	err1 := r.ParseMultipartForm(10 << 20) // Maximum memory 10MB, change this based on your requirements
 	if err1 != nil {
@@ -40,7 +48,7 @@ func UserRegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	util.ImageSave(w, r, &regData) // parses image data from request to the variable
 	// Store user in database
-	userID, err := repository.RegisterUser(sqlite.Dbase, regData)
+	userID, err := h.userRepo.RegisterUser(regData)
 	if err != nil {
 		http.Error(w, "Error registering user: "+ err.Error(), http.StatusInternalServerError)
 		return
@@ -48,7 +56,7 @@ func UserRegisterHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Generate a session token and store it in database with expiration time
 	sessionToken := util.GenerateSessionToken()
-	repository.StoreSessionInDB(sqlite.Dbase, sessionToken, int(userID))
+	h.sessionRepo.StoreSessionInDB(sessionToken, int(userID))
 
 	// Set a cookie with the session token
 	http.SetCookie(w, &http.Cookie{
