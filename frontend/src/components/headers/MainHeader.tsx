@@ -1,38 +1,28 @@
 import Image from "next/image"
 import rastaLionImage from '../../../public/assets/rasta_lion.png';
-
-
-import { useRouter } from 'next/navigation';
+import FriendsButton from "../buttons/FriendsButton";
+import NotificationButton from "../buttons/NotificationButton";
+import ProfileIconDM from "../buttons/ProfileIconDropdownMenu";
+import RastaIcon from "../icons/RastaIcon";
+import LeftNavBar from "../leftNavbar/LeftNavBar";
+import IrieSphereButton from "../buttons/IriesphereButton";
 
 function MainHeader() {
-    const router = useRouter();
-
-    const logout = async () => {
-        const response = await fetch('http://localhost:8080/api/users/logout', {
-            method: 'POST',
-            credentials: 'include',
-        });
-
-        if (response.ok) {
-            // Redirect to login page or show a success message
-            router.push('/auth');
-        } else {
-            // Handle error
-            console.error('Logout failed');
-        }
-    };
-
+        {/* Logout logic at buttons/ProfileIconDropdownMenu */}
     return (
-        <div className="flex justify-between items-center p-4 bg-green-800 text-white">
-            <div className="flex items-center">
-                <Image src={rastaLionImage} priority={true} alt="Rasta lion" width={50} />
-                <h1 className="ml-4 font-rasa text-3xl">IrieSphere</h1></div>
-
-            {/*right*/}
-            {/*    Username*/}
-            {/*    Notifications*/}
-            <button onClick={logout}>Logout</button>
+        
+        <div className="navbar bg-primary h-">
+        <div className="flex-1">
+            <LeftNavBar />
+            <IrieSphereButton />
         </div>
+        <div className="navbar-end">
+            <NotificationButton />
+            <FriendsButton />
+            <ProfileIconDM />
+        </div>
+        </div>
+    
     )
 }
 

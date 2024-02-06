@@ -25,22 +25,6 @@ export default function Home() {
             {/* Header */}
             <header>
                 <MainHeader />
-                
-                {/* User Profile */}
-                <div>
-                    <span>John Doe</span>
-                    <LeftNavBar />
-                </div>
-
-                {/* Navigation */}
-                <nav>
-                    <ul>
-                        <li>Home</li>
-                        <li>Friends</li>
-                        <li>Messages</li>
-                        {/* Add more navigation items */}
-                    </ul>
-                </nav>
             </header>
 
             {/* Main Content */}

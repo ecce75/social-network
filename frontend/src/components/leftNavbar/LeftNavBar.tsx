@@ -1,45 +1,29 @@
-import Image from "next/image"
-import rastaLionImage from '../../../public/assets/rasta_lion.png';
+import React from 'react';
+import FriendsButton from '../buttons/FriendsButton';
+import EventsButton from '../buttons/EventsButton';
+import GroupsButton from '../buttons/GroupsButton';
 
-
-function LeftNavBar (){
-    return (
-        <div className="navbar bg-primary">
-        <div className="flex-1">
-            <Image src={rastaLionImage} priority={true} alt="Rasta lion" width={50} />
-            <a className="btn btn-ghost text-xl">IrieSphere</a>
-        </div>
-        <div className="navbar-end">
-            <button className="btn btn-ghost btn-circle">
-            <div className="indicator">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>
-                <span className="badge badge-xs badge-primary indicator-item"></span>
-            </div>
-            </button>
-        </div>
-        <div className="flex-none">
-            <div className="dropdown dropdown-end">
-            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                <div className="w-10 rounded-full">
-                <img alt="Tailwind CSS Navbar component" src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg" />
-                </div>
-            </div>
-            <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-                <li>
-                <a className="justify-between">
-                    Profile
-                    <span className="badge">New</span>
-                </a>
-                </li>
-                <li><a>Settings</a></li>
-                <li><a>Logout</a></li>
-            </ul>
-            </div>
-        </div>
-        </div>
-    
-    )
-
+function LeftNavBar() {
+  return (
+    <div className="drawer">
+      <input id="my-drawer" type="checkbox" className="drawer-toggle" />
+      <div className="drawer-content">
+        <label htmlFor="my-drawer" className="btn bg-primary btn-outline btn-success swap swap-rotate border-b border-black round">
+          <input type="checkbox" />
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 512 512"><path d="M64,384H448V341.33H64Zm0-106.67H448V234.67H64ZM64,128v42.67H448V128Z"/></svg>
+          
+        </label>
+      </div> 
+      <div className="drawer-side">
+        <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
+        <ul className="menu p-4 w-80 min-h-full bg-primary text-base-content">
+          {/* Sidebar buttons here */}
+          <li><GroupsButton /></li>
+          <li><EventsButton /></li>
+        </ul>
+      </div>
+    </div>
+  );
 }
 
 export default LeftNavBar;
