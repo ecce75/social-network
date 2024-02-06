@@ -53,7 +53,10 @@ func Router(mux *mux.Router, db *sql.DB) {
     mux.Handle("/invitations/request/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.RequestGroupMembershipHandler))).Methods("POST")
     mux.Handle("/groups/{groupId}/members/{userId}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.RemoveMemberHandler))).Methods("DELETE")
     mux.Handle("/invitations/approve/{id}", middleware.CheckAuthMiddleware(http.HandlerFunc(groupMemberHandler.ApproveGroupMembershipHandler))).Methods("PUT")
-    // TODO: Events
+
+    // TODO: Group posts & comments
+
+    // TODO: Group events
     mux.HandleFunc("/events", handler.GetAllEventsHandler).Methods("GET")
     mux.HandleFunc("/events", handler.CreateEventHandler).Methods("POST")
     mux.HandleFunc("/events/{id}", handler.GetEventByIDHandler).Methods("GET")

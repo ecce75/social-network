@@ -38,14 +38,14 @@ func (h *GroupHandler) GetAllGroupsHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *GroupHandler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
-    // TODO: Implement logic for creating a group
+    // logic for creating a group
     var newGroup model.Group
     err := json.NewDecoder(r.Body).Decode(&newGroup)
     if err != nil {
         http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
         return
     }
-    // TODO: check if group with title already exists
+    // TODO: check if group with title already exists IN FRONTEND
     userID := r.Context().Value("AuthUserID").(int)
 
     newGroup.CreatorId = userID
@@ -60,7 +60,7 @@ func (h *GroupHandler) CreateGroupHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Request) {
-    // TODO: Implement logic for getting a group by ID
+    // logic for getting a group by ID
     vars := mux.Vars(r)
     id, err := strconv.Atoi(vars["id"])
     if err != nil {
@@ -78,7 +78,7 @@ func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Reques
 }
 
 func (h *GroupHandler) EditGroupHandler(w http.ResponseWriter, r *http.Request) {
-    // TODO: Implement logic for editing a group
+    // logic for editing a group
     var updatedGroup model.Group
     err := json.NewDecoder(r.Body).Decode(&updatedGroup)
     if err != nil {
@@ -104,7 +104,7 @@ func (h *GroupHandler) EditGroupHandler(w http.ResponseWriter, r *http.Request) 
 func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
     userID := r.Context().Value("AuthUserID").(int)
 
-    // TODO: Implement logic for deleting a group
+    // logic for deleting a group
     vars := mux.Vars(r)
     id, err := strconv.Atoi(vars["id"])
     if err != nil {
@@ -128,7 +128,7 @@ func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request
     }
     // Successful response
 	response := map[string]string{
-		"message": "Post deleted successfully",
+		"message": "Group deleted successfully",
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

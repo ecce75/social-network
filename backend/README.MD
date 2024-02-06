@@ -334,8 +334,8 @@ Notes:
 
 - refactor
 - proper database entity relationship diagram
-- group posts
-- events + invites/joins + event posts
+- group posts & comments
+- events + going/not going
 - friends + requests
 - sanitize input data
 - notification system

@@ -1,5 +1,5 @@
 // Package repository provides the implementation of the repository layer for the social network backend.
-// It includes functions to interact with the database for managing groups and invitations.
+// It includes functions to interact with the database for managing groups.
 package repository
 
 import (

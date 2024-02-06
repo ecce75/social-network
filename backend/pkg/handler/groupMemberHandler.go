@@ -17,40 +17,6 @@ func NewGroupMemberHandler(repo *repository.GroupMemberRepository) *GroupMemberH
 	return &GroupMemberHandler{repo: repo}
 }
 
-// AddMemberToGroup adds a user to a group. It takes two parameters: the ID of the group
-// and the ID of the user. It inserts a new row into the group_members table in the database,
-// which represents the user being a member of the group. If the operation is successful,
-// it returns nil. If there is an error, it returns the error.
-// // DEPRECATED: Adding a member is now done in ApproveGroupMembershipHandler and AcceptGroupInvitationHandler
-// func (h *GroupMemberHandler) AddMemberHandler(w http.ResponseWriter, r *http.Request) {
-//     vars := mux.Vars(r)
-//     groupId, ok := vars["groupId"]
-//     if !ok {
-//         http.Error(w, "Missing group ID", http.StatusBadRequest)
-//         return
-//     }
-//     intGroupId, err := strconv.Atoi(groupId); if err != nil {
-//         http.Error(w, "Failed to convert groupid string to int: " + err.Error(), http.StatusBadRequest)
-//         return
-//     }
-
-//     userId, ok := vars["userId"]
-//     if !ok {
-//         http.Error(w, "Missing user ID", http.StatusBadRequest)
-//         return
-//     }
-//     intUserId, err := strconv.Atoi(userId); if err != nil {
-//         http.Error(w, "Failed to convert userid string to int: " + err.Error(), http.StatusBadRequest)
-//         return
-//     }
-
-//     err = h.repo.AddMemberToGroup(intGroupId, intUserId); if err != nil {
-//         http.Error(w, "Failed to add member to group: "+err.Error(), http.StatusInternalServerError)
-//         return
-//     }
-//     w.WriteHeader(http.StatusOK)
-// }
-
 // RemoveMemberFromGroup removes a user from a group. It takes two parameters: the ID of the group
 // and the ID of the user. It deletes the row from the group_members table in the database that
 // represents the user being a member of the group. If the operation is successful, it returns nil.
@@ -122,7 +88,7 @@ func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter
     w.WriteHeader(http.StatusCreated)
 }
 
-// TODO: implement logic for setting the player as group member
+//  logic for setting the player as group member
 func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
     // Parse the request URL to get the invitation ID
     vars := mux.Vars(r)
