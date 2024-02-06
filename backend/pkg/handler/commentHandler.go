@@ -2,6 +2,7 @@ package handler
 
 import (
 	"backend/pkg/db/sqlite"
+	"backend/pkg/middleware"
 	"backend/pkg/model"
 	"backend/pkg/repository"
 	"encoding/json"
@@ -33,7 +34,7 @@ func CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	}
-    userID, err := confirmAuthentication(cookie)
+    userID, err := middleware.ConfirmAuthentication(cookie)
     if err != nil {
         http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
         return
@@ -100,7 +101,7 @@ func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Confirm user auth and get userid
-	userID, err := confirmAuthentication(cookie)
+	userID, err := middleware.ConfirmAuthentication(cookie)
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
 		return
@@ -142,7 +143,7 @@ func EditCommentHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Confirm user auth and get userid
-	userID, err := confirmAuthentication(cookie)
+	userID, err := middleware.ConfirmAuthentication(cookie)
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
 		return
