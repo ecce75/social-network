@@ -25,18 +25,11 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := repository.GetUserByEmailOrNickname(sqlite.Dbase, logData.Username)
 	if err != nil {
-		fmt.Printf("Error getting user by email of nickname: %v <> error: %v \n", logData.Username, err)
-		return
-	}
-
-	if user.Id == 0 {
-		// User not found
-		http.Error(w, "User not found", http.StatusInternalServerError)
+		http.Error(w, "user not found", http.StatusNotFound)
 		return
 	}
 
 	// Compare hashed password with provided password
-
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(logData.Password))
 	if err != nil { // Wrong password
 		fmt.Println("Error comparing password: ", err)
@@ -64,12 +57,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("session_token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			http.Error(w, "User already logged out", http.StatusBadRequest)
-			return
-		}
-		// For any other error, return a bad request status
+	if err != nil && err != http.ErrNoCookie{
 		http.Error(w, "Bad request: "+ err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -91,7 +79,6 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 func CheckAuth(w http.ResponseWriter, r *http.Request) {
 	isAuthenticated := true
-
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
 		if err == http.ErrNoCookie {

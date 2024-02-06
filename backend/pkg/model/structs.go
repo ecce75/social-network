@@ -7,15 +7,17 @@ import "time"
 var UserID int
 
 type User struct {
-	Id        int
-	Username  string
-	Email     string
-	Password  string
-	FirstName string
-	LastName  string
-	DOB       string
-	AvatarURL string
-	About     string
+	Id 			int
+	Username 	string
+	Email 		string
+	Password 	string
+	FirstName 	string
+	LastName 	string
+	DOB 		string
+	AvatarURL 	string
+	About 		string
+	CreatedAt 	string
+	UpdatedAt 	string
 }
 
 type LoginData struct {

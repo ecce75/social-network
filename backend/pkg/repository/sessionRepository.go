@@ -10,7 +10,7 @@ import (
 
 func StoreSessionInDB(db *sql.DB, sessionToken string, userID int) {
 	expiresAt := time.Now().Add(15*time.Minute)
-	_, err := db.Exec(`INSERT INTO sessions (sessionToken, userID, expiresAt)
+	_, err := db.Exec(`INSERT OR REPLACE INTO sessions (sessionToken, userID, expiresAt)
 	VALUES (?, ?, ?)`, sessionToken, userID, expiresAt)
 	if err != nil {
 		fmt.Println("Error inserting session into database: ", err)
