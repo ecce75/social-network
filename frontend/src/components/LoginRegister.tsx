@@ -137,11 +137,17 @@ const handleRegister = (
 	  router.push('/');
 	})
 	.catch(error => {
-	  formikHelpers.setSubmitting(false);
-	  console.error('Catch Error:', error);
-	  alert("Invalid username or password")
+		formikHelpers.setSubmitting(false);
+		console.error('Catch Error:', error);
+		console.log(error.message)
+		if (error.message.startsWith("Error registering user: UNIQUE constraint failed: users.")) {
+			const fieldName = error.message.split("Error registering user: UNIQUE constraint failed: users.")[1];
+			alert(`${fieldName} already taken`);
+		} else {
+			alert("Invalid username or password");
+		}
 	});
-  };
+}
 
   
 const RegisterForm = ({ }) => {

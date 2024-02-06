@@ -4,6 +4,7 @@ import (
 	"backend/pkg/model"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -25,7 +26,7 @@ func ImageSave(w http.ResponseWriter, r *http.Request, regData *model.Registrati
     // 2. Extract the image file from the form data
     file, _, err := r.FormFile("avatar") 
     if err != nil {
-        http.Error(w, "Error retrieving file from form data: "+err.Error(), http.StatusBadRequest)
+        fmt.Println("No image uploaded")
         return
     }
     defer file.Close()
