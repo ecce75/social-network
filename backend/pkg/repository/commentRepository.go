@@ -6,9 +6,17 @@ import (
 	"fmt"
 )
 
-func GetCommentsByID(db *sql.DB, id int) ([]model.Comment, error) {
+type CommentRepository struct {
+    db *sql.DB
+}
+
+func NewCommentRepository(db *sql.DB) *CommentRepository {
+    return &CommentRepository{db: db}
+}
+
+func (r *CommentRepository) GetCommentsByID(id int) ([]model.Comment, error) {
     query := `SELECT * FROM comments WHERE post_id = ? OR user_id = ?`
-    rows, err := db.Query(query, id, id)
+    rows, err := r.db.Query(query, id, id)
     if err != nil {
         return nil, err
     }
@@ -30,10 +38,10 @@ func GetCommentsByID(db *sql.DB, id int) ([]model.Comment, error) {
     return comments, nil
 }
 
-func CreateComment(db *sql.DB, comment model.Comment) (int64, error) {
+func (r *CommentRepository) CreateComment(comment model.Comment) (int64, error) {
 	query := `INSERT INTO comments (post_id, user_id, content) 
 	VALUES (?, ?, ?)`
-	result, err := db.Exec(query, comment.PostID, comment.UserID, comment.Content)
+	result, err := r.db.Exec(query, comment.PostID, comment.UserID, comment.Content)
 	if err != nil {
 		return 0, err
 	}
@@ -44,27 +52,27 @@ func CreateComment(db *sql.DB, comment model.Comment) (int64, error) {
 	return lastInsertID, nil
 }
 
-func DeleteComment(db *sql.DB, id int, userid int) error {
+func (r *CommentRepository) DeleteComment(id int, userid int) error {
     query := `DELETE FROM comments WHERE id = ? AND user_id = ?`
-    _, err := db.Exec(query, id)
+    _, err := r.db.Exec(query, id)
     if err != nil {
         return err
     }
     return nil
 }
 
-func UpdateComment(db *sql.DB, commentId int, userId int, comment model.UpdateCommentRequest) error {
+func (r *CommentRepository) UpdateComment(commentId int, userId int, comment model.UpdateCommentRequest) error {
     query := `UPDATE comments SET content = ? WHERE id = ? AND user_id = ?`
-    _, err := db.Exec(query, comment.Content, comment.Id, comment.UserID)
+    _, err := r.db.Exec(query, comment.Content, comment.Id, comment.UserID)
     if err != nil {
         return err
     }
     return nil
 }
 
-func GetAllPostComments(db *sql.DB, id int) ([]model.Comment, error) {
+func (r *CommentRepository) GetAllPostComments(id int) ([]model.Comment, error) {
     query := `SELECT * FROM comments WHERE post_id = ?`
-    rows, err := db.Query(query, id)
+    rows, err := r.db.Query(query, id)
     if err != nil {
         return nil, err
     }

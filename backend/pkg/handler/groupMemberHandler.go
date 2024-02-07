@@ -3,18 +3,22 @@ package handler
 import (
 	"backend/pkg/model"
 	"backend/pkg/repository"
+	"backend/util"
 	"encoding/json"
 	"net/http"
 	"strconv"
+
 	"github.com/gorilla/mux"
 )
 
 type GroupMemberHandler struct {
-	repo *repository.GroupMemberRepository
+	groupRepo *repository.GroupMemberRepository
+    invitationRepo *repository.InvitationRepository
+    sessionRepo *repository.SessionRepository
 }
 
-func NewGroupMemberHandler(repo *repository.GroupMemberRepository) *GroupMemberHandler {
-	return &GroupMemberHandler{repo: repo}
+func NewGroupMemberHandler(groupRepo *repository.GroupMemberRepository, invitationRepo *repository.InvitationRepository, sessionRepo *repository.SessionRepository) *GroupMemberHandler {
+	return &GroupMemberHandler{groupRepo: groupRepo, invitationRepo: invitationRepo, sessionRepo: sessionRepo}
 }
 
 // RemoveMemberFromGroup removes a user from a group. It takes two parameters: the ID of the group
@@ -42,19 +46,22 @@ func (h *GroupMemberHandler) RemoveMemberHandler(w http.ResponseWriter, r *http.
         http.Error(w, "Failed to convert userid string to int: " + err.Error(), http.StatusBadRequest)
         return
     }
-    requestingUserId := r.Context().Value("AuthUserID").(int)
+    requestingUserId, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r)); if err != nil {
+        http.Error(w, "Failed to get user id from session token: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
     // logic to check if the user trying to remove the member is the owner of the group
-    isAuthenticated, err := h.repo.IsUserGroupOwner(requestingUserId, intGroupId)
+    isAuthorized, err := h.groupRepo.IsUserGroupOwner(requestingUserId, intGroupId)
     if err != nil {
         http.Error(w, "Failed to check if user is group owner: "+err.Error(), http.StatusInternalServerError)
         return
     }
-    if !isAuthenticated {
+    if !isAuthorized {
         http.Error(w, "User requesting the removal is not the group owner", http.StatusUnauthorized)
         return
     }
 
-    err = h.repo.RemoveMemberFromGroup(intGroupId, intUserId)
+    err = h.groupRepo.RemoveMemberFromGroup(intGroupId, intUserId)
     if err != nil {
         http.Error(w, "Failed to remove member from group: "+err.Error(), http.StatusInternalServerError)
         return
@@ -74,10 +81,14 @@ func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter
         http.Error(w, err.Error(), http.StatusBadRequest)
         return
     }
-    userID := r.Context().Value("AuthUserID").(int)
+    userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+    if err != nil {
+        http.Error(w, "Failed to get user id from session token: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
     request.JoinUserId = userID
     // Create the membership request in the database
-    err = h.repo.CreateGroupRequest(request)
+    err = h.groupRepo.CreateGroupRequest(request)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -96,18 +107,18 @@ func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter
 
     //userID := r.Context().Value("AuthUserID").(int)
     // Update the status of the membership request to "approved"
-    err := h.repo.AcceptGroupInvitationAndRequest(id)
+    err := h.groupRepo.AcceptGroupInvitationAndRequest(id)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
     // get groupId from the request invitation that was accepted
-    groupInvitation, err := h.repo.GetGroupInvitationByID(id); if err != nil {
+    groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(id); if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
     // this should add player to group
-    err = h.repo.AddMemberToGroup(groupInvitation.GroupId, groupInvitation.JoinUserId)
+    err = h.groupRepo.AddMemberToGroup(groupInvitation.GroupId, groupInvitation.JoinUserId)
     if err != nil {
         http.Error(w, "Error adding member to the group: " +err.Error(), http.StatusInternalServerError)
         return
@@ -117,13 +128,13 @@ func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter
     w.WriteHeader(http.StatusOK)
 }
 
-func (h *InvitationHandler) DeclineGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupMemberHandler) DeclineGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
     // Parse the request URL to get the invitation ID
     vars := mux.Vars(r)
     id := vars["id"]
 
     // Update the status of the membership request to "declined"
-    err := h.repo.DeclineGroupInvitation(id)
+    err := h.invitationRepo.DeclineGroupInvitation(id)
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
@@ -137,14 +148,20 @@ func (h *InvitationHandler) DeclineGroupMembershipHandler(w http.ResponseWriter,
 
 // InviteMemberHandler sends an invitation to a user to join a group.
 // It creates an invitation in the database that can be accepted or declined by the user.
-func (h *InvitationHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *http.Request) {
     var newInvitation model.GroupInvitation
     err := json.NewDecoder(r.Body).Decode(&newInvitation)
     if err != nil {
         http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
         return
     }
-    err = h.repo.CreateGroupInvitation(newInvitation)
+    userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+    if err != nil {
+        http.Error(w, "Failed to get user id from session token: " + err.Error(), http.StatusInternalServerError)
+        return
+    }
+    newInvitation.InviteUserId = userID
+    err = h.invitationRepo.CreateGroupInvitation(newInvitation)
     if err != nil {
         http.Error(w, "Failed to create invitation: "+err.Error(), http.StatusInternalServerError)
         return
@@ -157,18 +174,18 @@ func (h *InvitationHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *h
 func (h *GroupMemberHandler) AcceptGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     id := vars["id"]
-    err := h.repo.AcceptGroupInvitationAndRequest(id)
+    err := h.groupRepo.AcceptGroupInvitationAndRequest(id)
     if err != nil {
         http.Error(w, "Failed to accept invitation: "+err.Error(), http.StatusInternalServerError)
         return
     }
     // get groupId from the request invitation that was accepted
-    groupInvitation, err := h.repo.GetGroupInvitationByID(id); if err != nil {
+    groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(id); if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
     //  add player to group
-    err = h.repo.AddMemberToGroup(groupInvitation.GroupId, groupInvitation.JoinUserId)
+    err = h.groupRepo.AddMemberToGroup(groupInvitation.GroupId, groupInvitation.JoinUserId)
     if err != nil {
         http.Error(w, "Error adding member to the group: " +err.Error(), http.StatusInternalServerError)
         return
@@ -178,10 +195,10 @@ func (h *GroupMemberHandler) AcceptGroupInvitationHandler(w http.ResponseWriter,
 }
 
 // DeclineGroupInvitationHandler allows a user to decline an invitation to join a group.
-func (h *InvitationHandler) DeclineGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupMemberHandler) DeclineGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     id := vars["id"]
-    err := h.repo.DeclineGroupInvitation(id)
+    err := h.invitationRepo.DeclineGroupInvitation(id)
     if err != nil {
         http.Error(w, "Failed to decline invitation: "+err.Error(), http.StatusInternalServerError)
         return
@@ -193,10 +210,10 @@ func (h *InvitationHandler) DeclineGroupInvitationHandler(w http.ResponseWriter,
 
 // GetInvitationByIDHandler gets an invitation by ID
 // TODO: refactor to use userid from cookie to get all group invitations for the user (pending)
-func (h *InvitationHandler) GetGroupInvitationByIDHandler(w http.ResponseWriter, r *http.Request) {
+func (h *GroupMemberHandler) GetGroupInvitationByIDHandler(w http.ResponseWriter, r *http.Request) {
     vars := mux.Vars(r)
     id := vars["id"]
-    invitation, err := h.repo.GetGroupInvitationByID(id)
+    invitation, err := h.invitationRepo.GetGroupInvitationByID(id)
     if err != nil {
         http.Error(w, "Failed to get invitation: "+err.Error(), http.StatusInternalServerError)
         return
@@ -205,8 +222,8 @@ func (h *InvitationHandler) GetGroupInvitationByIDHandler(w http.ResponseWriter,
 }
 
 // GetAllInvitationsHandler gets all invitations (ok)
-func (h *InvitationHandler) GetAllGroupInvitationsHandler(w http.ResponseWriter, r *http.Request) {
-    invitations, err := h.repo.GetAllGroupInvitations()
+func (h *GroupMemberHandler) GetAllGroupInvitationsHandler(w http.ResponseWriter, r *http.Request) {
+    invitations, err := h.invitationRepo.GetAllGroupInvitations()
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return

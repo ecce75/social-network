@@ -4,7 +4,7 @@ import FriendsButton from "../buttons/FriendsButton";
 import NotificationButton from "../buttons/NotificationButton";
 import ProfileIconDM from "../buttons/ProfileIconDropdownMenu";
 import RastaIcon from "../icons/RastaIcon";
-import LeftNavBar from "../leftNavbar/LeftNavBar";
+import LeftNavBar from "../leftnavbar/LeftNavBar";
 import IrieSphereButton from "../buttons/IriesphereButton";
 
 function MainHeader() {
