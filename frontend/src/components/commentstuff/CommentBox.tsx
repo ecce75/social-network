@@ -1,4 +1,4 @@
-import Comment from "./Comment";
+import Comments from "./Comments";
 function CommentBox (){
 
 return (
@@ -9,7 +9,7 @@ return (
             Comments
         </div>
         <div className="collapse-content"> 
-            <Comment/>
+            <Comments/>
         </div>
         </div>
 );

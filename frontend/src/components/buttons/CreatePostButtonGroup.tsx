@@ -1,6 +1,7 @@
-import CreatePost from "../postcreation/CreatePost";
+import CreatePostGroup from "../postcreation/CreatePostGroup";
 
-function CreatePostButton() {
+
+function CreatePostButtonGroups() {
     const openModal = () => {
         const modal = document.getElementById('my_modal_2') as HTMLDialogElement | null;
         if (modal) {
@@ -15,7 +16,7 @@ function CreatePostButton() {
             <dialog id="my_modal_2" className="modal">
                 <div className="modal-box" style={{maxWidth:'none', width: '50%', height: '50%'}}>
                     <h3 className="font-bold text-black text-lg">Write about your day!</h3>
-                    <CreatePost/>
+                    <CreatePostGroup/>
                 </div>
                 <form method="dialog" className="modal-backdrop">
                     <button>close</button>
@@ -25,4 +26,6 @@ function CreatePostButton() {
     )
 }
 
-export default CreatePostButton;
+
+export default CreatePostButtonGroups;
+

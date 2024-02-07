@@ -1,4 +1,4 @@
-function Comment() {
+function Comments() {
     return (
             <div className="chat chat-start">
             {/* Comments inside the CommentsBox.tsx collapsing box*/}
@@ -20,4 +20,4 @@ function Comment() {
     );
 }
 
-export default Comment;
+export default Comments;

@@ -1,7 +1,7 @@
 import React from 'react';
 import FriendsButton from '../buttons/FriendsButton';
 import EventsButton from '../buttons/EventsButton';
-import GroupsButton from '../buttons/GroupsButton';
+import NavGroupsButton from '../buttons/NavGroupsButton';
 
 function LeftNavBar() {
   return (
@@ -18,7 +18,7 @@ function LeftNavBar() {
         <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
         <ul className="menu p-4 w-80 min-h-full bg-primary text-base-content">
           {/* Sidebar buttons here */}
-          <li><GroupsButton /></li>
+          <li><NavGroupsButton /></li>
           <li><EventsButton /></li>
         </ul>
       </div>
