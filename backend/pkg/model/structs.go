@@ -7,17 +7,17 @@ import "time"
 var UserID int
 
 type User struct {
-	Id 			int
-	Username 	string
-	Email 		string
-	Password 	string
-	FirstName 	string
-	LastName 	string
-	DOB 		string
-	AvatarURL 	string
-	About 		string
-	CreatedAt 	string
-	UpdatedAt 	string
+	Id        int
+	Username  string
+	Email     string
+	Password  string
+	FirstName string
+	LastName  string
+	DOB       string
+	AvatarURL string
+	About     string
+	CreatedAt string
+	UpdatedAt string
 }
 
 type LoginData struct {
@@ -50,6 +50,7 @@ type Session struct {
 type Post struct {
 	Id             int       `json:"id"`
 	UserID         int       `json:"user_id"`
+	GroupID        int       `json:"group_id,omitempty"`
 	Title          string    `json:"title"`
 	Content        string    `json:"content,omitempty"`
 	ImageURL       string    `json:"image_url,omitempty"`
@@ -60,6 +61,7 @@ type Post struct {
 type CreatePostRequest struct {
 	Title          string `json:"title"`
 	Content        string `json:"content,omitempty"`
+	GroupID        int    `json:"group_id,omitempty"`
 	ImageURL       string `json:"image_url,omitempty"`
 	PrivacySetting string `json:"privacy_setting"`
 }
