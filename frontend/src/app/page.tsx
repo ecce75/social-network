@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 // Your authentication hook or context
 import { useAuth } from '../util/utils';
 import MainHeader from '@/components/headers/MainHeader';
+import LeftNavBar from '@/components/leftNavbar/LeftNavBar'
 import background from '../../public/assets/background.png';
 
 export default function Home() {
@@ -24,21 +25,6 @@ export default function Home() {
             {/* Header */}
             <header>
                 <MainHeader />
-
-                {/* User Profile */}
-                <div>
-                    <span>John Doe</span>
-                </div>
-
-                {/* Navigation */}
-                <nav>
-                    <ul>
-                        <li>Home</li>
-                        <li>Friends</li>
-                        <li>Messages</li>
-                        {/* Add more navigation items */}
-                    </ul>
-                </nav>
             </header>
 
             {/* Main Content */}

@@ -31,8 +31,11 @@ export default function RootLayout({
           backgroundSize: 'cover',
           flex: 1,
           minHeight: '100vh',
-      }}>{children}</div>
-            
+      }}>{children}
+      </div>
+
+
+          <div/>
             </body>
        
     </html>

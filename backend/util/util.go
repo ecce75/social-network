@@ -49,3 +49,14 @@ func ImageSave(w http.ResponseWriter, r *http.Request, regData *model.Registrati
     regData.AvatarURL = imagePath
 	
 }
+
+func GetSessionToken(r *http.Request) string {
+    cookie, err := r.Cookie("session_token")
+    if err != nil {
+        if err == http.ErrNoCookie {
+            return ""
+        }
+        log.Fatalf("Error getting session token: %v", err)
+    }
+    return cookie.Value
+}

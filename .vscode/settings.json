@@ -5,6 +5,12 @@
       "driver": "SQLite",
       "database": "${workspaceFolder:social-network}/backend/pkg/db/database.db",
       "name": "db"
+    },
+    {
+      "previewLimit": 50,
+      "driver": "SQLite",
+      "database": "${workspaceFolder:social-network}/backend/pkg/db/database.db",
+      "name": "DB"
     }
   ],
   "sqltools.useNodeRuntime": true

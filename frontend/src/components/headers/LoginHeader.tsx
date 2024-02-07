@@ -5,7 +5,7 @@ import { LoginForm } from "../LoginRegister";
 
 function LoginHeader() {
     return (
-        <div className="flex justify-between items-center p-4 bg-green-800 text-white">
+        <div className="flex justify-between items-center p-4 bg-primary text-white">
             <div className="flex items-center">
                 <Image src={rastaLionImage} priority={true} alt="Rasta lion" width={50} height={50} />
                 <h1 className="ml-4 font-rasa text-3xl">IrieSphere</h1></div>
