@@ -22,17 +22,18 @@ func Router(mux *mux.Router, db *sql.DB) {
 
     // Posts
     postHandler := handler.NewPostHandler(repository.NewPostRepository(db), sessionRepository)
-    mux.HandleFunc("/post", postHandler.GetAllPostsHandler).Methods("GET")
+    mux.HandleFunc("/post", postHandler.GetAllPostsHandler).Methods("GET") // Main feed, all public posts + user groups posts
     mux.HandleFunc("/post", postHandler.CreatePostHandler).Methods("POST")
     //mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
     mux.HandleFunc("/post/{id}", postHandler.EditPostHandler).Methods("PUT")    // Edit a post
     mux.HandleFunc("/post/{id}", postHandler.DeletePostHandler).Methods("DELETE") // Delete a post
+    mux.HandleFunc("/groups/posts/{id}", postHandler.GetPostsByGroupIDHandler).Methods("GET")
 
     // Comments
     commentHandler := handler.NewCommentHandler(repository.NewCommentRepository(db), sessionRepository)
-    mux.HandleFunc("/post/{id}/comments", commentHandler.GetCommentByUserIDorPostID).Methods("GET")
-    mux.HandleFunc("/comment", commentHandler.CreateCommentHandler).Methods("POST")
-    mux.HandleFunc("/comment/{id}", commentHandler.DeleteCommentHandler).Methods("DELETE")
+    mux.HandleFunc("/post/{id}/comments", commentHandler.GetCommentsByUserIDorPostID).Methods("GET")
+    mux.HandleFunc("/post/comment", commentHandler.CreateCommentHandler).Methods("POST")
+    mux.HandleFunc("/post/comment/{id}", commentHandler.DeleteCommentHandler).Methods("DELETE")
 
     // Groups
     groupHandler := handler.NewGroupHandler(repository.NewGroupRepository(db), sessionRepository)

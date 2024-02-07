@@ -43,7 +43,7 @@ func (h *UserHandler) UserRegisterHandler(w http.ResponseWriter, r *http.Request
 		http.Error(w, "Error hashing password", http.StatusInternalServerError)
 		return
 	}
-	// Change variable password data to hashed variant
+	// Change input password data to hashed variant
 	regData.Password = string(hashedPassword)
 
 	util.ImageSave(w, r, &regData) // parses image data from request to the variable

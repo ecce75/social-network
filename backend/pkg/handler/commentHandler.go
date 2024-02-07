@@ -3,6 +3,7 @@ package handler
 import (
 	"backend/pkg/model"
 	"backend/pkg/repository"
+	"backend/util"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -28,20 +29,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
         return
     }
 
-    // Authentication and authorization logic goes here
-    // Assuming you have a function to check the user's session and get the user ID
-	cookie, err := r.Cookie("session_token")
-	if err != nil {
-		if err == http.ErrNoCookie {
-			// If the session cookie doesn't exist, set isAuthenticated to false
-			http.Error(w, "User not authenticated", http.StatusUnauthorized)
-			return
-		} else {
-			http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
-			return
-		}
-	}
-    userID, err := h.sessionRepo.GetUserIDFromSessionToken(cookie.Value)
+    userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
     if err != nil {
         http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
         return
@@ -64,7 +52,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
     json.NewEncoder(w).Encode(response)
 }
 
-func (h *CommentHandler) GetCommentByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
+func (h *CommentHandler) GetCommentsByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
 	var id string
 
 	decoder := json.NewDecoder(r.Body)
