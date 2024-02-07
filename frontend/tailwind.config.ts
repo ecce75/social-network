@@ -1,6 +1,6 @@
 import type { Config } from "tailwindcss"
 
-const config = {
+const config:Config = {
   darkMode: ["class"],
   content: [
     './src/pages/**/*.{ts,tsx}',
@@ -22,10 +22,21 @@ const config = {
         rasa: ['Rasa'],
         sans: ['Rasa', 'sans-serif'],
       },
+      
     },
   },
-  plugins: [require("tailwindcss-animate")],
-} satisfies Config
+    daisyui: {
+      themes: [
+        {
+          mytheme: {
+            "primary": "#4d7c0f",
+          },
+        },
+      ],
+    },
+  
 
+    plugins: [require("daisyui")],
+} 
 export default config
 
