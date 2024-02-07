@@ -6,5 +6,6 @@
       "database": "${workspaceFolder:social-network}/backend/pkg/db/database.db",
       "name": "db"
     }
-  ]
+  ],
+  "sqltools.useNodeRuntime": true
 }
