@@ -144,81 +144,128 @@ const handleRegister = (
   };
 
   
-const RegisterForm = ({ }) => {
-	const router = useRouter();
-	return (
-		<Formik
-			initialValues={{
-				email: "",
-				password: "",
-				first_name: "",
-				last_name: "",
-				dob: "",
-				avatar: null as File | null,
-				username: "",
-				about: "",
-			}}
-			onSubmit={(values, formikHelpers) => handleRegister(values, formikHelpers, router)}
-		>
-			{({ values, setFieldValue }) => (
-				<Form>
-					<div style={{backgroundColor: '#F0EAD6'}} className="flex flex-col max-w-md mx-auto mt-10 p-4">
-					<h2 className="text-5xl font-rasa font-bold mb-4 text-green-700">Register</h2>
-					<div>
-						<label className="labelStyle">Email</label>
-						<Field type="email" name="email"  className="inputStyle" />
-					</div>
-						<div className="mb-4">
-							<label className="labelStyle">Password</label>
-							<Field type="password" name="password"  className="inputStyle" />
-						</div>
-						<div className="mb-4">
-							<label className="labelStyle">First Name</label>
-							<Field type="text" name="first_name" className="inputStyle" />
-						</div>
-						<div className="mb-4">
-							<label className="labelStyle">Last Name</label>
-							<Field type="text" name="last_name" className="inputStyle" />
-						</div>
-						<div className="mb-4">
-							<label className="labelStyle">Date of Birth</label>
-							<Field type="date" name="dob" className="inputStyle" />
-						</div>
-						<div className="mb-4">
-							<label className="labelStyle">Avatar/Image</label>
-							<Field name="avatar">
-								{({ field, form }: FieldProps) => (
-									<input
-										id="avatar"
-										name="avatar"
-										type="file"
-										onChange={(event) => {
-											if (event.currentTarget.files) {
-											const file = event.currentTarget.files[0];
-											setFieldValue("avatar", file);
-										}
-									}}
-								/>
-							)}
-						</Field>
-					</div>
-					<div>
-						<label className="labelStyle">Username</label>
-						<Field type="text" name="username" className="inputStyle" />
-					</div>
-					<div>
-						<label className="labelStyle">About Me</label>
-						<Field as="textarea" name="about" className="inputStyle" />
-					</div>
-					<button type="submit" className= "buttonStyle">
-						Register
-					</button>
-				</div>
-				</Form>
-			)}
-		</Formik>
-	);
+  const RegisterForm = () => {
+    const router = useRouter();
+    return (
+        <Formik
+            initialValues={{
+                email: '',
+                password: '',
+                first_name: '',
+                last_name: '',
+                dob: '',
+                avatar: null as File | null,
+                username: '',
+                about: '',
+            }}
+            onSubmit={(values, formikHelpers) =>
+                handleRegister(values, formikHelpers, router)
+            }
+        >
+            {({ values, setFieldValue }) => (
+                <Form>
+                    <div
+                        style={{ backgroundColor: '#e5e7eb' }}
+                        className="flex flex-col max-w-md mx-auto mt-3 p-4"
+                    >
+                        <h2 className="text-5xl font-rasa font-bold mb-4 text-green-700">
+                            Register
+                        </h2>
+                        {/* Email */}
+                        <div className="mb-4">
+                            <label className="labelStyle">Email</label>
+                            <Field type="email" name="email" className="inputStyle" />
+                        </div>
+                        {/* Password */}
+                        <div className="mb-4">
+                            <label className="labelStyle">Password</label>
+                            <Field type="password" name="password" className="inputStyle" />
+                        </div>
+                        {/* First Name */}
+                        <div className="mb-4">
+                            <label className="labelStyle">First Name</label>
+                            <Field type="text" name="first_name" className="inputStyle" />
+                        </div>
+                        {/* Last Name */}
+                        <div className="mb-4">
+                            <label className="labelStyle">Last Name</label>
+                            <Field type="text" name="last_name" className="inputStyle" />
+                        </div>
+                        {/* Date of Birth */}
+                        <div className="mb-4">
+                            <label className="labelStyle">Date of Birth</label>
+                            <Field type="date" name="dob" className="inputStyle" />
+                        </div>
+                        {/* Avatar/Image */}
+                        <div className="mb-4 flex justify-between items-center">
+                            <label className="labelStyle">Avatar/Image</label>
+                            <Field name="avatar">
+                                {({ field, form }: FieldProps) => (
+                                    <div className="flex items-center">
+                                        <input
+                                            id="avatar"
+                                            name="avatar"
+                                            type="file"
+                                            className="hidden"
+                                            onChange={(event) => {
+                                                if (event.currentTarget.files) {
+                                                    const file = event.currentTarget.files[0];
+                                                    setFieldValue("avatar", file);
+                                                }
+                                            }}
+                                        />
+                                        {/* Display the "Browse" button */}
+                                        <label
+                                            htmlFor="avatar"
+                                            className="buttonStyle mr-4 cursor-pointer"
+                                        >
+                                            Browse
+                                        </label>
+                                        {/* Display the image preview */}
+                                        {form.values.avatar ? (
+                                            <div className="avatar-preview">
+                                                <img
+                                                    src={URL.createObjectURL(form.values.avatar)}
+                                                    alt="Avatar Preview"
+                                                    className="rounded-full"
+                                                    style={{ width: 100, height: 100 }}
+                                                />
+                                            </div>
+                                        ) : (
+                                            <div className="avatar-preview">
+                                                <img
+                                                    src="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
+                                                    alt="Placeholder"
+                                                    className="rounded-full"
+                                                    style={{ width: 100, height: 100 }}
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </Field>
+                        </div>
+                        {/* Username */}
+                        <div className="mb-4">
+                            <label className="labelStyle">Username</label>
+                            <Field type="text" name="username" className="inputStyle" />
+                        </div>
+                        {/* About Me */}
+                        <div className="mb-4">
+                            <label className="labelStyle">About Me</label>
+                            <Field as="textarea" name="about" className="inputStyle" />
+                        </div>
+                        {/* Submit Button */}
+                        <button type="submit" className="buttonStyle">
+                            Register
+                        </button>
+                    </div>
+                </Form>
+            )}
+        </Formik>
+    );
 };
+export default RegisterForm;
 
 export { LoginForm, RegisterForm };
 	
