@@ -11,9 +11,6 @@ import (
 
 func main() {
     mux := mux.NewRouter()
-
-    
-
 	dbPath := "./pkg/db/database.db"
     migrationsPath := "pkg/db/migrations/sqlite"
 

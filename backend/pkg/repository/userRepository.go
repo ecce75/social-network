@@ -6,12 +6,20 @@ import (
 	"fmt"
 )
 
+type UserRepository struct {
+	db *sql.DB
+}
+
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{db: db}
+}
+
 // # Data access layer, interacts with db
 
-func GetUserByEmailOrNickname(db *sql.DB, emailOrNickname string) (model.User, error) {
+func (r *UserRepository) GetUserByEmailOrNickname(emailOrNickname string) (model.User, error) {
 	query := "SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1"
 	var user model.User
-	err := db.QueryRow(query, emailOrNickname, emailOrNickname).Scan(
+	err := r.db.QueryRow(query, emailOrNickname, emailOrNickname).Scan(
 		&user.Id, &user.Username, &user.Email, &user.Password, &user.FirstName, &user.LastName, 
 		&user.DOB, &user.AvatarURL, &user.About, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
@@ -23,8 +31,8 @@ func GetUserByEmailOrNickname(db *sql.DB, emailOrNickname string) (model.User, e
 	return user, nil
 }
 
-func RegisterUser(db *sql.DB, data model.RegistrationData) (int64, error) {
-	result, err := db.Exec("INSERT INTO users (username, email, password, first_name, last_name, date_of_birth, avatar_url, about_me) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+func (r *UserRepository) RegisterUser(data model.RegistrationData) (int64, error) {
+	result, err := r.db.Exec("INSERT INTO users (username, email, password, first_name, last_name, date_of_birth, avatar_url, about_me) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
 	data.Username, data.Email, data.Password, data.FirstName, data.LastName, data.DOB, data.AvatarURL, data.About)
 	if err != nil {
 		fmt.Println("Error inserting user into database")
