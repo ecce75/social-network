@@ -22,6 +22,7 @@ const config:Config = {
         rasa: ['Rasa'],
         sans: ['Rasa', 'sans-serif'],
       },
+      
     },
   },
     daisyui: {
