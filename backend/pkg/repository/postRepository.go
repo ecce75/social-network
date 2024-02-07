@@ -6,10 +6,18 @@ import (
 	"fmt"
 )
 
-func CreatePost(db *sql.DB, post model.CreatePostRequest, userID int) (int64, error) {
-	query := `INSERT INTO posts (user_id, title, content, image_url, privacy_setting) 
-	VALUES (?, ?, ?, ?, ?)`
-	result, err := db.Exec(query, userID, post.Title, post.Content, post.ImageURL, post.PrivacySetting)
+type PostRepository struct {
+    db *sql.DB
+}
+
+func NewPostRepository(db *sql.DB) *PostRepository {
+    return &PostRepository{db: db}
+}
+
+func (r *PostRepository) CreatePost(post model.CreatePostRequest, userID int) (int64, error) {
+	query := `INSERT INTO posts (user_id, title, group_id, content, image_url, privacy_setting) 
+	VALUES (?, ?, ?, ?, ?, ?)`
+	result, err := r.db.Exec(query, userID, post.GroupID, post.Title, post.Content, post.ImageURL, post.PrivacySetting)
 	if err != nil {
 		fmt.Println("Error inserting post into database: ", err)
 		return 0, err
@@ -28,7 +36,7 @@ func CreatePost(db *sql.DB, post model.CreatePostRequest, userID int) (int64, er
 // - Posts with privacy setting set to 'public'
 // - Posts with privacy setting set to 'private' and the user is a friend (status = 'accepted')
 // The function returns a slice of model.Post and an error if any occurred during the query.
-func GetAllPostsWithUserIDAccess(db *sql.DB, userID int) ([]model.Post, error) {
+func (r *PostRepository) GetAllPostsWithUserIDAccess(userID int) ([]model.Post, error) {
     query := `
     SELECT posts.* 
     FROM posts 
@@ -41,7 +49,7 @@ func GetAllPostsWithUserIDAccess(db *sql.DB, userID int) ([]model.Post, error) {
     ))
     `
 
-    rows, err := db.Query(query, userID, userID, userID)
+    rows, err := r.db.Query(query, userID, userID, userID)
     if err != nil {
         return []model.Post{}, err
     }
@@ -62,9 +70,9 @@ func GetAllPostsWithUserIDAccess(db *sql.DB, userID int) ([]model.Post, error) {
     return posts, nil
 }
 
-func DeletePost(db *sql.DB, postID int, userID int) error {
+func (r *PostRepository) DeletePost(postID int, userID int) error {
 	query := `DELETE FROM posts WHERE id = ? AND user_id = ?`
-	result, err := db.Exec(query, postID, userID)
+	result, err := r.db.Exec(query, postID, userID)
 	if err != nil {
 		return err
 	}
@@ -79,10 +87,10 @@ func DeletePost(db *sql.DB, postID int, userID int) error {
 	return nil
 }
 
-func UpdatePost(db *sql.DB, postID int, userID int, request model.UpdatePostRequest) error {
+func (r *PostRepository) UpdatePost(postID int, userID int, request model.UpdatePostRequest) error {
     query := `UPDATE posts SET title = ?, content = ?, image_url = ?, privacy_setting = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?`
 
-    result, err := db.Exec(query, request.Title, request.Content, request.ImageURL, request.PrivacySetting, postID, userID)
+    result, err := r.db.Exec(query, request.Title, request.Content, request.ImageURL, request.PrivacySetting, postID, userID)
     if err != nil {
         return err // Handle the error appropriately
     }
@@ -97,4 +105,55 @@ func UpdatePost(db *sql.DB, postID int, userID int, request model.UpdatePostRequ
     }
 
     return nil
+}
+
+func (r *PostRepository) GetPostsByGroupID(groupID int) ([]model.Post, error) {
+    query := `SELECT * FROM posts WHERE group_id = ?`
+    rows, err := r.db.Query(query, groupID)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var posts []model.Post
+    for rows.Next() {
+        var post model.Post
+        if err := rows.Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+            return nil, err
+        }
+        posts = append(posts, post)
+    }
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+    return posts, nil
+}
+
+func (r *PostRepository) GetPostsByUserGroups(userID int) ([]model.Post, error) {
+    query := `
+    SELECT posts.* 
+    FROM posts 
+    JOIN group_members ON posts.group_id = group_members.group_id
+    WHERE group_members.user_id = ?
+    `
+
+    rows, err := r.db.Query(query, userID)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var posts []model.Post
+    for rows.Next() {
+        var post model.Post
+        if err := rows.Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+            return nil, err
+        }
+        posts = append(posts, post)
+    }
+
+    if err = rows.Err(); err != nil {
+        return nil, err
+    }
+    return posts, nil
 }

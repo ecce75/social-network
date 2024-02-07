@@ -151,6 +151,8 @@ type AuthResponse struct {
 
 ### Posts
 
+- **Get All Posts**: Endpoint `/post` (GET)
+- **Get Posts By Group ID**: Endpoint `/groups/posts/{id}` (GET)
 - **Create Post**: Endpoint `/post` (POST)
 - **Delete Post**: Endpoint `/post/{id}` (DELETE)
 - **Update Post**: Endpoint `/post/{id}` (PUT)
@@ -165,6 +167,22 @@ This endpoint requires post title, content, imageurl(may be empty) and privacy
 setting('public', 'private', 'custom').
 
 The request then is processed and user authentication is double checked via cookie and userID attached to the create post request. After request data is decoded and stored it will return the id of the post.
+
+---
+
+```go
+mux.HandleFunc("/post", postHandler.GetAllPostsHandler).Methods("GET")
+```
+
+This endpoint retrieves all posts that the authenticated user has access to. It includes all public posts and posts from the user's groups.
+
+---
+
+```go
+mux.HandleFunc("/groups/posts/{id}", postHandler.GetPostsByGroupIDHandler).Methods("GET")
+```
+
+This endpoint retrieves all posts for a specific group by its ID. It requires the ID as a URL parameter.
 
 ---
 
@@ -190,16 +208,18 @@ This endpoint updates a post by its ID. It requires the ID as a URL parameter an
 type Post struct {
  Id     int   `json:"id"`
  UserID    int   `json:"user_id"`
+ GroupID int `json:"group_id"`
  Title   string   `json:"title"`
  Content   string   `json:"content,omitempty"`
  ImageURL   string   `json:"image_url,omitempty"`
  PrivacySetting  string     `json:"privacy_setting"`
-    CreatedAt       time.Time  `json:"created_at"`
+ CreatedAt       time.Time  `json:"created_at"`
 }
 ```
 
 ```go
 type CreatePostRequest struct {
+ GroupID int `json:"group_id"`
  Title    string `json:"title"`
  Content   string `json:"content,omitempty"`
  ImageURL   string `json:"image_url,omitempty"`
@@ -256,7 +276,6 @@ type Comment struct {
 ### Groups
 
 The Groups functionality allows for the creation, management, and deletion of user groups. It supports operations such as creating a new group, editing group details, deleting a group, and managing group memberships and invitations.
-Uses auth checking middleware
 
 #### Group Endpoints
 
@@ -333,7 +352,6 @@ Notes:
 ## Future Work
 
 - refactor
-- proper database entity relationship diagram
 - group posts & comments
 - events + going/not going
 - friends + requests
