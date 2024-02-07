@@ -26,7 +26,7 @@ func ImageSave(w http.ResponseWriter, r *http.Request, regData *model.Registrati
     // 2. Extract the image file from the form data
     file, _, err := r.FormFile("avatar") 
     if err != nil {
-        fmt.Println("No image uploaded")
+        fmt.Println("No image uploaded on register")
         return
     }
     defer file.Close()
