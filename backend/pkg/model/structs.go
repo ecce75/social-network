@@ -114,6 +114,14 @@ type Friend struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
+type FriendList struct {
+	UserID     int    `json:"id"`
+    FirstName  string `json:"first_name"`
+    LastName   string `json:"last_name"`
+    AvatarURL  string `json:"avatar_url"`
+    Username   string `json:"username"`
+}
+
 type Notification struct {
 	Id        int       `json:"id"`
 	UserId    int       `json:"user_id"`
