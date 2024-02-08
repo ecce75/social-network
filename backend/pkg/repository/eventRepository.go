@@ -40,7 +40,6 @@ func (r *EventRepository) GetAllEvents() ([]model.Event, error) {
 		return nil, err
 	}
 	return events, nil
-
 }
 
 // CreateEvent creates a new event in the database.
