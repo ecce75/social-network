@@ -117,3 +117,70 @@ func (r *EventRepository) GetEventsByGroupID(groupID int) ([]model.Event, error)
 	}
 	return events, nil
 }
+
+// AddOrUpdateAttendance adds or updates attendance status for an event and a user.
+// It returns the ID of the attendance record and an error if any.
+func (r *EventRepository) AddOrUpdateAttendance(eventID, userID int, status string) (int64, error) {
+	// Check if the attendance record already exists
+	query := `
+		SELECT id FROM event_attendance
+		WHERE event_id = ? AND user_id = ?
+	`
+
+	row := r.db.QueryRow(query, eventID, userID)
+	var attendanceID int64
+	err := row.Scan(&attendanceID)
+
+	if err == nil {
+		// Attendance record exists, update the status
+		updateQuery := `
+			UPDATE event_attendance
+			SET status = ?
+			WHERE id = ?
+		`
+
+		_, err := r.db.Exec(updateQuery, status, attendanceID)
+		return attendanceID, err
+	}
+
+	// Attendance record doesn't exist, insert a new record
+	insertQuery := `
+		INSERT INTO event_attendance (event_id, user_id, status)
+		VALUES (?, ?, ?)
+	`
+
+	result, err := r.db.Exec(insertQuery, eventID, userID, status)
+	if err != nil {
+		return 0, err
+	}
+
+	attendanceID, err = result.LastInsertId()
+	return attendanceID, err
+}
+
+// GetAttendanceByEventID retrieves attendance records for a specific event from the database.
+func (r *EventRepository) GetAttendanceByEventID(eventID int) ([]model.EventAttendance, error) {
+	query := `
+		SELECT * FROM event_attendance
+		WHERE event_id = ?
+	`
+
+	rows, err := r.db.Query(query, eventID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var attendanceList []model.EventAttendance
+	for rows.Next() {
+		var attendance model.EventAttendance
+		if err := rows.Scan(&attendance.Id, &attendance.EventId, &attendance.UserId, &attendance.Status, &attendance.CreatedAt); err != nil {
+			return nil, err
+		}
+		attendanceList = append(attendanceList, attendance)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return attendanceList, nil
+}

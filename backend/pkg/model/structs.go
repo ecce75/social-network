@@ -144,7 +144,7 @@ type Event struct {
 	CreatedAt   time.Time `json:"created_at"`
 }
 
-type EventAttending struct {
+type EventAttendance struct {
 	Id        int       `json:"id"`
 	EventId   int       `json:"event_id"`
 	UserId    int       `json:"user_id"`
