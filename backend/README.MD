@@ -8,6 +8,7 @@
   - [Posts](#posts)
   - [Comments](#comments)
   - [Groups](#groups)
+  - [Friends](#friends)
 - [Backend contribution](#backend-contribution)
 - [Future Work](#future-work)
 - [Extra](#extra)
@@ -41,8 +42,6 @@ The backend is structured into several packages, each with a specific purpose:
 │   │       └── sqlite.go
 │   ├── handler
 │   │   └── # Handlers do the magic of organizing everything
-│   ├── middleware
-│   │   └── # Middleware for apis
 │   ├── model
 │   │   └── # Data structures(structs)
 │   └── repository
@@ -279,11 +278,11 @@ The Groups functionality allows for the creation, management, and deletion of us
 
 #### Group Endpoints
 
-- **Create Group:** POST /groups - Allows authenticated users to create a new group.
-- **Get All Groups:** GET /groups - Retrieves all groups.
-- **Get Group by ID:** GET /groups/{id} - Retrieves details of a specific group by its ID.
-- **Edit Group:** PUT /groups/{id} - Allows editing of group details.
-- **Delete Group:** DELETE /groups/{id} - Deletes a group by its ID.
+- **Create Group:** (POST) `/groups` - Allows authenticated users to create a new group.
+- **Get All Groups:** (GET) `/groups` - Retrieves all groups.
+- **Get Group by ID:** (GET) `/groups/{id}` - Retrieves details of a specific group by its ID.
+- **Edit Group:** (PUT) `/groups/{id}` - Allows editing of group details.
+- **Delete Group:** (DELETE) `/groups/{id}` - Deletes a group by its ID.
 
 ---
 
@@ -291,12 +290,12 @@ The Groups functionality allows for the creation, management, and deletion of us
 
 #### Group Membership and Invitations
 
-- **Invite Group Member:** POST /invitations - Enables group admins to send invitations to users.
-- **Approve Group Membership:** PUT /invitations/approve/{id} - Allows group admins to approve membership requests.
-- **Decline Group Membership:** PUT /invitations/{id} - Used by admins to decline membership requests or by users to decline invitations.
-- **Request Group Membership:** POST /invitations/request/{id} - Allows users to request membership to a group.
-- **Accept Group Invitation:** PUT /invitations/{id} - Allows users to accept group invitations.
-- **Remove Group Member:** DELETE /groups/{groupId}/members/{userId} - Admins can remove users from their group.
+- **Invite Group Member:** (POST) `/invitations` - Enables group admins to send invitations to users.
+- **Approve Group Membership:** (PUT) `/invitations/approve/{id}` - Allows group admins to approve membership requests.
+- **Decline Group Membership:** (PUT) `/invitations/{id}` - Used by admins to decline membership requests or by users to decline invitations.
+- **Request Group Membership:** (POST) `/invitations/request/{id}` - Allows users to request membership to a group.
+- **Accept Group Invitation:** (PUT) `/invitations/{id}` - Allows users to accept group invitations.
+- **Remove Group Member:** (DELETE) `/groups/{groupId}/members/{userId}` - Admins can remove users from their group.
 
 ---
 
@@ -335,6 +334,110 @@ type GroupMember struct {
 
 ---
 
+### Friends
+
+The Friends functionality allows for the management of friend relationships between users. It supports operations such as sending friend requests, accepting friend requests, declining friend requests, blocking and unblocking users, and retrieving a user's friends.
+
+**Send Friend Request:** (POST) `/friends/{id}` - Allows authenticated users to send a friend request to another user.
+**Accept Friend Request:** (PUT) `/friends/{id}/accept` - Allows users to accept a friend request from another user.
+**Decline Friend Request:** (PUT) `/friends/{id}/decline` - Allows users to decline a friend request from another user.
+**Block User:** (PUT) `/friends/{id}/block` - Allows users to block another user.
+**Unblock User:** (PUT) `/friends/{id}/unblock` - Allows users to unblock a user they have previously blocked.
+**Get Friends:** (GET) `/friends` - Retrieves all friends of the authenticated user.
+
+The friend request works by friends table field status(accepted, pending, declined, blocked). The handler layer uses the status field to handle different actions based on the status of the friend request.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}", handler.SendFriendRequestHandler).Methods("POST")
+```
+
+This endpoint allows an authenticated user to send a friend request to another user. It requires the ID of the user to send the request to as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}/accept", handler.AcceptFriendRequestHandler).Methods("PUT")
+```
+
+This endpoint allows a user to accept a friend request from another user. It requires the ID of the user who sent the request as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}/decline", handler.DeclineFriendRequestHandler).Methods("PUT")
+```
+
+This endpoint allows a user to decline a friend request from another user. It requires the ID of the user who sent the request as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}/block", handler.BlockUserHandler).Methods("PUT")
+```
+
+This endpoint allows a user to block another user. It requires the ID of the user to block as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}/unblock", handler.UnblockUserHandler).Methods("PUT")
+```
+
+This endpoint allows a user to unblock a user they have previously blocked. It requires the ID of the user to unblock as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends", handler.GetFriendsHandler).Methods("GET")
+```
+
+This endpoint retrieves all friends of the authenticated user.
+
+---
+
+#### Friends related code
+
+```go
+type FriendList struct {
+    UserID     int    `json:"user_id"`
+    FirstName  string `json:"first_name"`
+    LastName   string `json:"last_name"`
+    AvatarURL  string `json:"avatar_url"`
+    Username   string `json:"username"`
+}
+
+type Friend struct {
+    Id           int       `json:"id"`
+    UserId1      int       `json:"user_id_1"`
+    UserId2      int       `json:"user_id_2"`
+    Status       string    `json:"status"`
+    ActionUserId int       `json:"action_user_id"`
+    CreatedAt    time.Time `json:"created_at"`
+    UpdatedAt    time.Time `json:"updated_at"`
+}
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS friends (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id1 INTEGER NOT NULL,
+    user_id2 INTEGER NOT NULL,
+    status TEXT CHECK(status IN ('pending', 'accepted', 'declined', 'blocked')),
+    action_user_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id1) REFERENCES users(id),
+    FOREIGN KEY (user_id2) REFERENCES users(id),
+    FOREIGN KEY (action_user_id) REFERENCES users(id)
+);
+```
+
+---
+
+---
+
 ## Backend contribution
 
 fork -> contribute -> pull request
@@ -343,16 +446,12 @@ Notes:
 
 - Use repository pattern for data access layer.
 
-- Use auth middleware for requests that should require authorization.
-
 - Document everything, clear commit messages about changes
 
 - Don't forget Jira issue links(ex. SN-44) for commits and pull requests
 
 ## Future Work
 
-- refactor
-- group posts & comments
 - events + going/not going
 - friends + requests
 - sanitize input data
