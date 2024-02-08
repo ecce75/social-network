@@ -12,6 +12,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+// LoginHandler handles the login request.
+// It decodes the login data from the request body and validates the user's credentials.
+// If the credentials are valid, it generates a session token, stores it in the database, and sets a cookie with the session token.
+// Finally, it sends a success response indicating that the login was successful.
 func (h *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	var logData model.LoginData
 
@@ -31,19 +35,19 @@ func (h *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(logData.Password))
 	if err != nil { // Wrong password
 		fmt.Println("Error comparing password: ", err)
-		http.Error(w, "Couldn't compare password with hashed variant: "+ err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Couldn't compare password with hashed variant: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	// Generate a session token and store it in database
 	sessionToken := util.GenerateSessionToken()
 	h.sessionRepo.StoreSessionInDB(sessionToken, user.Id)
-	
+
 	// Set a cookie with the session
 	http.SetCookie(w, &http.Cookie{
-		Name: "session_token",
-		Value: sessionToken,
-		MaxAge: 60*15, // 15 minutes
+		Name:   "session_token",
+		Value:  sessionToken,
+		MaxAge: 60 * 15, // 15 minutes
 	})
 
 	// Send a success response
@@ -53,18 +57,20 @@ func (h *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// LogoutHandler handles the logout functionality by deleting the session-token cookie and sending a success response.
+// If the session-token cookie is not found or there is an error, it returns a bad request error.
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	_, err := r.Cookie("session_token")
-	if err != nil && err != http.ErrNoCookie{
-		http.Error(w, "Bad request: "+ err.Error(), http.StatusBadRequest)
+	if err != nil && err != http.ErrNoCookie {
+		http.Error(w, "Bad request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	// Delete the session-token cookie
 	http.SetCookie(w, &http.Cookie{
-		Name: "session_token",
-		Value: "",
-		MaxAge: -1, // Setting MaxAge to -1 immediately expires the cookie
+		Name:    "session_token",
+		Value:   "",
+		MaxAge:  -1, // Setting MaxAge to -1 immediately expires the cookie
 		Expires: time.Unix(0, 0),
 	})
 
@@ -75,6 +81,10 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// CheckAuth checks the authentication status of the user.
+// It retrieves the session token from the request cookie and verifies it against the session stored in the database.
+// If the session token is valid and not expired, the user is considered authenticated.
+// The authentication status is then returned as a JSON response.
 func (h *UserHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 	isAuthenticated := true
 	cookie, err := r.Cookie("session_token")
@@ -83,7 +93,7 @@ func (h *UserHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 			// If the session cookie doesn't exist, set isAuthenticated to false
 			isAuthenticated = false
 		} else {
-			http.Error(w, "Error checking session token: " + err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Error checking session token: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	}
@@ -110,7 +120,7 @@ func (h *UserHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 	}
 	jsonResponse, err := json.Marshal(response)
 	if err != nil {
-		http.Error(w, "Error marshalling response: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error marshalling response: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

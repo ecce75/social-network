@@ -128,7 +128,41 @@ func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
+	userGroupsPosts, err := h.postRepo.GetPostsByUserGroups(userID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve posts by user groups: " + err.Error(), http.StatusInternalServerError)
+		return
+	}
 	posts, err := h.postRepo.GetAllPostsWithUserIDAccess(userID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+		return
+	}
+	posts = append(posts, userGroupsPosts...)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(posts)
+}
+
+// ---------------------------------------------- //
+// ------------ Group Posts Handlers ------------ //
+// ---------------------------------------------- //
+
+
+func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	groupID, ok := vars["id"]
+	intGroupID, err := strconv.Atoi(groupID)
+	if err != nil {
+		http.Error(w, "Failed to parse group ID: " +err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		http.Error(w, "Group ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
+
+	posts, err := h.postRepo.GetPostsByGroupID(intGroupID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
 		return

@@ -1,13 +1,19 @@
 import RastaIcon from "../icons/RastaIcon";
+import { useRouter } from 'next/navigation';
 
 function IrieSphereButton (){
+    const router = useRouter();
+    
+    const dashboard = () => {
+        router.push('/dashboard');
+    };
 
     return (
 
-        <a className="btn btn-ghost text-3xl font-bold  relative left-20">
+        <button onClick={dashboard} className="btn btn-ghost text-3xl font-bold  relative left-20">
         <RastaIcon />
         <span>IrieSphere</span>
-        </a>
+        </button>
     )
 }
 

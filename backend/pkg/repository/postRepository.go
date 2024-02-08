@@ -15,9 +15,9 @@ func NewPostRepository(db *sql.DB) *PostRepository {
 }
 
 func (r *PostRepository) CreatePost(post model.CreatePostRequest, userID int) (int64, error) {
-	query := `INSERT INTO posts (user_id, title, content, image_url, privacy_setting) 
-	VALUES (?, ?, ?, ?, ?)`
-	result, err := r.db.Exec(query, userID, post.Title, post.Content, post.ImageURL, post.PrivacySetting)
+	query := `INSERT INTO posts (user_id, title, group_id, content, image_url, privacy_setting) 
+	VALUES (?, ?, ?, ?, ?, ?)`
+	result, err := r.db.Exec(query, userID, post.GroupID, post.Title, post.Content, post.ImageURL, post.PrivacySetting)
 	if err != nil {
 		fmt.Println("Error inserting post into database: ", err)
 		return 0, err
@@ -105,4 +105,55 @@ func (r *PostRepository) UpdatePost(postID int, userID int, request model.Update
     }
 
     return nil
+}
+
+func (r *PostRepository) GetPostsByGroupID(groupID int) ([]model.Post, error) {
+    query := `SELECT * FROM posts WHERE group_id = ?`
+    rows, err := r.db.Query(query, groupID)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var posts []model.Post
+    for rows.Next() {
+        var post model.Post
+        if err := rows.Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+            return nil, err
+        }
+        posts = append(posts, post)
+    }
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+    return posts, nil
+}
+
+func (r *PostRepository) GetPostsByUserGroups(userID int) ([]model.Post, error) {
+    query := `
+    SELECT posts.* 
+    FROM posts 
+    JOIN group_members ON posts.group_id = group_members.group_id
+    WHERE group_members.user_id = ?
+    `
+
+    rows, err := r.db.Query(query, userID)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var posts []model.Post
+    for rows.Next() {
+        var post model.Post
+        if err := rows.Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+            return nil, err
+        }
+        posts = append(posts, post)
+    }
+
+    if err = rows.Err(); err != nil {
+        return nil, err
+    }
+    return posts, nil
 }
