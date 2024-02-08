@@ -1,6 +1,6 @@
 "use client"
 
-import MainHeader from '@/components/headers/MainHeader';
+
 
 import PostFeed from '@/components/feeds/PostFeed';
 

@@ -1,8 +1,8 @@
 import CreatePost from "../postcreation/CreatePost";
 
-function CreatePostButton() {
+function CreateEventButton() {
     const openModal = () => {
-        const modal = document.getElementById('Modal_Post') as HTMLDialogElement | null;
+        const modal = document.getElementById('Modal_Create_Event') as HTMLDialogElement | null;
         if (modal) {
             modal.showModal();
         }
@@ -11,11 +11,10 @@ function CreatePostButton() {
     return (
         <div>
             {/* Open the modal using document.getElementById('ID').showModal() method */}
-            <button className="btn btn-primary text-white" onClick={openModal}>Create Post</button>
-            <dialog id="Modal_Post" className="modal">
+            <button className="btn btn-primary text-white" onClick={openModal}>Create Event</button>
+            <dialog id="Modal_Create_Event" className="modal">
                 <div className="modal-box" style={{maxWidth:'none', width: '50%', height: '50%'}}>
-                    <h3 className="font-bold text-black text-lg">Write about your day!</h3>
-                    <CreatePost/>
+                    <h3 className="font-bold text-black text-lg">Create an Event</h3>
                     
                 </div>
                 <form method="dialog" className="modal-backdrop">
@@ -26,4 +25,4 @@ function CreatePostButton() {
     )
 }
 
-export default CreatePostButton;
+export default CreateEventButton;

@@ -20,6 +20,13 @@ function ProfileIconDM (){
             console.error('Logout failed');
         }
     };
+ 
+    
+    
+        const profile = () => {
+            router.push('/dashboard/profile/placeholderprofile'); // Redirect to groups page
+        };
+    
 
     return (
 
@@ -32,7 +39,7 @@ function ProfileIconDM (){
             </div>
             {/* Dropdown menu */}
             <ul tabIndex={0} className="menu menu-lg dropdown-content mt-3 z-[1] p-2 shadow bg-primary rounded-box w-52 border-2 border-black">
-                <li className="border-b border-black rounded-box"><a>Profile</a></li>
+                <li onClick={profile}className="border-b border-black rounded-box"><a>Profile</a></li>
                 <li className="border-b border-black rounded-box"><a>Settings</a></li>
                 <li onClick={logout} className="border-b border-black rounded-box"><a>Logout</a></li>
             </ul>
