@@ -137,3 +137,26 @@ func (h *EventHandler) DeleteEventHandler(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+func (h *EventHandler) GetEventsByGroupIDHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	groupIDStr, ok := vars["id"]
+	intGroupID, err := strconv.Atoi(groupIDStr)
+	if err != nil {
+		http.Error(w, "Failed to parse group ID: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		http.Error(w, "Group ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
+
+	events, err := h.eventRepo.GetEventsByGroupID(intGroupID)
+	if err != nil {
+		http.Error(w, "Failed to retrieve events: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(events)
+}

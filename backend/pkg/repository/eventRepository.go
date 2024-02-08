@@ -76,8 +76,8 @@ func (r *EventRepository) GetEventByID(id int) (model.Event, error) {
 // EditEvent updates an event in the database.
 // It returns an error if any.
 func (r *EventRepository) EditEvent(event model.Event) error {
-	query := `UPDATE events SET creator_id = ?, title = ?, description = ?, location = ?, start_time = ?, end_time = ? WHERE id = ?`
-	_, err := r.db.Exec(query, event.CreatorId, event.Title, event.Description, time.Now(), event.Id)
+	query := `UPDATE events SET title = ?, description = ?, location = ?, start_time = ?, end_time = ? WHERE id = ?`
+	_, err := r.db.Exec(query, event.Title, event.Description, time.Now(), event.Id)
 	return err
 }
 
@@ -87,4 +87,33 @@ func (r *EventRepository) DeleteEvent(id int) error {
 	query := `DELETE FROM events WHERE id = ?`
 	_, err := r.db.Exec(query, id)
 	return err
+}
+
+// GetEventsByGroupID retrieves events associated with a specific group ID from the database.
+func (r *EventRepository) GetEventsByGroupID(groupID int) ([]model.Event, error) {
+	query := `
+		SELECT events.*
+		FROM events
+		INNER JOIN group_members ON events.creator_id = group_members.user_id
+		WHERE group_members.group_id = ?
+	`
+
+	rows, err := r.db.Query(query, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []model.Event
+	for rows.Next() {
+		var event model.Event
+		if err := rows.Scan(&event.Id, &event.CreatorId, &event.Title, &event.Description, &event.Location, &event.StartTime, &event.EndTime, &event.CreatedAt); err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return events, nil
 }
