@@ -18,7 +18,7 @@ export default function Home() {
                 router.push('/auth');
             }
             else{
-                router.push('/dashboard');
+                router.push('dashboard');
             }
         })();
     }, []); // Empty dependency array to run only once on mount

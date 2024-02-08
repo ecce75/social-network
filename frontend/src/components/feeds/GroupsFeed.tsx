@@ -1,26 +1,26 @@
 import React from 'react';
-import Post from '../postcreation/Post';
-import CreatePostButtonGroups from '../buttons/CreatePostButtonGroup';
 import GroupSearchCreateButton from '../buttons/GroupSearchCreateButton';
-
+import Group from '../groupcreation/Group';
 
 const GroupsFeed: React.FC = () => {
     return (
         /* Change % for post feed width*/
-        <section style={{ width: '45%', margin: 'auto', backgroundColor: '#e5e7eb', padding: '20px', maxHeight: '110vh', overflowY: 'auto' }}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <GroupSearchCreateButton/>
-                {/* Post Creation Form */}
-                <div style={{ marginBottom: '20px' }}>
-                    
-                </div>
-                {/* Posts */}
-                <div style={{ marginBottom: '20px' }}>
-                    {/* Display Groups*/}
-                    
-                </div>
+        <div>
+            <div>
+                
             </div>
-        </section>
+            <section style={{ width: '45%', margin: 'auto', backgroundColor: '#e5e7eb', padding: '20px', height: '100vh', overflowY: 'auto' }}>
+                
+                <div style={{ marginBottom: '20px' }}>
+                <GroupSearchCreateButton/>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
+                    <Group/>
+                    <Group/>
+                </div>
+
+            </section>
+        </div>
     );
 };
 
