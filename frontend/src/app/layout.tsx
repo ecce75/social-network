@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="en">
       
       <body className={inter.className}>
-        {/* <MainHeader /> */}
+      
         <div style={{
           backgroundImage: `url("${background.src}")`,
           backgroundSize: 'cover',
