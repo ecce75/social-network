@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface PostContentProps {
+interface PostInformationProps {
     title?: string; // New prop for post title
     text?: string;
     pictureUrl?: string;
@@ -9,7 +9,7 @@ interface PostContentProps {
     placeholderPictureUrl?: string;
 }
 
-const PostContent: React.FC<PostContentProps> = ({ title, text, pictureUrl, placeholderText, placeholderTitle, placeholderPictureUrl }) => {
+const PostInformation: React.FC<PostInformationProps> = ({ title, text, pictureUrl, placeholderText, placeholderTitle, placeholderPictureUrl }) => {
     const textColor = 'black'; // Set text color to black
 
     return (
@@ -24,4 +24,4 @@ const PostContent: React.FC<PostContentProps> = ({ title, text, pictureUrl, plac
     );
 };
 
-export default PostContent;
+export default PostInformation;

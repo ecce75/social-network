@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface PostContentProps {
+interface GroupInformationProps {
     title?: string; // New prop for post title
     text?: string;
     pictureUrl?: string;
@@ -9,7 +9,7 @@ interface PostContentProps {
     placeholderPictureUrl?: string;
 }
 
-const GroupContent: React.FC<PostContentProps> = ({ title, text, pictureUrl, placeholderText, placeholderTitle, placeholderPictureUrl }) => {
+const GroupInformation: React.FC<GroupInformationProps> = ({ title, text, pictureUrl, placeholderText, placeholderTitle, placeholderPictureUrl }) => {
     const textColor = 'black'; // Set text color to black
 
     return (
@@ -24,7 +24,7 @@ const GroupContent: React.FC<PostContentProps> = ({ title, text, pictureUrl, pla
             {!pictureUrl && placeholderPictureUrl && (
                 <div className="avatar" style={{ marginRight: '20px' }}>
                     <div className="w-24 rounded-full">
-                        <img src={placeholderPictureUrl} alt="Placeholder Picture" />
+                        <img src={placeholderPictureUrl} alt="Loading" />
                     </div>
                 </div>
             )}
@@ -38,4 +38,4 @@ const GroupContent: React.FC<PostContentProps> = ({ title, text, pictureUrl, pla
     );
 };
 
-export default GroupContent;
+export default GroupInformation;

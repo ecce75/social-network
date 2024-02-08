@@ -23,7 +23,7 @@ function CreatePost() {
             <div className="flex justify-between">
                     <div>
                     {/* Top message box */}
-                    <input type="text" placeholder="Header" className="input mt-2 w-full max-w-sm" />
+                    <input type="text" placeholder="Title" className="input mt-2 w-full max-w-sm" />
                     </div>
                     
                     <div>

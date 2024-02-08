@@ -1,10 +1,10 @@
 import React from 'react';
 import GroupSearchCreateButton from '../buttons/GroupSearchCreateButton';
-import Group from '../groupcreation/Group';
+import GroupTab from '../groups/GroupTab';
 
-const GroupsFeed: React.FC = () => {
+const GroupsNavFeed: React.FC = () => {
     return (
-        /* Change % for post feed width*/
+        /* For page groups, Displays groups and create group*/
         <div>
             <div>
                 
@@ -15,8 +15,8 @@ const GroupsFeed: React.FC = () => {
                 <GroupSearchCreateButton/>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
-                    <Group/>
-                    <Group/>
+                    <GroupTab/>
+                    <GroupTab/>
                 </div>
 
             </section>
@@ -24,4 +24,4 @@ const GroupsFeed: React.FC = () => {
     );
 };
 
-export default GroupsFeed;
+export default GroupsNavFeed;

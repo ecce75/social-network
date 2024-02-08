@@ -1,15 +1,18 @@
 "use client"
-import GroupsFeed from "@/components/feeds/GroupsFeed";
-import MainHeader from "@/components/headers/MainHeader";
 
-export default function Page() {
+import GroupsNavFeed from "@/components/feeds/GroupNavFeed"
+
+
+
+
+export default function Groups() {
     return (       
     
     <div>
     {/* Main Content */}
     <main>
         <section>
-            <GroupsFeed />
+            <GroupsNavFeed/>
         </section>
     </main>
     

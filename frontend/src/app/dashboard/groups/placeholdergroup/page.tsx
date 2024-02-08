@@ -1,13 +1,18 @@
 "use client"
 
-export default function Page() {
+import GroupFeed from "@/components/feeds/GroupFeed"
+
+
+
+
+export default function PlaceholderGroup() {
     return (       
     
     <div>
     {/* Main Content */}
     <main>
         <section>
-            GROUP STUFF
+            <GroupFeed/>
         </section>
     </main>
     
