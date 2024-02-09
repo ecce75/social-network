@@ -70,6 +70,50 @@ func (r *PostRepository) GetAllPostsWithUserIDAccess(userID int) ([]model.Post, 
     return posts, nil
 }
 
+func (r *PostRepository) GetAllUserPosts(userID int) ([]model.Post, error) {
+    query := `SELECT * FROM posts WHERE user_id = ? AND group_id IS NULL`
+    rows, err := r.db.Query(query, userID)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var posts []model.Post
+    for rows.Next() {
+        var post model.Post
+        if err := rows.Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+            return nil, err
+        }
+        posts = append(posts, post)
+    }
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+    return posts, nil
+}
+
+func (r *PostRepository) GetAllUserPublicPosts(userID int) ([]model.Post, error) {
+    query := `SELECT * FROM posts WHERE user_id = ? AND privacy_setting = 'public' AND group_id IS NULL`
+    rows, err := r.db.Query(query, userID)
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
+
+    var posts []model.Post
+    for rows.Next() {
+        var post model.Post
+        if err := rows.Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+            return nil, err
+        }
+        posts = append(posts, post)
+    }
+    if err := rows.Err(); err != nil {
+        return nil, err
+    }
+    return posts, nil
+}
+
 func (r *PostRepository) DeletePost(postID int, userID int) error {
 	query := `DELETE FROM posts WHERE id = ? AND user_id = ?`
 	result, err := r.db.Exec(query, postID, userID)

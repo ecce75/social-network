@@ -34,7 +34,7 @@ func (r *FriendsRepository) AddFriend(userID, friendID int) error {
 }
 
 
-func (r *FriendsRepository) GetFriends(userID int) ([]model.Friend, error) {
+func (r *FriendsRepository) GetFriends(userID int) ([]model.FriendList, error) {
     query := `
         SELECT users.id, users.firstname, users.lastname, users.avatarurl, users.username
         FROM friends
@@ -47,9 +47,9 @@ func (r *FriendsRepository) GetFriends(userID int) ([]model.Friend, error) {
     }
     defer rows.Close()
 
-    var friends []model.Friend
+    var friends []model.FriendList
     for rows.Next() {
-        var friend model.Friend
+        var friend model.FriendList
         if err := rows.Scan(&friend.UserID, &friend.FirstName, &friend.LastName, &friend.AvatarURL, &friend.Username); err != nil {
             return nil, err
         }

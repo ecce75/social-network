@@ -45,3 +45,4 @@ func (r *UserRepository) RegisterUser(data model.RegistrationData) (int64, error
 	}
 	return lastInsertID, nil
 }
+

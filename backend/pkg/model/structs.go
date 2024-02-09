@@ -20,6 +20,17 @@ type User struct {
 	UpdatedAt string
 }
 
+type Profile struct {
+	Id int `json:"id"`
+	Username string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName string `json:"last_name"`
+	DOB string `json:"dob"`
+	AvatarURL string `json:"avatar_url"`
+	About string `json:"about"`
+	CreatedAt string `json:"created_at"`
+}
+
 type LoginData struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -104,24 +115,25 @@ type GroupMember struct {
 	JoinedAt time.Time `json:"joined_at"`
 }
 
-// type Friend struct {
-// 	Id           int       `json:"id"`
-// 	UserId1      int       `json:"user_id_1"`
-// 	UserId2      int       `json:"user_id_2"`
-// 	Status       string    `json:"status"`
-// 	ActionUserId int       `json:"action_user_id"`
-// 	CreatedAt    time.Time `json:"created_at"`
-// 	UpdatedAt    time.Time `json:"updated_at"`
-// }
-
 type Friend struct {
-	UserID     int    `json:"id"`
-    FirstName  string `json:"first_name"`
-    LastName   string `json:"last_name"`
-    AvatarURL  string `json:"avatar_url"`
-    Username   string `json:"username"`
+	Id           int       `json:"id"`
+	UserId1      int       `json:"user_id_1"`
+	UserId2      int       `json:"user_id_2"`
+	Status       string    `json:"status"`
+	ActionUserId int       `json:"action_user_id"`
+	CreatedAt    time.Time `json:"created_at"`
+	UpdatedAt    time.Time `json:"updated_at"`
 }
 
+// type Friend struct {
+// 	UserID     int    `json:"id"`
+//     FirstName  string `json:"first_name"`
+//     LastName   string `json:"last_name"`
+//     AvatarURL  string `json:"avatar_url"`
+//     Username   string `json:"username"`
+// }
+
+// Required information for the friends list
 type FriendList struct {
 	UserID     int    `json:"id"`
     FirstName  string `json:"first_name"`

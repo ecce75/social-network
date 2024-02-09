@@ -197,7 +197,7 @@ func (h *FriendHandler) GetFriendsHandler(w http.ResponseWriter, r *http.Request
         // w.Header().Set("Content-Type", "application/json")
         // json.NewEncoder(w).Encode(map[string]string{"message": "No friends found"})
         // Sample friends
-        friends := []model.Friend{
+        friends := []model.FriendList{
             {
                 UserID:        1,
                 FirstName: "John",
