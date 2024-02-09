@@ -71,12 +71,13 @@ func Router(mux *mux.Router, db *sql.DB) {
     mux.HandleFunc("/notifications/{id}", handler.MarkNotificationAsReadHandler).Methods("PUT")
 
 	// TODO: Friends
-	mux.HandleFunc("/friends/request", handler.SendFriendRequestHandler).Methods("POST")
-	mux.HandleFunc("/friends/accept", handler.AcceptFriendRequestHandler).Methods("POST")
-	mux.HandleFunc("/friends/decline", handler.DeclineFriendRequestHandler).Methods("POST")
-	mux.HandleFunc("/friends/block", handler.BlockUserHandler).Methods("POST")
-	mux.HandleFunc("/friends/unblock", handler.UnblockUserHandler).Methods("POST")
-	mux.HandleFunc("/friends", handler.GetFriendsHandler).Methods("GET")
+	friendHandler := handler.NewFriendHandler(repository.NewFriendsRepository(db), sessionRepository)
+	mux.HandleFunc("/friends/request", friendHandler.SendFriendRequestHandler).Methods("POST")
+	mux.HandleFunc("/friends/accept", friendHandler.AcceptFriendRequestHandler).Methods("POST")
+	mux.HandleFunc("/friends/decline", friendHandler.DeclineFriendRequestHandler).Methods("POST")
+	mux.HandleFunc("/friends/block", friendHandler.BlockUserHandler).Methods("POST")
+	mux.HandleFunc("/friends/unblock", friendHandler.UnblockUserHandler).Methods("POST")
+	mux.HandleFunc("/friends", friendHandler.GetFriendsHandler)
 
     // CORS
     corsOptions := cors.New(cors.Options{

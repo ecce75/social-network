@@ -1,5 +1,4 @@
 import React from 'react';
-import FriendsButton from '../buttons/FriendsButton';
 import EventsButton from '../buttons/EventsButton';
 import NavGroupsButton from '../buttons/NavGroupsButton';
 
