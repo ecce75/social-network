@@ -1,6 +1,6 @@
 import React from 'react';
 
-interface GroupInformationProps {
+interface ProfileInformationProps {
     title?: string; // New prop for post title
     text?: string;
     pictureUrl?: string;
@@ -9,7 +9,7 @@ interface GroupInformationProps {
     placeholderPictureUrl?: string;
 }
 
-const GroupInformation: React.FC<GroupInformationProps> = ({ title, text, pictureUrl, placeholderText, placeholderTitle, placeholderPictureUrl }) => {
+const ProfileInformation: React.FC<ProfileInformationProps> = ({ title, text, pictureUrl, placeholderText, placeholderTitle, placeholderPictureUrl }) => {
     const textColor = 'white'; // Set text color to black
 
     return (
@@ -38,4 +38,4 @@ const GroupInformation: React.FC<GroupInformationProps> = ({ title, text, pictur
     );
 };
 
-export default GroupInformation;
+export default ProfileInformation;

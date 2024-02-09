@@ -30,7 +30,7 @@ func (r *SessionRepository) GetSessionBySessionToken(sessionToken string) (model
 	var session model.Session
 	err := r.db.QueryRow(`SELECT userID, expiresAt FROM sessions WHERE sessionToken = ?`, sessionToken).Scan(&session.UserID, &session.ExpiresAt)
 	if err != nil {
-		fmt.Println("Error querying session: ", err)
+		fmt.Println("Error querying session1: ", err)
 		return model.Session{}, err
 	}
 	return session, nil
@@ -40,7 +40,7 @@ func (r *SessionRepository) GetUserIDFromSessionToken(sessionToken string) (int,
 	var userID int
 	err := r.db.QueryRow(`SELECT userID FROM sessions WHERE sessionToken = ?`, sessionToken).Scan(&userID)
 	if err != nil {
-		fmt.Println("Error querying session: ", err)
+		fmt.Println("Error querying session2: ", err)
 		return 0, err
 	}
 	return userID, nil

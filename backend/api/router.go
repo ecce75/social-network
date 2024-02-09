@@ -68,13 +68,14 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/notifications/{id}", handler.GetNotificationByIDHandler).Methods("GET")
 	mux.HandleFunc("/notifications/{id}", handler.MarkNotificationAsReadHandler).Methods("PUT")
 
-	// Friends
+
 	friendHandler := handler.NewFriendHandler(repository.NewFriendsRepository(db), sessionRepository)
 	mux.HandleFunc("/friends/request", friendHandler.SendFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/accept", friendHandler.AcceptFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/decline", friendHandler.DeclineFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/block", friendHandler.BlockUserHandler).Methods("POST")
 	mux.HandleFunc("/friends/unblock", friendHandler.UnblockUserHandler).Methods("POST")
+
 	mux.HandleFunc("/friends", friendHandler.GetFriendsHandler).Methods("GET")
 
 	// CORS

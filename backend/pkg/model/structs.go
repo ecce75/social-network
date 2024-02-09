@@ -104,14 +104,22 @@ type GroupMember struct {
 	JoinedAt time.Time `json:"joined_at"`
 }
 
+// type Friend struct {
+// 	Id           int       `json:"id"`
+// 	UserId1      int       `json:"user_id_1"`
+// 	UserId2      int       `json:"user_id_2"`
+// 	Status       string    `json:"status"`
+// 	ActionUserId int       `json:"action_user_id"`
+// 	CreatedAt    time.Time `json:"created_at"`
+// 	UpdatedAt    time.Time `json:"updated_at"`
+// }
+
 type Friend struct {
-	Id           int       `json:"id"`
-	UserId1      int       `json:"user_id_1"`
-	UserId2      int       `json:"user_id_2"`
-	Status       string    `json:"status"`
-	ActionUserId int       `json:"action_user_id"`
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	UserID     int    `json:"id"`
+    FirstName  string `json:"first_name"`
+    LastName   string `json:"last_name"`
+    AvatarURL  string `json:"avatar_url"`
+    Username   string `json:"username"`
 }
 
 type FriendList struct {
