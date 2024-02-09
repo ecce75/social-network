@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"backend/pkg/model"
 	"backend/pkg/repository"
 	"backend/util"
 	"database/sql"
