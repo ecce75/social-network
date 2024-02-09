@@ -16,14 +16,14 @@ const GroupInformation: React.FC<GroupInformationProps> = ({ title, text, pictur
         <div style={{ display: 'flex', alignItems: 'center' }}>
             {pictureUrl && (
                 <div className="avatar" style={{ marginRight: '20px' }}>
-                    <div className="w-24 rounded-full">
+                    <div className="w-24 sm:w-10 md:b-15 lg:w-24 rounded-full">
                         <img src={pictureUrl} alt="Uploaded Picture" />
                     </div>
                 </div>
             )}
             {!pictureUrl && placeholderPictureUrl && (
                 <div className="avatar" style={{ marginRight: '20px' }}>
-                    <div className="w-24 rounded-full">
+                    <div className="w-24 sm:w-11 md:b-12 lg:w-24 rounded-full">
                         <img src={placeholderPictureUrl} alt="Loading" />
                     </div>
                 </div>
