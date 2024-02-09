@@ -1,18 +1,18 @@
 "use client"
 
-import GroupsNavFeed from "@/components/feeds/GroupNavFeed"
+import GroupFeed from "@/components/feeds/GroupFeed"
 
 
 
 
-export default function Groups() {
+export default function PlaceholderGroup() {
     return (       
     
     <div>
     {/* Main Content */}
     <main>
         <section>
-            <GroupsNavFeed/>
+            <GroupFeed/>
         </section>
     </main>
     

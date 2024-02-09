@@ -1,7 +1,8 @@
 import React from 'react';
-import CommentText from '../commentstuff/CommentText';
-import CommentBox from '../commentstuff/CommentBox';
-import PostContent from './PostContent';
+import PostInformation from './PostInfromation';
+import CommentText from '../comments/CommentText';
+import CommentBox from '../comments/CommentBox';
+
 
 interface PostProps {
     title?: string; // New prop for post title
@@ -13,7 +14,7 @@ const Post: React.FC<PostProps> = ({ title, text, pictureUrl }) => {
     return (
         <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
             {/* Post Content */}
-            <PostContent
+            <PostInformation
                 title={title} // Pass title prop to PostContent
                 text={text}
                 pictureUrl={pictureUrl}

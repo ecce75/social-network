@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 
 const inter = Inter({ subsets: ['latin'] })
 const MainHeader = dynamic(() => import('@/components/headers/MainHeader'), { ssr: false });
-import AuthLayout from './auth/layout';
+
 
 export const metadata: Metadata = {
   title: 'Iriesphere',

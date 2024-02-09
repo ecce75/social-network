@@ -1,9 +1,6 @@
-import Image from "next/image"
-import rastaLionImage from '../../../public/assets/rasta_lion.png';
 import FriendsButton from "../buttons/FriendsButton";
 import NotificationButton from "../buttons/NotificationButton";
 import ProfileIconDM from "../buttons/ProfileIconDropdownMenu";
-import RastaIcon from "../icons/RastaIcon";
 import LeftNavBar from "../leftnavbar/LeftNavBar";
 import IrieSphereButton from "../buttons/IriesphereButton";
 
