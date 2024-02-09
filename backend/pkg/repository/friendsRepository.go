@@ -33,6 +33,7 @@ func (r *FriendsRepository) AddFriend(userID, friendID int) error {
     return nil
 }
 
+
 func (r *FriendsRepository) GetFriends(userID int) ([]model.Friend, error) {
     query := `
         SELECT users.id, users.firstname, users.lastname, users.avatarurl, users.username
