@@ -2,13 +2,14 @@
 
 
 import PostFeed from '@/components/feeds/PostFeed';
+import ProfileFeed from '@/components/feeds/ProfileFeed';
 
 export default function placeholderprofile() {
 
     return (
 
         <div>
-                asdasdsa
+               <ProfileFeed/>
             
         </div>
     );
