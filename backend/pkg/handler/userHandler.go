@@ -69,8 +69,26 @@ func (h *UserHandler) UserRegisterHandler(w http.ResponseWriter, r *http.Request
 	// Send a success response
 	response := map[string]interface{}{
 		"message": "User registration successful",
-		"userID": userID, // TODO: remove in production
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func (h *UserHandler) GetUserProfileByIDHandler(w http.ResponseWriter, r *http.Request) {
+	// Get the user ID from the URL
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Invalid user ID: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Get the user profile from the database
+	profile, err := h.userRepo.GetUserProfileByID(userID)
+	if err != nil {
+		http.Error(w, "Error getting user profile: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(profile)
 }
