@@ -21,13 +21,13 @@ type User struct {
 }
 
 type Profile struct {
-	Id int `json:"id"`
-	Username string `json:"username"`
+	Id        int    `json:"id"`
+	Username  string `json:"username"`
 	FirstName string `json:"first_name"`
-	LastName string `json:"last_name"`
-	DOB string `json:"dob"`
+	LastName  string `json:"last_name"`
+	DOB       string `json:"dob"`
 	AvatarURL string `json:"avatar_url"`
-	About string `json:"about"`
+	About     string `json:"about"`
 	CreatedAt string `json:"created_at"`
 }
 
@@ -125,21 +125,13 @@ type Friend struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-// type Friend struct {
-// 	UserID     int    `json:"id"`
-//     FirstName  string `json:"first_name"`
-//     LastName   string `json:"last_name"`
-//     AvatarURL  string `json:"avatar_url"`
-//     Username   string `json:"username"`
-// }
-
 // Required information for the friends list
 type FriendList struct {
-	UserID     int    `json:"id"`
-    FirstName  string `json:"first_name"`
-    LastName   string `json:"last_name"`
-    AvatarURL  string `json:"avatar_url"`
-    Username   string `json:"username"`
+	UserID    int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	AvatarURL string `json:"avatar_url"`
+	Username  string `json:"username"`
 }
 
 type Notification struct {

@@ -46,3 +46,15 @@ func (r *UserRepository) RegisterUser(data model.RegistrationData) (int64, error
 	return lastInsertID, nil
 }
 
+func (r *UserRepository) GetUserProfileByID(id int) (model.Profile, error) {
+	query := "SELECT id, username, first_name, last_name, date_of_birth, avatar_url, about_me, created_at FROM users WHERE id = ?"
+	var profile model.Profile
+	err := r.db.QueryRow(query, id).Scan(&profile.Id, &profile.Username, &profile.FirstName, &profile.LastName, &profile.DOB, &profile.AvatarURL, &profile.About, &profile.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("User not found in database")
+		}
+		return model.Profile{}, err
+	}
+	return profile, nil
+}
