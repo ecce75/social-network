@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"runtime"
+	"strings"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/sqlite"
@@ -11,42 +13,47 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+func createURL(path, prefix string) string {
+	urlPath := strings.Replace(path, "\\", "/", -1)
+	if runtime.GOOS == "windows" && strings.Contains(urlPath, ":/") {
+		urlPath = "/" + urlPath
+	}
+	return prefix + "://" + urlPath
+}
+
 func ConnectAndMigrate(dbPath string, migrationsPath string) (*sql.DB, error) {
-    // Adjusted for clarity in logging
-    fmt.Printf("Connecting to SQLite database at path: %s\n", dbPath)
+	fmt.Printf("Connecting to SQLite database at path: %s\n", dbPath)
 
-    db, err := sql.Open("sqlite3", dbPath)
-    if err != nil {
-        fmt.Println("Could not connect to SQLite database:", err)
-        return nil, err
-    }
+	db, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		fmt.Println("Could not connect to SQLite database:", err)
+		return nil, err
+	}
 
-    err = db.Ping()
+	err = db.Ping()
 	if err != nil {
 		log.Fatal("Cannot ping db!")
 	}
 
-    fmt.Println("Connected to SQLite database successfully.")
+	fmt.Println("Connected to SQLite database successfully.")
 
-    // Ensure migrationsPath is also correctly set relative to your working directory
-    fmt.Printf("Applying migrations from path: %s\n", migrationsPath)
+	migrationsURL := createURL(migrationsPath, "file")
+	dbURL := createURL(dbPath, "sqlite")
 
-    m, err := migrate.New(
-        "file://"+migrationsPath,
-        "sqlite://"+dbPath,
-    )
-    if err != nil {
-        fmt.Println("Failed to prepare migrations:", err)
-        return nil, err
-    }
+	fmt.Printf("Applying migrations from path: %s\n", migrationsURL)
 
-    // Switch to m.Down() to drop all tables and then up to create them
-    err = m.Up()
-    if err != nil && err != migrate.ErrNoChange {
-        fmt.Println("Failed to apply migrations:", err)
-        return nil, err
-    }
+	m, err := migrate.New(migrationsURL, dbURL)
+	if err != nil {
+		fmt.Println("Failed to prepare migrations:", err)
+		return nil, err
+	}
 
-    fmt.Println("Migrations applied successfully.")
-    return db, nil
+	err = m.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		fmt.Println("Failed to apply migrations:", err)
+		return nil, err
+	}
+
+	fmt.Println("Migrations applied successfully.")
+	return db, nil
 }
