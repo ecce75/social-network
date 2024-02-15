@@ -1,4 +1,3 @@
-import FriendsButton from "../buttons/FriendsButton";
 import NotificationButton from "../buttons/NotificationButton";
 import ProfileIconDM from "../buttons/ProfileIconDropdownMenu";
 import LeftNavBar from "../leftnavbar/LeftNavBar";
@@ -15,7 +14,7 @@ function MainHeader() {
         </div>
         <div className="navbar-end">
             <NotificationButton />
-            <FriendsButton />
+            
             <ProfileIconDM />
         </div>
         </div>

@@ -1,6 +1,7 @@
 "use client"
 import { useState, useEffect } from "react";
 import { useAuth } from "../../util/utils";
+import UserTab from "./UserTab";
 
 interface FriendProps {
     id: number;
@@ -46,7 +47,10 @@ export default function FriendsList() {
                 )
                 :
                 //TODO; Add a button to add friends
-                <p>No friends found</p>
+                <div>
+                <UserTab/>
+                <UserTab/>
+                </div>
             }
         </>
     );

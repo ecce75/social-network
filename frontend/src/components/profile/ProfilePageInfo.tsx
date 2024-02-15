@@ -18,6 +18,8 @@ const ProfilePageInfo: React.FC<ProfilePageInfoProps> = ({ title, text, pictureU
                     text={text}
                     pictureUrl={pictureUrl}
                     placeholderTitle="John Doe"
+
+                    
                     placeholderText="Mis sa nuhid mu profiilil"
                     placeholderPictureUrl="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTHH7mMDHH0S0oWu5HT4FiCTd900_jix22KWhOj6VDlww&s"
                 />

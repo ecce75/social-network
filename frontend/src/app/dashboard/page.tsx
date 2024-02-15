@@ -1,6 +1,5 @@
 "use client"
 
-import MainHeader from '@/components/headers/MainHeader';
 import {useAuth} from '../../util/utils';
 import PostFeed from '@/components/feeds/PostFeed';
 import { useRouter } from 'next/navigation';

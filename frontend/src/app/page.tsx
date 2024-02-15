@@ -4,10 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 // Your authentication hook or context
 import {useAuth}  from '../util/utils';
-import MainHeader from '@/components/headers/MainHeader';
-import LeftNavBar from '@/components/leftnavbar/LeftNavBar'
-import background from '../../public/assets/background.png';
-import PostFeed from '@/components/feeds/PostFeed';
+
 
 export default function Home() {
     const router = useRouter();

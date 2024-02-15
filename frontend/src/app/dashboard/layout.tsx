@@ -6,6 +6,7 @@ import Footer from '@/components/headers/Footer';
 
 
 
+
 export default function DashboardLayout({
     children,
   }: {
@@ -18,6 +19,7 @@ export default function DashboardLayout({
           flex: 1,
 
       }}>
+        
         <MainHeader/>
         {children}
         
