@@ -47,9 +47,9 @@ func (r *UserRepository) RegisterUser(data model.RegistrationData) (int64, error
 }
 
 func (r *UserRepository) GetUserProfileByID(id int) (model.Profile, error) {
-	query := "SELECT id, username, first_name, last_name, date_of_birth, avatar_url, about_me, created_at FROM users WHERE id = ?"
+	query := "SELECT id, username, first_name, last_name, date_of_birth, avatar_url, about_me, profile, created_at FROM users WHERE id = ?"
 	var profile model.Profile
-	err := r.db.QueryRow(query, id).Scan(&profile.Id, &profile.Username, &profile.FirstName, &profile.LastName, &profile.DOB, &profile.AvatarURL, &profile.About, &profile.CreatedAt)
+	err := r.db.QueryRow(query, id).Scan(&profile.Id, &profile.Username, &profile.FirstName, &profile.LastName, &profile.DOB, &profile.AvatarURL, &profile.About, &profile.ProfileSetting, &profile.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			fmt.Println("User not found in database")
@@ -57,4 +57,14 @@ func (r *UserRepository) GetUserProfileByID(id int) (model.Profile, error) {
 		return model.Profile{}, err
 	}
 	return profile, nil
+}
+
+func (r *UserRepository) UpdateUserProfile(id int, data model.RegistrationData) error {
+	_, err := r.db.Exec("UPDATE users SET username = ?, email = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, avatar_url = ?, about_me = ? WHERE id = ?",
+	data.Username, data.Email, data.Password, data.FirstName, data.LastName, data.DOB, data.AvatarURL, data.About, id)
+	if err != nil {
+		fmt.Println("Error updating user profile in database")
+		return err
+	}
+	return nil
 }

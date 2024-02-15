@@ -15,7 +15,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	sessionRepository := repository.NewSessionRepository(db)
     friendsRepository := repository.NewFriendsRepository(db)
 
-	userHandler := handler.NewUserHandler(repository.NewUserRepository(db), sessionRepository)
+	userHandler := handler.NewUserHandler(repository.NewUserRepository(db), sessionRepository, friendsRepository)
 	mux.HandleFunc("/api/users/register", userHandler.UserRegisterHandler).Methods("POST")
 	// User login and logout
 	mux.HandleFunc("/api/users/logout", handler.LogoutHandler).Methods("POST")
@@ -33,6 +33,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	
 	// Profile
 	mux.HandleFunc("/profile/users/{id}", userHandler.GetUserProfileByIDHandler).Methods("GET")
+	mux.HandleFunc("/profile/users/{id}", userHandler.EditUserProfileHandler).Methods("PUT")
 	// Profile feed, all posts by user
 	mux.HandleFunc("/profile/posts/{id}", postHandler.GetAllUserPostsHandler).Methods("GET")
 
