@@ -13,21 +13,28 @@ import (
 func Router(mux *mux.Router, db *sql.DB) {
 	// User registration requires input in the form like RegistrationData struct at /pkg/model/stucts.go
 	sessionRepository := repository.NewSessionRepository(db)
+    friendsRepository := repository.NewFriendsRepository(db)
+
 	userHandler := handler.NewUserHandler(repository.NewUserRepository(db), sessionRepository)
 	mux.HandleFunc("/api/users/register", userHandler.UserRegisterHandler).Methods("POST")
 	// User login and logout
 	mux.HandleFunc("/api/users/logout", handler.LogoutHandler).Methods("POST")
 	mux.HandleFunc("/api/users/login", userHandler.LoginHandler).Methods("POST")
 	mux.HandleFunc("/api/users/check-auth", userHandler.CheckAuth)
-
+	
 	// Posts
-	postHandler := handler.NewPostHandler(repository.NewPostRepository(db), sessionRepository)
+	postHandler := handler.NewPostHandler(repository.NewPostRepository(db), sessionRepository, friendsRepository)
 	mux.HandleFunc("/post", postHandler.GetAllPostsHandler).Methods("GET") // Main feed, all public posts + user groups posts
 	mux.HandleFunc("/post", postHandler.CreatePostHandler).Methods("POST")
 	//mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
 	mux.HandleFunc("/post/{id}", postHandler.EditPostHandler).Methods("PUT")      // Edit a post
 	mux.HandleFunc("/post/{id}", postHandler.DeletePostHandler).Methods("DELETE") // Delete a post
 	mux.HandleFunc("/groups/posts/{id}", postHandler.GetPostsByGroupIDHandler).Methods("GET")
+	
+	// Profile
+	mux.HandleFunc("/profile/users/{id}", userHandler.GetUserProfileByIDHandler).Methods("GET")
+	// Profile feed, all posts by user
+	mux.HandleFunc("/profile/posts/{id}", postHandler.GetAllUserPostsHandler).Methods("GET")
 
 	// Comments
 	commentHandler := handler.NewCommentHandler(repository.NewCommentRepository(db), sessionRepository)
@@ -69,7 +76,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/notifications/{id}", handler.MarkNotificationAsReadHandler).Methods("PUT")
 
 
-	friendHandler := handler.NewFriendHandler(repository.NewFriendsRepository(db), sessionRepository)
+	friendHandler := handler.NewFriendHandler(friendsRepository, sessionRepository)
 	mux.HandleFunc("/friends/request", friendHandler.SendFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/accept", friendHandler.AcceptFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/decline", friendHandler.DeclineFriendRequestHandler).Methods("POST")

@@ -9,6 +9,7 @@
   - [Comments](#comments)
   - [Groups](#groups)
   - [Friends](#friends)
+  - [Profile](#profile)
 - [Backend contribution](#backend-contribution)
 - [Future Work](#future-work)
 - [Extra](#extra)
@@ -432,6 +433,50 @@ CREATE TABLE IF NOT EXISTS friends (
     FOREIGN KEY (user_id2) REFERENCES users(id),
     FOREIGN KEY (action_user_id) REFERENCES users(id)
 );
+```
+
+---
+
+### Profile
+
+The Profile functionality allows for the retrieval of user profile information. It supports operations such as getting a user's profile and getting all posts by a user.
+
+- **Get User Profile:** (GET) `/profile/users/{id}` - Retrieves the profile of a user by their ID.
+- **Get All User Posts:** (GET) `/profile/posts/{id}` - Retrieves all posts made by a user by their ID.
+
+---
+
+```go
+mux.HandleFunc("/profile/users/{id}", userHandler.GetUserProfileByIDHandler).Methods("GET")
+```
+
+This endpoint retrieves the profile of a user by their ID. It requires the ID of the user as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/profile/posts/{id}", postHandler.GetAllUserPostsHandler).Methods("GET")
+```
+
+This endpoint retrieves all posts made by a user by their ID. It requires the ID of the user as a URL parameter.
+It returns users public posts and private posts if the requesting user is friends with the target user.
+Doesn't retrieve group posts.
+
+---
+
+#### Profile related code
+
+```go
+type Profile struct {
+    Id        int    `json:"id"`
+    Username  string `json:"username"`
+    FirstName string `json:"first_name"`
+    LastName  string `json:"last_name"`
+    DOB       string `json:"dob"`
+    AvatarURL string `json:"avatar_url"`
+    About     string `json:"about"`
+    CreatedAt string `json:"created_at"`
+}
 ```
 
 ---
