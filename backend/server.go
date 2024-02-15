@@ -7,12 +7,13 @@ import (
 	"net/http"
     "backend/api"
 	"github.com/gorilla/mux"
+    "path/filepath"
 )
 
 func main() {
     mux := mux.NewRouter()
-	dbPath := "./pkg/db/database.db"
-    migrationsPath := "pkg/db/migrations/sqlite"
+    dbPath := filepath.Join(".", "pkg", "db", "database.db")
+    migrationsPath := filepath.Join("pkg", "db", "migrations", "sqlite")
 
     // Connect to the database and apply migrations
     db, err := sqlite.ConnectAndMigrate(dbPath, migrationsPath)
