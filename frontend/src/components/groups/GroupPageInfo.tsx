@@ -3,6 +3,7 @@ import GroupInformation from './GroupInformation';
 import JoinRequestsButton from '../buttons/JoinRequestsButton';
 import InviteGroupButton from '../buttons/InviteGroupButton';
 import Post from '../postcreation/Post';
+import UserTab from '../friends/UserTab';
 
 interface GroupPageInfoProps {
     title?: string; // New prop for post title
@@ -41,7 +42,9 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({ title, text, pictureUrl }
                 {/* List */}
                 <ul style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
                     {/* Map through the list of people and render each item */}
-                    
+                    <UserTab/>
+                    <UserTab/>
+
                 </ul>
             </div>
         </div>

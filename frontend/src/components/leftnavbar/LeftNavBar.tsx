@@ -4,7 +4,7 @@ import NavGroupsButton from '../buttons/NavGroupsButton';
 
 function LeftNavBar() {
   return (
-    <div className="drawer">
+    <div className="drawer" style={{ zIndex: 9999 }}>
       <input id="my-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content">
         <label htmlFor="my-drawer" className="btn bg-secondary swap swap-rotate border-b border-black round">

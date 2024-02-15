@@ -1,8 +1,5 @@
 "use client"
 
-
-import PostFeed from '@/components/feeds/PostFeed';
-
 export default function profile() {
 
     return (
