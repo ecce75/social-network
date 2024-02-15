@@ -60,8 +60,8 @@ func (r *UserRepository) GetUserProfileByID(id int) (model.Profile, error) {
 }
 
 func (r *UserRepository) UpdateUserProfile(id int, data model.RegistrationData) error {
-	_, err := r.db.Exec("UPDATE users SET username = ?, email = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, avatar_url = ?, about_me = ? WHERE id = ?",
-	data.Username, data.Email, data.Password, data.FirstName, data.LastName, data.DOB, data.AvatarURL, data.About, id)
+	_, err := r.db.Exec("UPDATE users SET username = ?, email = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, avatar_url = ?, about_me = ?, profile = ? WHERE id = ?",
+	data.Username, data.Email, data.Password, data.FirstName, data.LastName, data.DOB, data.AvatarURL, data.About, data.ProfileSetting, id)
 	if err != nil {
 		fmt.Println("Error updating user profile in database")
 		return err
