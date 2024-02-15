@@ -21,14 +21,15 @@ type User struct {
 }
 
 type Profile struct {
-	Id        int    `json:"id"`
-	Username  string `json:"username"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	DOB       string `json:"dob"`
-	AvatarURL string `json:"avatar_url"`
-	About     string `json:"about"`
-	CreatedAt string `json:"created_at"`
+	Id             int    `json:"id"`
+	Username       string `json:"username"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	DOB            string `json:"dob"`
+	AvatarURL      string `json:"avatar_url"`
+	About          string `json:"about"`
+	ProfileSetting string `json:"profile_setting"`
+	CreatedAt      string `json:"created_at"`
 }
 
 type LoginData struct {
@@ -37,14 +38,15 @@ type LoginData struct {
 }
 
 type RegistrationData struct {
-	Username  string `json:"username"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	DOB       string `json:"dob"`
-	AvatarURL string `json:"avatar_url,omitempty"`
-	About     string `json:"about,omitempty"`
+	Username       string `json:"username"`
+	Email          string `json:"email"`
+	Password       string `json:"password"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	DOB            string `json:"dob"`
+	AvatarURL      string `json:"avatar_url,omitempty"`
+	About          string `json:"about,omitempty"`
+	ProfileSetting string `json:"profile_setting,omitempty"`
 }
 
 type AuthResponse struct {

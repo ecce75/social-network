@@ -443,6 +443,7 @@ The Profile functionality allows for the retrieval of user profile information. 
 
 - **Get User Profile:** (GET) `/profile/users/{id}` - Retrieves the profile of a user by their ID.
 - **Get All User Posts:** (GET) `/profile/posts/{id}` - Retrieves all posts made by a user by their ID.
+- **Edit User Profile:** (PUT) `/profile/users/{id}` - Update the authenticated user profile.
 
 ---
 
@@ -464,6 +465,28 @@ Doesn't retrieve group posts.
 
 ---
 
+```go
+mux.HandleFunc("/profile/users/{id}", userHandler.EditUserProfileHandler).Methods("PUT")
+```
+
+This endpoint updates the authenticated user profile by userid from cookie. Introduced ProfileSetting field to RegistrationData struct.
+
+```go
+type RegistrationData struct {
+  Username       string `json:"username"`
+  Email          string `json:"email"`
+  Password       string `json:"password"`
+  FirstName      string `json:"first_name"`
+  LastName       string `json:"last_name"`
+  DOB            string `json:"dob"`
+  AvatarURL      string `json:"avatar_url,omitempty"`
+  About          string `json:"about,omitempty"`
+  ProfileSetting string `json:"profile_setting,omitempty"`
+}
+```
+
+---
+
 #### Profile related code
 
 ```go
@@ -477,6 +500,25 @@ type Profile struct {
     About     string `json:"about"`
     CreatedAt string `json:"created_at"`
 }
+```
+
+User handlers formvalues:
+
+```go
+regData.Username = r.FormValue("username")
+regData.Email = r.FormValue("email")
+regData.Password = r.FormValue("password")
+regData.FirstName = r.FormValue("first_name")
+regData.LastName = r.FormValue("last_name")
+regData.DOB = r.FormValue("dob")
+regData.About = r.FormValue("about")
+regData.ProfileSetting = r.FormValue("profile_setting")
+```
+
+User table:
+
+```sql
+profile TEXT NOT NULL CHECK(profile IN ('public', 'private')) DEFAULT 'public',
 ```
 
 ---
