@@ -52,7 +52,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	json.NewEncoder(w).Encode(response)
 }
 
-func (h *CommentHandler) GetCommentByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
+func (h *CommentHandler) GetCommentsByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
 	var id string
 
 	decoder := json.NewDecoder(r.Body)

@@ -8,6 +8,8 @@
   - [Posts](#posts)
   - [Comments](#comments)
   - [Groups](#groups)
+  - [Friends](#friends)
+  - [Profile](#profile)
 - [Backend contribution](#backend-contribution)
 - [Future Work](#future-work)
 - [Extra](#extra)
@@ -41,8 +43,6 @@ The backend is structured into several packages, each with a specific purpose:
 │   │       └── sqlite.go
 │   ├── handler
 │   │   └── # Handlers do the magic of organizing everything
-│   ├── middleware
-│   │   └── # Middleware for apis
 │   ├── model
 │   │   └── # Data structures(structs)
 │   └── repository
@@ -279,11 +279,11 @@ The Groups functionality allows for the creation, management, and deletion of us
 
 #### Group Endpoints
 
-- **Create Group:** POST /groups - Allows authenticated users to create a new group.
-- **Get All Groups:** GET /groups - Retrieves all groups.
-- **Get Group by ID:** GET /groups/{id} - Retrieves details of a specific group by its ID.
-- **Edit Group:** PUT /groups/{id} - Allows editing of group details.
-- **Delete Group:** DELETE /groups/{id} - Deletes a group by its ID.
+- **Create Group:** (POST) `/groups` - Allows authenticated users to create a new group.
+- **Get All Groups:** (GET) `/groups` - Retrieves all groups.
+- **Get Group by ID:** (GET) `/groups/{id}` - Retrieves details of a specific group by its ID.
+- **Edit Group:** (PUT) `/groups/{id}` - Allows editing of group details.
+- **Delete Group:** (DELETE) `/groups/{id}` - Deletes a group by its ID.
 
 ---
 
@@ -291,12 +291,12 @@ The Groups functionality allows for the creation, management, and deletion of us
 
 #### Group Membership and Invitations
 
-- **Invite Group Member:** POST /invitations - Enables group admins to send invitations to users.
-- **Approve Group Membership:** PUT /invitations/approve/{id} - Allows group admins to approve membership requests.
-- **Decline Group Membership:** PUT /invitations/{id} - Used by admins to decline membership requests or by users to decline invitations.
-- **Request Group Membership:** POST /invitations/request/{id} - Allows users to request membership to a group.
-- **Accept Group Invitation:** PUT /invitations/{id} - Allows users to accept group invitations.
-- **Remove Group Member:** DELETE /groups/{groupId}/members/{userId} - Admins can remove users from their group.
+- **Invite Group Member:** (POST) `/invitations` - Enables group admins to send invitations to users.
+- **Approve Group Membership:** (PUT) `/invitations/approve/{id}` - Allows group admins to approve membership requests.
+- **Decline Group Membership:** (PUT) `/invitations/{id}` - Used by admins to decline membership requests or by users to decline invitations.
+- **Request Group Membership:** (POST) `/invitations/request/{id}` - Allows users to request membership to a group.
+- **Accept Group Invitation:** (PUT) `/invitations/{id}` - Allows users to accept group invitations.
+- **Remove Group Member:** (DELETE) `/groups/{groupId}/members/{userId}` - Admins can remove users from their group.
 
 ---
 
@@ -335,6 +335,350 @@ type GroupMember struct {
 
 ---
 
+### Friends
+
+The Friends functionality allows for the management of friend relationships between users. It supports operations such as sending friend requests, accepting friend requests, declining friend requests, blocking and unblocking users, and retrieving a user's friends.
+
+**Send Friend Request:** (POST) `/friends/{id}` - Allows authenticated users to send a friend request to another user.
+**Accept Friend Request:** (PUT) `/friends/{id}/accept` - Allows users to accept a friend request from another user.
+**Decline Friend Request:** (PUT) `/friends/{id}/decline` - Allows users to decline a friend request from another user.
+**Block User:** (PUT) `/friends/{id}/block` - Allows users to block another user.
+**Unblock User:** (PUT) `/friends/{id}/unblock` - Allows users to unblock a user they have previously blocked.
+**Get Friends:** (GET) `/friends` - Retrieves all friends of the authenticated user.
+
+The friend request works by friends table field status(accepted, pending, declined, blocked). The handler layer uses the status field to handle different actions based on the status of the friend request.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}", handler.SendFriendRequestHandler).Methods("POST")
+```
+
+This endpoint allows an authenticated user to send a friend request to another user. It requires the ID of the user to send the request to as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}/accept", handler.AcceptFriendRequestHandler).Methods("PUT")
+```
+
+This endpoint allows a user to accept a friend request from another user. It requires the ID of the user who sent the request as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}/decline", handler.DeclineFriendRequestHandler).Methods("PUT")
+```
+
+This endpoint allows a user to decline a friend request from another user. It requires the ID of the user who sent the request as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}/block", handler.BlockUserHandler).Methods("PUT")
+```
+
+This endpoint allows a user to block another user. It requires the ID of the user to block as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends/{id}/unblock", handler.UnblockUserHandler).Methods("PUT")
+```
+
+This endpoint allows a user to unblock a user they have previously blocked. It requires the ID of the user to unblock as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/friends", handler.GetFriendsHandler).Methods("GET")
+```
+
+This endpoint retrieves all friends of the authenticated user.
+
+---
+
+#### Friends related code
+
+```go
+type FriendList struct {
+    UserID     int    `json:"user_id"`
+    FirstName  string `json:"first_name"`
+    LastName   string `json:"last_name"`
+    AvatarURL  string `json:"avatar_url"`
+    Username   string `json:"username"`
+}
+
+type Friend struct {
+    Id           int       `json:"id"`
+    UserId1      int       `json:"user_id_1"`
+    UserId2      int       `json:"user_id_2"`
+    Status       string    `json:"status"`
+    ActionUserId int       `json:"action_user_id"`
+    CreatedAt    time.Time `json:"created_at"`
+    UpdatedAt    time.Time `json:"updated_at"`
+}
+```
+
+```sql
+CREATE TABLE IF NOT EXISTS friends (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id1 INTEGER NOT NULL,
+    user_id2 INTEGER NOT NULL,
+    status TEXT CHECK(status IN ('pending', 'accepted', 'declined', 'blocked')),
+    action_user_id INTEGER NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id1) REFERENCES users(id),
+    FOREIGN KEY (user_id2) REFERENCES users(id),
+    FOREIGN KEY (action_user_id) REFERENCES users(id)
+);
+```
+
+---
+
+### Profile
+
+The Profile functionality allows for the retrieval of user profile information. It supports operations such as getting a user's profile and getting all posts by a user.
+
+- **Get User Profile:** (GET) `/profile/users/{id}` - Retrieves the profile of a user by their ID.
+- **Get All User Posts:** (GET) `/profile/posts/{id}` - Retrieves all posts made by a user by their ID.
+- **Edit User Profile:** (PUT) `/profile/users/{id}` - Update the authenticated user profile.
+
+---
+
+```go
+mux.HandleFunc("/profile/users/{id}", userHandler.GetUserProfileByIDHandler).Methods("GET")
+```
+
+This endpoint retrieves the profile of a user by their ID. It requires the ID of the user as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/profile/posts/{id}", postHandler.GetAllUserPostsHandler).Methods("GET")
+```
+
+This endpoint retrieves all posts made by a user by their ID. It requires the ID of the user as a URL parameter.
+It returns users public posts and private posts if the requesting user is friends with the target user.
+Doesn't retrieve group posts.
+
+---
+
+```go
+mux.HandleFunc("/profile/users/{id}", userHandler.EditUserProfileHandler).Methods("PUT")
+```
+
+This endpoint updates the authenticated user profile by userid from cookie. Introduced ProfileSetting field to RegistrationData struct.
+
+```go
+type RegistrationData struct {
+  Username       string `json:"username"`
+  Email          string `json:"email"`
+  Password       string `json:"password"`
+  FirstName      string `json:"first_name"`
+  LastName       string `json:"last_name"`
+  DOB            string `json:"dob"`
+  AvatarURL      string `json:"avatar_url,omitempty"`
+  About          string `json:"about,omitempty"`
+  ProfileSetting string `json:"profile_setting,omitempty"`
+}
+```
+
+---
+
+#### Profile related code
+
+```go
+type Profile struct {
+    Id        int    `json:"id"`
+    Username  string `json:"username"`
+    FirstName string `json:"first_name"`
+    LastName  string `json:"last_name"`
+    DOB       string `json:"dob"`
+    AvatarURL string `json:"avatar_url"`
+    About     string `json:"about"`
+    CreatedAt string `json:"created_at"`
+}
+```
+
+User handlers formvalues:
+
+```go
+regData.Username = r.FormValue("username")
+regData.Email = r.FormValue("email")
+regData.Password = r.FormValue("password")
+regData.FirstName = r.FormValue("first_name")
+regData.LastName = r.FormValue("last_name")
+regData.DOB = r.FormValue("dob")
+regData.About = r.FormValue("about")
+regData.ProfileSetting = r.FormValue("profile_setting")
+```
+
+User table:
+
+```sql
+profile TEXT NOT NULL CHECK(profile IN ('public', 'private')) DEFAULT 'public',
+```
+
+---
+
+---
+
+#### Events
+
+The Event functionality encompasses operations related to events, offering functionalities such as creating, retrieving, updating, and deleting events. Additionally, it supports managing attendance records for events.
+
+---
+
+- **Get All Events:** (GET) `/events` - Retrieves a list of all events.
+
+```go
+mux.HandleFunc("/events", eventHandler.GetAllEventsHandler).Methods("GET")
+```
+
+---
+
+- **Create Event:** (POST) `/events` - Creates a new event. Requires authentication.
+
+```go
+mux.HandleFunc("/events", eventHandler.CreateEventHandler).Methods("POST")
+```
+
+---
+
+- **Get Event by ID:** (GET) `/events/{id}` - Retrieves details of a specific event by its ID.
+
+```go
+	mux.HandleFunc("/events/{id}", eventHandler.GetEventByIDHandler).Methods("GET")
+```
+
+---
+
+- **Edit Event:** (PUT) `/events/{id}` - Updates details of a specific event. Requires authentication and ownership verification.
+
+```go
+mux.HandleFunc("/events/{id}", eventHandler.EditEventHandler).Methods("PUT")
+```
+
+---
+
+- **Delete Event:** (DELETE) `/events/{id}` - Deletes a specific event. Requires authentication and ownership verification.
+
+```go
+mux.HandleFunc("/events/{id}", eventHandler.DeleteEventHandler).Methods("DELETE")
+```
+
+---
+
+- **Get Events by Group ID:** (GET) `/events/{id}` - Retrieves events associated with a specific group.
+
+```go
+mux.HandleFunc("/events/{id}", eventHandler.GetEventsByGroupIDHandler).Methods("GET")
+```
+
+---
+
+- **Add or Update Attendance:** (PUT) `/events/{id}` - Adds or updates attendance for a user at a specific event. Requires authentication.
+
+```go
+mux.HandleFunc("/events/{id}", eventHandler.AddOrUpdateAttendanceHandler).Methods("PUT")
+```
+
+---
+
+- **Get Attendance by Event ID:** (GET) `/events/{id}` - Retrieves attendance records for a specific event.
+
+```go
+mux.HandleFunc("/events/{id}", eventHandler.GetAttendanceByEventIDHandler).Methods("GET")
+```
+
+---
+
+#### Events related code
+
+```go
+type Event struct {
+	Id          int       `json:"id"`
+	CreatorId   int       `json:"creator_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Location    string    `json:"location"`
+	StartTime   time.Time `json:"start_time"`
+	EndTime     time.Time `json:"end_time"`
+	CreatedAt   time.Time `json:"created_at"`
+}
+```
+
+```go
+type EventAttendance struct {
+	Id        int       `json:"id"`
+	EventId   int       `json:"event_id"`
+	UserId    int       `json:"user_id"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+}
+```
+
+---
+
+---
+
+#### Notifications
+
+The Notification functionality facilitates operations related to user notifications, including retrieving, creating, and managing notification status.
+
+---
+
+- **Get All Notifications:** (GET) /notifications - Retrieves a list of all notifications for the authenticated user.
+
+```go
+mux.HandleFunc("/notifications", notificationHandler.GetAllNotificationsHandler).Methods("GET")
+```
+
+---
+
+- **Create Notification:** (POST) /notifications - Creates a new notification. Requires authentication.
+
+```go
+mux.HandleFunc("/notifications", notificationHandler.CreateNotificationHandler).Methods("POST")
+```
+
+---
+
+- **Get Notification by ID:** (GET) /notifications/{id} - Retrieves details of a specific notification by its ID.
+
+```go
+mux.HandleFunc("/notifications/{id}", notificationHandler.GetNotificationByIDHandler).Methods("GET")
+```
+
+---
+
+- **Mark Notification as Read:** (PUT) /notifications/{id} - Marks a specific notification as read. Requires authentication.
+
+```go
+mux.HandleFunc("/notifications/{id}", notificationHandler.MarkNotificationAsReadHandler).Methods("PUT")
+```
+
+---
+
+#### Notifications related code
+
+```go
+type Notification struct {
+	Id        int       `json:"id"`
+	UserId    int       `json:"user_id"`
+	Type      string    `json:"type"`
+	Message   string    `json:"message"`
+	IsRead    bool      `json:"is_read"`
+	CreatedAt time.Time `json:"created_at"`
+}
+```
+
+---
+
+---
+
 ## Backend contribution
 
 fork -> contribute -> pull request
@@ -343,16 +687,12 @@ Notes:
 
 - Use repository pattern for data access layer.
 
-- Use auth middleware for requests that should require authorization.
-
 - Document everything, clear commit messages about changes
 
 - Don't forget Jira issue links(ex. SN-44) for commits and pull requests
 
 ## Future Work
 
-- refactor
-- group posts & comments
 - events + going/not going
 - friends + requests
 - sanitize input data
