@@ -21,6 +21,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/api/users/logout", handler.LogoutHandler).Methods("POST")
 	mux.HandleFunc("/api/users/login", userHandler.LoginHandler).Methods("POST")
 	mux.HandleFunc("/api/users/check-auth", userHandler.CheckAuth)
+	mux.HandleFunc("/api/users/list", userHandler.ListUsersHandler).Methods("GET")
 	
 	// Posts
 	postHandler := handler.NewPostHandler(repository.NewPostRepository(db), sessionRepository, friendsRepository)

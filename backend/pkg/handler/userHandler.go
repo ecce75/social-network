@@ -178,3 +178,20 @@ func (h *UserHandler) EditUserProfileHandler(w http.ResponseWriter, r *http.Requ
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
+
+func (h *UserHandler) ListUsersHandler(w http.ResponseWriter, r *http.Request) {
+	// get userid from cookie
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error getting user id: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	users, err := h.userRepo.GetAllUsersExcludeRequestingUser(userID)
+	if err != nil {
+		http.Error(w, "Error listing users: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(users)
+}

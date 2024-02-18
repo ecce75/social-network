@@ -68,3 +68,24 @@ func (r *UserRepository) UpdateUserProfile(id int, data model.RegistrationData) 
 	}
 	return nil
 }
+
+func (r *UserRepository) GetAllUsersExcludeRequestingUser(userID int) ([]model.UserList, error) {
+	query := "SELECT id, username, first_name, last_name, avatar_url FROM users WHERE id != ?"
+	rows, err := r.db.Query(query, userID)
+	if err != nil {
+		fmt.Println("Error getting all users from database")
+		return nil, err
+	}
+	defer rows.Close()
+	users := []model.UserList{}
+	for rows.Next() {
+		var user model.UserList
+		err := rows.Scan(&user.Id, &user.Username, &user.FirstName, &user.LastName, &user.AvatarURL)
+		if err != nil {
+			fmt.Println("Error scanning user data from database")
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}

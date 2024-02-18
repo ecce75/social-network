@@ -20,6 +20,14 @@ type User struct {
 	UpdatedAt string
 }
 
+type UserList struct {
+	Id        int    `json:"id"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	AvatarURL string `json:"avatar_url"`
+}
+
 type Profile struct {
 	Id             int    `json:"id"`
 	Username       string `json:"username"`
