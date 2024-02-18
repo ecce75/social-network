@@ -10,6 +10,8 @@
   - [Groups](#groups)
   - [Friends](#friends)
   - [Profile](#profile)
+  - [Events](#events)
+  - [Notifications](#notifications)
 - [Backend contribution](#backend-contribution)
 - [Future Work](#future-work)
 - [Extra](#extra)
@@ -525,7 +527,7 @@ profile TEXT NOT NULL CHECK(profile IN ('public', 'private')) DEFAULT 'public',
 
 ---
 
-#### Events
+### Events
 
 The Event functionality encompasses operations related to events, offering functionalities such as creating, retrieving, updating, and deleting events. Additionally, it supports managing attendance records for events.
 
@@ -624,7 +626,7 @@ type EventAttendance struct {
 
 ---
 
-#### Notifications
+### Notifications
 
 The Notification functionality facilitates operations related to user notifications, including retrieving, creating, and managing notification status.
 

@@ -1,3 +1,4 @@
+import Footer from '@/components/headers/Footer';
 import background from '../../../public/assets/background.png';
 
 export default function AuthLayout({
@@ -13,6 +14,7 @@ export default function AuthLayout({
 
       }}>
         {children}
+        <Footer/>
         </div>
       
         

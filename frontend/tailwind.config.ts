@@ -29,7 +29,15 @@ const config:Config = {
       themes: [
         {
           mytheme: {
-            "primary": "#4d7c0f",
+            "primary": "#4F7942",
+            "secondary": "#355E3B",
+            "accent": "#a21caf",
+            "neutral": "#ffffff",
+            "base-100": "#e5e7eb",
+            "info": "#ffffff",
+            "success": "#355E3B",
+            "warning": "#ffffff",
+            "error": "#ffffff",
           },
         },
       ],

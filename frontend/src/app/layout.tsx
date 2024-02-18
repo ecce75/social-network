@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 
 const inter = Inter({ subsets: ['latin'] })
 const MainHeader = dynamic(() => import('@/components/headers/MainHeader'), { ssr: false });
-import AuthLayout from './auth/layout';
+
 
 export const metadata: Metadata = {
   title: 'Iriesphere',
@@ -25,7 +25,7 @@ export default function RootLayout({
     <html lang="en">
       
       <body className={inter.className}>
-        {/* <MainHeader /> */}
+      
         <div style={{
           backgroundImage: `url("${background.src}")`,
           backgroundSize: 'cover',

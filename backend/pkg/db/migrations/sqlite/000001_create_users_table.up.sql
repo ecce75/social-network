@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     date_of_birth DATETIME, 
     avatar_url TEXT,
     about_me TEXT,
+    profile TEXT NOT NULL CHECK(profile IN ('public', 'private')) DEFAULT 'public',
     created_at TEXT DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT DEFAULT CURRENT_TIMESTAMP
 );

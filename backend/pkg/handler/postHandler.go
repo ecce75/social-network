@@ -14,10 +14,11 @@ import (
 type PostHandler struct {
 	postRepo *repository.PostRepository
 	sessionRepo *repository.SessionRepository
+	friendsRepo *repository.FriendsRepository
 }
 
-func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository) *PostHandler {
-	return &PostHandler{postRepo: postRepo, sessionRepo: sessionRepo}
+func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository, friendsRepo *repository.FriendsRepository) *PostHandler {
+	return &PostHandler{postRepo: postRepo, sessionRepo: sessionRepo, friendsRepo: friendsRepo}
 }
 
 func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -121,7 +122,6 @@ func (h *PostHandler) DeletePostHandler(w http.ResponseWriter, r *http.Request) 
 
 
 func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
-	
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
@@ -140,6 +140,63 @@ func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request)
 	}
 	posts = append(posts, userGroupsPosts...)
 
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(posts)
+}
+
+// GetAllUserPosts retrieves all posts for a specific user.
+// It takes the user ID from the request parameters and checks the user's authentication.
+// If the requesting user is the same as the user ID in the parameters, it retrieves all posts for that user.
+// If the requesting user is not the same, it checks the friend status between the requesting user and the user ID in the parameters.
+// If they are friends, it retrieves all posts for that user.
+// If they are not friends, it retrieves only the public posts for that user.
+// The retrieved posts are encoded as JSON and sent in the response.
+func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	userID, ok := vars["id"]
+	intUserID, err := strconv.Atoi(userID)
+	if err != nil {
+		http.Error(w, "Failed to parse user ID: " +err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !ok {
+		http.Error(w, "User ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
+	requestingUserID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		return
+	}
+	var posts []model.Post
+	if requestingUserID == intUserID {
+		posts, err = h.postRepo.GetAllUserPosts(requestingUserID)
+		if err != nil {
+			http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+			return
+		}
+	} else {
+		// check if the users are friends
+		status, err := h.friendsRepo.GetFriendStatus(requestingUserID, intUserID)
+		if err != nil {
+			http.Error(w, "Failed to retrieve friend status: " + err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// retrieve users public posts, and private posts if they are friends
+		if status == "accepted" {
+			posts, err = h.postRepo.GetAllUserPosts(intUserID)
+			if err != nil {
+				http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+				return
+			}
+		} else {
+			posts, err = h.postRepo.GetAllUserPublicPosts(intUserID)
+			if err != nil {
+				http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+				return
+			}
+		}
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(posts)
 }

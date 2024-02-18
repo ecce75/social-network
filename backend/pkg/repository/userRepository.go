@@ -45,3 +45,47 @@ func (r *UserRepository) RegisterUser(data model.RegistrationData) (int64, error
 	}
 	return lastInsertID, nil
 }
+
+func (r *UserRepository) GetUserProfileByID(id int) (model.Profile, error) {
+	query := "SELECT id, username, first_name, last_name, date_of_birth, avatar_url, about_me, profile, created_at FROM users WHERE id = ?"
+	var profile model.Profile
+	err := r.db.QueryRow(query, id).Scan(&profile.Id, &profile.Username, &profile.FirstName, &profile.LastName, &profile.DOB, &profile.AvatarURL, &profile.About, &profile.ProfileSetting, &profile.CreatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("User not found in database")
+		}
+		return model.Profile{}, err
+	}
+	return profile, nil
+}
+
+func (r *UserRepository) UpdateUserProfile(id int, data model.RegistrationData) error {
+	_, err := r.db.Exec("UPDATE users SET username = ?, email = ?, password = ?, first_name = ?, last_name = ?, date_of_birth = ?, avatar_url = ?, about_me = ?, profile = ? WHERE id = ?",
+	data.Username, data.Email, data.Password, data.FirstName, data.LastName, data.DOB, data.AvatarURL, data.About, data.ProfileSetting, id)
+	if err != nil {
+		fmt.Println("Error updating user profile in database")
+		return err
+	}
+	return nil
+}
+
+func (r *UserRepository) GetAllUsersExcludeRequestingUser(userID int) ([]model.UserList, error) {
+	query := "SELECT id, username, first_name, last_name, avatar_url FROM users WHERE id != ?"
+	rows, err := r.db.Query(query, userID)
+	if err != nil {
+		fmt.Println("Error getting all users from database")
+		return nil, err
+	}
+	defer rows.Close()
+	users := []model.UserList{}
+	for rows.Next() {
+		var user model.UserList
+		err := rows.Scan(&user.Id, &user.Username, &user.FirstName, &user.LastName, &user.AvatarURL)
+		if err != nil {
+			fmt.Println("Error scanning user data from database")
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
+}

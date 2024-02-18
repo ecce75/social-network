@@ -21,20 +21,41 @@ type User struct {
 	UpdatedAt string
 }
 
+type UserList struct {
+	Id        int    `json:"id"`
+	Username  string `json:"username"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	AvatarURL string `json:"avatar_url"`
+}
+
+type Profile struct {
+	Id             int    `json:"id"`
+	Username       string `json:"username"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	DOB            string `json:"dob"`
+	AvatarURL      string `json:"avatar_url"`
+	About          string `json:"about"`
+	ProfileSetting string `json:"profile_setting"`
+	CreatedAt      string `json:"created_at"`
+}
+
 type LoginData struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
 
 type RegistrationData struct {
-	Username  string `json:"username"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	DOB       string `json:"dob"`
-	AvatarURL string `json:"avatar_url,omitempty"`
-	About     string `json:"about,omitempty"`
+	Username       string `json:"username"`
+	Email          string `json:"email"`
+	Password       string `json:"password"`
+	FirstName      string `json:"first_name"`
+	LastName       string `json:"last_name"`
+	DOB            string `json:"dob"`
+	AvatarURL      string `json:"avatar_url,omitempty"`
+	About          string `json:"about,omitempty"`
+	ProfileSetting string `json:"profile_setting,omitempty"`
 }
 
 type AuthResponse struct {
@@ -113,6 +134,15 @@ type Friend struct {
 	ActionUserId int       `json:"action_user_id"`
 	CreatedAt    time.Time `json:"created_at"`
 	UpdatedAt    time.Time `json:"updated_at"`
+}
+
+// Required information for the friends list
+type FriendList struct {
+	UserID    int    `json:"id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	AvatarURL string `json:"avatar_url"`
+	Username  string `json:"username"`
 }
 
 type Notification struct {
