@@ -1,0 +1,152 @@
+https://dbdiagram.io/d/Social-Network_ERD-65c6033fac844320aecd58bf
+
+Table users {
+  id integer pk
+	username text unique
+	email text unique
+	password text
+	first_name text
+	last_name text
+	date_of_birth datetime
+	avatar_url text
+	about_me text
+	created_at datetime (current_timestamp)
+	updated_at datetime (current_timestamp)
+}
+
+Table posts {
+  id integer pk
+	user_id integer
+	title text
+	content text
+	image_url text
+	privacy_setting text
+	created_at datetime
+	updated_at datetime
+}
+
+Table comments {
+  id integer pk
+	post_id integer
+	user_id integer
+	content text
+	created_at datetime (current_timestamp)
+	updated_at datetime (current_timestamp)
+}
+
+Table sessions {
+  id integer pk
+	sessionToken text unique
+	userID integer unique
+	expiresAt datetime
+}
+
+Table friends {
+  id integer pk 
+	user_id1 integer 
+	user_id2 integer 
+	status text
+	action_user_id integer
+	created_at datetime (current_timestamp)
+	updated_at datetime (current_timestamp)
+}
+
+Table chats {
+  id integer pk
+	sender_id integer
+	receiver_id integer
+	message text
+	created_at datetime (current_timestamp)
+}
+
+Table groups {
+  id integer pk
+	creator_id integer
+	title text
+	description text
+	created_at datetime (current_timestamp)
+	updated_at datetime (current_timestamp)
+}
+
+Table group_invitations {
+  id integer pk
+	group_id integer
+	join_user_id integer
+	invite_user_id integer
+	status text
+	created_at datetime (current_timestamp)
+}
+
+Table group_members {
+  group_id integer pk
+	user_id integer pk
+	joined_at datetime (current_timestamp)
+}
+
+Table notifications {
+  id integer pk
+	user_id integer
+	type text
+	message text
+	is_read numeric (false)
+	created_at datetime
+}
+
+Table events {
+  id integer pk
+	creator_id integer
+	title text
+	description text
+	location text
+	start_time datetime
+	end_time datetime
+	created_at datetime (current_timestamp)
+}
+
+Table event_attending {
+  id integer pk
+	event_id integer
+	user_id integer
+	status text
+	created_at datetime (current_timestamp)
+}
+
+Ref: users.id < friends.user_id1
+
+Ref: users.id < friends.user_id2
+
+Ref: users.id < friends.action_user_id
+
+Ref: users.id < posts.user_id
+
+Ref: users.id < comments.user_id
+
+Ref: users.id < groups.creator_id
+
+Ref: users.id < group_members.user_id
+
+Ref: users.id < chats.sender_id
+
+Ref: users.id < chats.receiver_id
+
+Ref: users.id < notifications.user_id
+
+Ref: users.id < events.creator_id
+
+Ref: users.id < group_invitations.join_user_id
+
+Ref: users.id < group_invitations.invite_user_id
+
+Ref: users.id <> event_attending.user_id
+
+Ref: posts.id > groups.id
+
+Ref: comments.post_id > posts.id
+
+Ref: group_members.group_id > groups.id
+
+Ref: event_attending.user_id > events.id
+
+Ref: sessions.userID > users.id
+
+Ref: group_invitations.group_id > groups.id

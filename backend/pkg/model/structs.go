@@ -16,6 +16,7 @@ type User struct {
 	DOB       string
 	AvatarURL string
 	About     string
+	Status    string
 	CreatedAt string
 	UpdatedAt string
 }
@@ -171,4 +172,12 @@ type Event struct {
 	StartTime   time.Time `json:"start_time"`
 	EndTime     time.Time `json:"end_time"`
 	CreatedAt   time.Time `json:"created_at"`
+}
+
+type EventAttendance struct {
+	Id        int       `json:"id"`
+	EventId   int       `json:"event_id"`
+	UserId    int       `json:"user_id"`
+	Status    string    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
 }

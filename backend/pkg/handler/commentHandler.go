@@ -21,35 +21,35 @@ func NewCommentHandler(commentRepo *repository.CommentRepository, sessionRepo *r
 }
 
 func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
-    // TODO: id may not come from request and will cause error
-	var newComment model.Comment 
-    err := json.NewDecoder(r.Body).Decode(&newComment)
-    if err != nil {
-        http.Error(w, "Error decoding request body: "+err.Error(), http.StatusBadRequest)
-        return
-    }
+	// TODO: id may not come from request and will cause error
+	var newComment model.Comment
+	err := json.NewDecoder(r.Body).Decode(&newComment)
+	if err != nil {
+		http.Error(w, "Error decoding request body: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
-    userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
-    if err != nil {
-        http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
-        return
-    }
-    newComment.UserID = userID
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
+		return
+	}
+	newComment.UserID = userID
 
-    // Insert the comment into the database
-    createdCommentId, err := h.commentRepo.CreateComment(newComment)
-    if err != nil {
-        http.Error(w, "Failed to create comment: "+err.Error(), http.StatusInternalServerError)
-        return
-    }
+	// Insert the comment into the database
+	createdCommentId, err := h.commentRepo.CreateComment(newComment)
+	if err != nil {
+		http.Error(w, "Failed to create comment: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Successful response
 	response := map[string]interface{}{
 		"message": "Comment created successfully",
-		"data": createdCommentId,
+		"data":    createdCommentId,
 	}
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(response)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
 func (h *CommentHandler) GetCommentsByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
@@ -68,7 +68,7 @@ func (h *CommentHandler) GetCommentsByUserIDorPostID(w http.ResponseWriter, r *h
 	}
 	comments, err := h.commentRepo.GetCommentsByID(intid)
 	if err != nil {
-		http.Error(w, "Error retrieving comments: "+ err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error retrieving comments: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -81,7 +81,7 @@ func (h *CommentHandler) DeleteCommentHandler(w http.ResponseWriter, r *http.Req
 	commentID, ok := vars["id"]
 	intcommentID, err := strconv.Atoi(commentID)
 	if err != nil {
-		http.Error(w, "Failed to parse comment ID: " +err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to parse comment ID: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !ok {
@@ -91,14 +91,14 @@ func (h *CommentHandler) DeleteCommentHandler(w http.ResponseWriter, r *http.Req
 
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		http.Error(w, "Error authenticating user: " +err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Error authenticating user: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	// Confirm user auth and get userid
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(cookie.Value)
 	if err != nil {
-		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Error confirming user authentication: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
@@ -123,7 +123,7 @@ func (h *CommentHandler) EditCommentHandler(w http.ResponseWriter, r *http.Reque
 	commentID, ok := vars["id"]
 	intcommentID, err := strconv.Atoi(commentID)
 	if err != nil {
-		http.Error(w, "Failed to parse comment ID: " +err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to parse comment ID: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !ok {
@@ -133,14 +133,14 @@ func (h *CommentHandler) EditCommentHandler(w http.ResponseWriter, r *http.Reque
 
 	cookie, err := r.Cookie("session_token")
 	if err != nil {
-		http.Error(w, "Error authenticating user: " +err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Error authenticating user: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	// Confirm user auth and get userid
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(cookie.Value)
 	if err != nil {
-		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Error confirming user authentication: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
