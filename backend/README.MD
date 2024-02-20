@@ -61,6 +61,7 @@ The backend is structured into several packages, each with a specific purpose:
 - **User Logout**: Endpoint `/api/users/logout` (POST)
 - **User Login**: Endpoint `/api/users/login` (POST)
 - **Check User Authentication**: Endpoint `/api/users/check-auth` (GET)
+- **Get users list**: Endpoint `/api/users/list` (GET)
 
 ---
 
@@ -109,6 +110,26 @@ mux.HandleFunc("/api/users/check-auth", handler.CheckAuth)
 ```
 
 This endpoint will perform an auth check of the user and return a boolean value.
+
+---
+
+```go
+mux.HandleFunc("/api/users/list", userHandler.ListUsersHandler).Methods("GET")
+```
+
+This endpoint retrieves a list of users excluding the authenticated user.
+
+Returns following values of users:
+
+```go
+type UserList struct {
+  Id        int    `json:"id"`
+  Username  string `json:"username"`
+  FirstName string `json:"first_name"`
+  LastName  string `json:"last_name"`
+  AvatarURL string `json:"avatar_url"`
+}
+```
 
 ---
 
