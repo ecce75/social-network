@@ -15,10 +15,11 @@ type PostHandler struct {
 	postRepo *repository.PostRepository
 	sessionRepo *repository.SessionRepository
 	friendsRepo *repository.FriendsRepository
+	groupMemberRepo *repository.GroupMemberRepository
 }
 
-func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository, friendsRepo *repository.FriendsRepository) *PostHandler {
-	return &PostHandler{postRepo: postRepo, sessionRepo: sessionRepo, friendsRepo: friendsRepo}
+func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository, friendsRepo *repository.FriendsRepository, groupMemberRepo *repository.GroupMemberRepository) *PostHandler {
+	return &PostHandler{postRepo: postRepo, sessionRepo: sessionRepo, friendsRepo: friendsRepo, groupMemberRepo: groupMemberRepo}
 }
 
 func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -205,7 +206,7 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 // ------------ Group Posts Handlers ------------ //
 // ---------------------------------------------- //
 
-
+// TODO: check if user requesting is in group
 func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	groupID, ok := vars["id"]
@@ -216,6 +217,21 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 	}
 	if !ok {
 		http.Error(w, "Group ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		return
+	}
+	// check if user is in group
+	isMember, err := h.groupMemberRepo.IsUserGroupMember(userID, intGroupID)
+	if err != nil {
+		http.Error(w, "Failed to check if user is in group: " + err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if !isMember {
+		http.Error(w, "User is not a member of the group", http.StatusUnauthorized)
 		return
 	}
 

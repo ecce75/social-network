@@ -13,11 +13,12 @@ import (
 
 type EventHandler struct {
 	eventRepo   *repository.EventRepository
+	groupMemberRepo *repository.GroupMemberRepository
 	sessionRepo *repository.SessionRepository
 }
 
-func NewEventHandler(eventRepo *repository.EventRepository, sessionRepo *repository.SessionRepository) *EventHandler {
-	return &EventHandler{eventRepo: eventRepo, sessionRepo: sessionRepo}
+func NewEventHandler(eventRepo *repository.EventRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository) *EventHandler {
+	return &EventHandler{eventRepo: eventRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo}
 }
 
 // Event Handlers
@@ -42,6 +43,15 @@ func (h *EventHandler) CreateEventHandler(w http.ResponseWriter, r *http.Request
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "Error confirming authentication: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	isMember, err := h.groupMemberRepo.IsUserGroupMember(userID, newEvent.GroupId)
+	if !isMember {
+		http.Error(w, "User not authorized to create event in this group", http.StatusUnauthorized)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Failed to check if user is group member: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	newEvent.CreatorId = userID

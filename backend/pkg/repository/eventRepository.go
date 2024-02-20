@@ -92,11 +92,7 @@ func (r *EventRepository) DeleteEvent(id int) error {
 // GetEventsByGroupID retrieves events associated with a specific group ID from the database.
 func (r *EventRepository) GetEventsByGroupID(groupID int) ([]model.Event, error) {
 	query := `
-		SELECT events.*
-		FROM events
-		INNER JOIN group_members ON events.creator_id = group_members.user_id
-		WHERE group_members.group_id = ?
-	`
+		SELECT * FROM events WHERE group_id = ?`
 
 	rows, err := r.db.Query(query, groupID)
 	if err != nil {
@@ -107,7 +103,7 @@ func (r *EventRepository) GetEventsByGroupID(groupID int) ([]model.Event, error)
 	var events []model.Event
 	for rows.Next() {
 		var event model.Event
-		if err := rows.Scan(&event.Id, &event.CreatorId, &event.Title, &event.Description, &event.Location, &event.StartTime, &event.EndTime, &event.CreatedAt); err != nil {
+		if err := rows.Scan(&event.Id, &event.CreatorId, &event.GroupId, &event.Title, &event.Description, &event.Location, &event.StartTime, &event.EndTime, &event.CreatedAt); err != nil {
 			return nil, err
 		}
 		events = append(events, event)

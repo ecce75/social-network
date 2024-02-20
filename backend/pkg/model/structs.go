@@ -166,6 +166,7 @@ type GroupInvitation struct {
 type Event struct {
 	Id          int       `json:"id"`
 	CreatorId   int       `json:"creator_id"`
+	GroupId     int       `json:"group_id,omitempty"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Location    string    `json:"location"`

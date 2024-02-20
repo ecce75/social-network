@@ -139,3 +139,15 @@ func (r *GroupMemberRepository) IsUserGroupOwner(userId, groupId int) (bool, err
 	}
 	return creatorId == userId, nil
 }
+
+func (r *GroupMemberRepository) IsUserGroupMember(userId, groupId int) (bool, error) {
+	query := `SELECT user_id FROM group_members WHERE group_id = ? AND user_id = ?`
+	row := r.db.QueryRow(query, groupId, userId)
+
+	var memberId int
+	err := row.Scan(&memberId)
+	if err != nil {
+		return false, err
+	}
+	return memberId == userId, nil
+}
