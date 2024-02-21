@@ -69,23 +69,33 @@ func (r *UserRepository) UpdateUserProfile(id int, data model.RegistrationData) 
 	return nil
 }
 
-func (r *UserRepository) GetAllUsersExcludeRequestingUser(userID int) ([]model.UserList, error) {
-	query := "SELECT id, username, first_name, last_name, avatar_url FROM users WHERE id != ?"
-	rows, err := r.db.Query(query, userID)
+func (r *UserRepository) GetAllUsersExcludeRequestingUserAndFriends(userID int) ([]model.UserList, error) {
+	query := `
+    SELECT u.id, u.username, u.first_name, u.last_name, u.avatar_url 
+    FROM users u
+    WHERE u.id != ?
+    AND u.id NOT IN (
+        SELECT f.user_id2 FROM friends f WHERE f.user_id1 = ? AND f.status = 'accepted'
+        UNION
+        SELECT f.user_id1 FROM friends f WHERE f.user_id2 = ? AND f.status = 'accepted'
+    )`
+
+	rows, err := r.db.Query(query, userID, userID, userID)
 	if err != nil {
-		fmt.Println("Error getting all users from database")
+		fmt.Println("Error getting all users excluding friends from database:", err)
 		return nil, err
 	}
 	defer rows.Close()
-	users := []model.UserList{}
+
+	var users []model.UserList
 	for rows.Next() {
 		var user model.UserList
-		err := rows.Scan(&user.Id, &user.Username, &user.FirstName, &user.LastName, &user.AvatarURL)
-		if err != nil {
-			fmt.Println("Error scanning user data from database")
+		if err := rows.Scan(&user.Id, &user.Username, &user.FirstName, &user.LastName, &user.AvatarURL); err != nil {
+			fmt.Println("Error scanning user data from database:", err)
 			return nil, err
 		}
 		users = append(users, user)
 	}
+
 	return users, nil
 }

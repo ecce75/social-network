@@ -92,7 +92,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	// Friends
 	friendHandler := handler.NewFriendHandler(friendsRepository, sessionRepository)
 	mux.HandleFunc("/friends/request/{id}", friendHandler.SendFriendRequestHandler).Methods("POST")
-	mux.HandleFunc("/friends/accept", friendHandler.AcceptFriendRequestHandler).Methods("POST")
+	mux.HandleFunc("/friends/accept/{id}", friendHandler.AcceptFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/decline", friendHandler.DeclineFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/block", friendHandler.BlockUserHandler).Methods("POST")
 	mux.HandleFunc("/friends/unblock", friendHandler.UnblockUserHandler).Methods("POST")

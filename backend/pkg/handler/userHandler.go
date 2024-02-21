@@ -192,7 +192,7 @@ func (h *UserHandler) ListUsersHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	users, err := h.userRepo.GetAllUsersExcludeRequestingUser(userID)
+	users, err := h.userRepo.GetAllUsersExcludeRequestingUserAndFriends(userID)
 	if err != nil {
 		http.Error(w, "Error listing users: "+err.Error(), http.StatusInternalServerError)
 		return
