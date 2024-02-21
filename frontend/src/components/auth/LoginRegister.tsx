@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Formik, Field, Form, FormikHelpers, useFormikContext, FieldProps } from "formik";
-import "../../styles/styles.css";
+import "../../../styles/styles.css";
 import { useRouter} from 'next/navigation';
 
 interface LoginValues {

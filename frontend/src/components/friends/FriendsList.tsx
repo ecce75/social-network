@@ -36,20 +36,24 @@ export default function FriendsList() {
             {
                 friends.length > 0 ? 
                 friends.map(friend =>
-                    <FriendsListContent
+                    <UserTab
                         key={friend.id}
-                        id={friend.id}
-                        firstName={friend.firstName}
-                        lastName={friend.lastName}
-                        avatar={friend.avatar}
-                        username={friend.username}
+                        userName={friend.username}
+                        pictureUrl={friend.avatar}
                     />
+                    // <FriendsListContent
+                    //     key={friend.id}
+                    //     id={friend.id}
+                    //     firstName={friend.firstName}
+                    //     lastName={friend.lastName}
+                    //     avatar={friend.avatar}
+                    //     username={friend.username}
+                    // />
                 )
                 :
                 //TODO; Add a button to add friends
                 <div>
-                <UserTab/>
-                <UserTab/>
+                    <p>No friends found</p>
                 </div>
             }
         </>

@@ -13,7 +13,7 @@ import (
 )
 
 type UserHandler struct {
-	userRepo *repository.UserRepository
+	userRepo    *repository.UserRepository
 	sessionRepo *repository.SessionRepository
 	friendsRepo *repository.FriendsRepository
 }
@@ -38,7 +38,6 @@ func (h *UserHandler) UserRegisterHandler(w http.ResponseWriter, r *http.Request
 	regData.LastName = r.FormValue("last_name")
 	regData.DOB = r.FormValue("dob")
 	regData.About = r.FormValue("about")
-	
 
 	// Hash the password
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(regData.Password), bcrypt.DefaultCost)
@@ -53,7 +52,7 @@ func (h *UserHandler) UserRegisterHandler(w http.ResponseWriter, r *http.Request
 	// Store user in database
 	userID, err := h.userRepo.RegisterUser(regData)
 	if err != nil {
-		http.Error(w, "Error registering user: "+ err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error registering user: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -63,10 +62,10 @@ func (h *UserHandler) UserRegisterHandler(w http.ResponseWriter, r *http.Request
 
 	// Set a cookie with the session token
 	http.SetCookie(w, &http.Cookie{
-		Name: "session_token",
-		Value: sessionToken,
-		MaxAge: 60*15, // 15 minutes
-		Path:     "/", // Make cookie available for all paths
+		Name:   "session_token",
+		Value:  sessionToken,
+		MaxAge: 60 * 15, // 15 minutes
+		Path:   "/",     // Make cookie available for all paths
 	})
 
 	// Send a success response
@@ -78,21 +77,26 @@ func (h *UserHandler) UserRegisterHandler(w http.ResponseWriter, r *http.Request
 }
 
 func (h *UserHandler) GetUserProfileByIDHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	userID, ok := vars["id"]
-	intUserID, err := strconv.Atoi(userID)
-	if err != nil {
-		http.Error(w, "Failed to parse user ID: " +err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if !ok {
-		http.Error(w, "User ID is missing in parameters", http.StatusBadRequest)
-		return
-	}
 	// Get the user ID from the URL
 	requestUserID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "Invalid user ID: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	vars := mux.Vars(r)
+	userID, ok := vars["id"]
+	if !ok {
+		http.Error(w, "User ID not found in URL", http.StatusBadRequest)
+		return
+	}
+	if userID == "me" {
+		// No ID in URL, use the logged-in user's ID
+		userID = strconv.Itoa(requestUserID)
+	}
+
+	intUserID, err := strconv.Atoi(userID)
+	if err != nil {
+		http.Error(w, "Invalid user ID format: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -104,7 +108,8 @@ func (h *UserHandler) GetUserProfileByIDHandler(w http.ResponseWriter, r *http.R
 	}
 	if profile.ProfileSetting == "private" {
 		// check whether the user requesting is the same as the user profile
-		status, err := h.friendsRepo.GetFriendStatus(requestUserID, intUserID); if err != nil {
+		status, err := h.friendsRepo.GetFriendStatus(requestUserID, intUserID)
+		if err != nil {
 			http.Error(w, "Error getting friend status: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -167,7 +172,7 @@ func (h *UserHandler) EditUserProfileHandler(w http.ResponseWriter, r *http.Requ
 	// Store user in database
 	err = h.userRepo.UpdateUserProfile(userID, regData)
 	if err != nil {
-		http.Error(w, "Error updating user profile: "+ err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error updating user profile: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

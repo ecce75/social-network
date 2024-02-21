@@ -16,7 +16,7 @@ type User struct {
 	DOB       string
 	AvatarURL string
 	About     string
-	Status    string
+	Profile   string
 	CreatedAt string
 	UpdatedAt string
 }
@@ -26,6 +26,7 @@ type UserList struct {
 	Username  string `json:"username"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
+	Status    string `json:"status"`
 	AvatarURL string `json:"avatar_url"`
 }
 

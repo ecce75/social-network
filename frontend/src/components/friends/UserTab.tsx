@@ -4,11 +4,12 @@ import UserInformation from './UserInformation';
 
 
 interface UserTabProps {
-    userName?: string; // New prop for post title
-    pictureUrl?: string;
+    userName: string;
+    avatarUrl: string;
+    onAddFriend?: () => void; // Optional prop for the add friend functionality
 }
 
-const UserTab: React.FC<UserTabProps> = ({ userName, pictureUrl }) => {
+const UserTab: React.FC<UserTabProps> = ({ userName, avatarUrl, onAddFriend  }) => {
     const router = useRouter(); 
 
     const handleClick = () => {
@@ -20,10 +21,18 @@ const UserTab: React.FC<UserTabProps> = ({ userName, pictureUrl }) => {
             {/* Group Content */}
             <UserInformation
                 userName={userName} // Pass title prop to GroupContent
-                pictureUrl={pictureUrl}
+                pictureUrl={avatarUrl}
                 placeholderuserName="Mari Tänav"
                 placeholderPictureUrl="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
             />
+            {onAddFriend && (
+                <button onClick={(e) => {
+                    e.stopPropagation(); // Prevents the parent div click event
+                    onAddFriend();
+                }} className="btn btn-primary">
+                    Add Friend
+                </button>
+            )}
         </div>
     );
 };

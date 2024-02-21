@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS group_invitations (
     FOREIGN KEY (group_id) REFERENCES groups(id),
     FOREIGN KEY (join_user_id) REFERENCES users(id),
     FOREIGN KEY (invite_user_id) REFERENCES users(id)
-);
+    );

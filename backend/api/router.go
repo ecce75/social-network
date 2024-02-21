@@ -35,7 +35,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	postHandler := handler.NewPostHandler(postRepository, sessionRepository, friendsRepository, groupMemberRepository)
 	mux.HandleFunc("/post", postHandler.GetAllPostsHandler).Methods("GET") // Main feed, all public posts + user groups posts
 	mux.HandleFunc("/post", postHandler.CreatePostHandler).Methods("POST")
-	//mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
+	// mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
 	mux.HandleFunc("/post/{id}", postHandler.EditPostHandler).Methods("PUT")      // Edit a post
 	mux.HandleFunc("/post/{id}", postHandler.DeletePostHandler).Methods("DELETE") // Delete a post
 	mux.HandleFunc("/groups/posts/{id}", postHandler.GetPostsByGroupIDHandler).Methods("GET")
@@ -91,14 +91,19 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	// Friends
 	friendHandler := handler.NewFriendHandler(friendsRepository, sessionRepository)
-	mux.HandleFunc("/friends/request", friendHandler.SendFriendRequestHandler).Methods("POST")
+	mux.HandleFunc("/friends/request/{id}", friendHandler.SendFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/accept", friendHandler.AcceptFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/decline", friendHandler.DeclineFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/block", friendHandler.BlockUserHandler).Methods("POST")
 	mux.HandleFunc("/friends/unblock", friendHandler.UnblockUserHandler).Methods("POST")
+	mux.HandleFunc("/friends/check/{id}", friendHandler.CheckFriendStatusHandler).Methods("GET")
 
 	mux.HandleFunc("/friends", friendHandler.GetFriendsHandler).Methods("GET")
 
+	// route to serve images
+	http.HandleFunc("/images/", func(w http.ResponseWriter, r *http.Request) {
+		http.StripPrefix("/images/", http.FileServer(http.Dir("./pkg/db/images"))).ServeHTTP(w, r)
+	})
 	// CORS
 	corsOptions := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},                   // Replace with your frontend's origin

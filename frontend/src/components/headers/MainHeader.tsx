@@ -1,5 +1,5 @@
 import NotificationButton from "../buttons/NotificationButton";
-import ProfileIconDM from "../buttons/ProfileIconDropdownMenu";
+import ProfileIconDM from "../buttons/ProfileIconDropdown";
 import LeftNavBar from "../leftnavbar/LeftNavBar";
 import IrieSphereButton from "../buttons/IriesphereButton";
 

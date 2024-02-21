@@ -2,7 +2,7 @@
 
 import Head from 'next/head'
 import Header from '../../components/headers/LoginHeader'
-import { RegisterForm } from '../../components/LoginRegister'
+import { RegisterForm } from '../../components/auth/LoginRegister'
 import background from '../../../public/assets/background.png';
 
 

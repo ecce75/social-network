@@ -48,7 +48,7 @@ func (h *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 		Name:   "session_token",
 		Value:  sessionToken,
 		MaxAge: 60 * 15, // 15 minutes
-		Path:     "/", // Make cookie available for all paths
+		Path:   "/",     // Make cookie available for all paths
 	})
 
 	// Send a success response
