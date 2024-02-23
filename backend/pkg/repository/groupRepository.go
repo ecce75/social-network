@@ -90,3 +90,17 @@ func (r *GroupRepository) DeleteGroup(id int) error {
 	_, err := r.db.Exec(query, id)
 	return err
 }
+
+// RemoveGroupMembers removes all group members of a specific group.
+func (r *GroupMemberRepository) RemoveGroupMembers(groupID int) error {
+	query := `DELETE FROM group_members WHERE group_id = ?`
+	_, err := r.db.Exec(query, groupID)
+	return err
+}
+
+// LogGroupDeletion logs the deletion of a group.
+func (r *GroupRepository) LogGroupDeletion(groupID int) error {
+	query := `UPDATE groups SET deleted = true WHERE id = ?`
+	_, err := r.db.Exec(query, groupID)
+	return err
+}

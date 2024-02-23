@@ -41,7 +41,6 @@ func (r *GroupMemberRepository) RemoveMemberFromGroup(groupId, userId int) error
 
 // CreateGroupInvitation creates a new invitation in the database.
 // It returns an error if any.
-// TODO: implement notifications for group invitations
 func (r *InvitationRepository) CreateGroupInvitation(invitation model.GroupInvitation) error {
 	query := `INSERT INTO group_invitations (group_id, user_id, status) VALUES (?, ?, ?)`
 	_, err := r.db.Exec(query, invitation.GroupId, invitation.JoinUserId, &invitation.InviteUserId, "pending")
@@ -77,7 +76,6 @@ func (r *GroupMemberRepository) CreateGroupRequest(request model.GroupInvitation
 	_, err := r.db.Exec(query, request.GroupId, request.JoinUserId, request.InviteUserId, "pending")
 	return err
 }
-
 
 // GetAllGroupInvitations retrieves all group invitations from the database.
 // It returns a slice of GroupInvitation objects and an error if any.
@@ -150,4 +148,30 @@ func (r *GroupMemberRepository) IsUserGroupMember(userId, groupId int) (bool, er
 		return false, err
 	}
 	return memberId == userId, nil
+}
+
+// GetGroupMembers retrieves the list of members for a given group ID.
+func (r *GroupMemberRepository) GetGroupMembers(groupID int) ([]model.GroupMember, error) {
+	query := `SELECT group_id, user_id, joined_at FROM group_members WHERE group_id = ?`
+	rows, err := r.db.Query(query, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var members []model.GroupMember
+	for rows.Next() {
+		var member model.GroupMember
+		err := rows.Scan(&member.GroupId, &member.UserId, &member.JoinedAt)
+		if err != nil {
+			return nil, err
+		}
+		members = append(members, member)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return members, nil
 }
