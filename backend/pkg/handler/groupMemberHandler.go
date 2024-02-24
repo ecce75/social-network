@@ -467,28 +467,51 @@ func notifyInvitationDecline(invitationRepo *repository.InvitationRepository, no
 
 // ----------------------------------------------------------------------------------------------------------
 
-// GetInvitationByIDHandler gets an invitation by ID
-// TODO: refactor to use userid from cookie to get all group invitations for the user (pending)
+// GetGroupInvitationByIDHandler gets an invitation by ID for the user.
 func (h *GroupMemberHandler) GetGroupInvitationByIDHandler(w http.ResponseWriter, r *http.Request) {
+	// Extract the user ID from the cookie.
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error extracting user ID from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	vars := mux.Vars(r)
 	id := vars["id"]
+
+	// Check if the user has the permission to view the invitation.
 	invitation, err := h.invitationRepo.GetGroupInvitationByID(id)
 	if err != nil {
 		http.Error(w, "Failed to get invitation: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	if invitation.JoinUserId != userID {
+		http.Error(w, "User does not have permission to view this invitation", http.StatusUnauthorized)
+		return
+	}
+
+	// Encode the invitation in the response.
 	json.NewEncoder(w).Encode(invitation)
 }
 
-// ----------------------------------------------------------------------------------------------------------
-
-// GetAllInvitationsHandler gets all invitations (ok)
+// GetAllGroupInvitationsHandler gets all pending invitations for the user.
 func (h *GroupMemberHandler) GetAllGroupInvitationsHandler(w http.ResponseWriter, r *http.Request) {
-	invitations, err := h.invitationRepo.GetAllGroupInvitations()
+	// Extract the user ID from the cookie.
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error extracting user ID from session token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// Get all pending group invitations for the user.
+	invitations, err := h.invitationRepo.GetPendingGroupInvitationsForUser(userID)
+	if err != nil {
+		http.Error(w, "Failed to get group invitations: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Encode the invitations in the response.
 	json.NewEncoder(w).Encode(invitations)
 }
 

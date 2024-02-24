@@ -175,3 +175,25 @@ func (r *GroupMemberRepository) GetGroupMembers(groupID int) ([]model.GroupMembe
 
 	return members, nil
 }
+
+// GetPendingGroupInvitationsForUser retrieves all pending group invitations for the user.
+func (r *InvitationRepository) GetPendingGroupInvitationsForUser(userID int) ([]model.GroupInvitation, error) {
+	query := `SELECT * FROM group_invitations WHERE join_user_id = ? AND status = 'pending'`
+	rows, err := r.db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var invitations []model.GroupInvitation
+	for rows.Next() {
+		var invitation model.GroupInvitation
+		err := rows.Scan(&invitation.Id, &invitation.GroupId, &invitation.JoinUserId, &invitation.InviteUserId, &invitation.Status, &invitation.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		invitations = append(invitations, invitation)
+	}
+
+	return invitations, nil
+}
