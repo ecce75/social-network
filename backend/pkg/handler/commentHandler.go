@@ -14,14 +14,17 @@ import (
 type CommentHandler struct {
 	commentRepo *repository.CommentRepository
 	sessionRepo *repository.SessionRepository
+	notificationRepo *repository.NotificationRepository
+	postRepo *repository.PostRepository
+	userRepo *repository.UserRepository
 }
 
-func NewCommentHandler(commentRepo *repository.CommentRepository, sessionRepo *repository.SessionRepository) *CommentHandler {
-	return &CommentHandler{commentRepo: commentRepo, sessionRepo: sessionRepo}
+func NewCommentHandler(commentRepo *repository.CommentRepository, sessionRepo *repository.SessionRepository, notificationRepo *repository.NotificationRepository, postRepo *repository.PostRepository, userRepo *repository.UserRepository) *CommentHandler {
+	return &CommentHandler{commentRepo: commentRepo, sessionRepo: sessionRepo, notificationRepo: notificationRepo, postRepo: postRepo, userRepo: userRepo}
 }
 
 func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: id may not come from request and will cause error
+	// TODO: id may not come from request and will cause error - added omitempty
 	var newComment model.Comment
 	err := json.NewDecoder(r.Body).Decode(&newComment)
 	if err != nil {
@@ -37,11 +40,40 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	newComment.UserID = userID
 
 	// Insert the comment into the database
+	// TODO: should it return the new comment?
 	createdCommentId, err := h.commentRepo.CreateComment(newComment)
 	if err != nil {
 		http.Error(w, "Failed to create comment: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
+	// TODO: notify post creator of new comment
+	id, err := h.postRepo.GetPostOwnerIDByPostID(newComment.PostID)
+	if err != nil {
+		http.Error(w, "Failed to get post owner id: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	post, err := h.postRepo.GetPostByID(newComment.PostID)
+	if err != nil {
+		http.Error(w, "Failed to get post: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	// authenticated user username
+	username, err := h.userRepo.GetUsernameByID(userID)
+	if err != nil {
+		http.Error(w, "Failed to get username: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	message := username + "commented on your post: " + post.Title
+	notification := model.Notification{
+		UserId: int(id),
+		SenderId: userID,
+		Type: "comment",
+		Message: message,
+		IsRead: false,
+	}
+	h.notificationRepo.CreateNotification(notification)
 
 	// Successful response
 	response := map[string]interface{}{

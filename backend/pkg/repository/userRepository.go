@@ -16,6 +16,19 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 
 // # Data access layer, interacts with db
 
+func (r *UserRepository) GetUsernameByID(id int) (string, error) {
+	query := "SELECT username FROM users WHERE id = ?"
+	var username string
+	err := r.db.QueryRow(query, id).Scan(&username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("User not found in database")
+		}
+		return "", err
+	}
+	return username, nil
+}
+
 func (r *UserRepository) GetUserByEmailOrNickname(emailOrNickname string) (model.User, error) {
 	query := "SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1"
 	var user model.User

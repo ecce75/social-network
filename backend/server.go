@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-
+	"os"
 	"github.com/gorilla/mux"
 )
 
@@ -24,6 +24,15 @@ func main() {
 
 	api.Router(mux, db)
 
-	fmt.Println("Server is running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	port := os.Getenv("BACKEND_PORT")
+	if port == "" {
+		port = "8080"
+	}
+	address := os.Getenv("BACKEND_URL")
+	if address == "" {
+		address = "localhost"
+	}
+
+	fmt.Println("Server is running on " + address + ":" + port)
+	http.ListenAndServe(":" + port, nil)
 }

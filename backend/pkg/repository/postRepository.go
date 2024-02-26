@@ -14,6 +14,16 @@ func NewPostRepository(db *sql.DB) *PostRepository {
     return &PostRepository{db: db}
 }
 
+func (r *PostRepository) GetPostByID(postID int) (model.Post, error) {
+    query := `SELECT * FROM posts WHERE id = ?`
+    var post model.Post
+    err := r.db.QueryRow(query, postID).Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt)
+    if err != nil {
+        return model.Post{}, err
+    }
+    return post, nil
+}
+
 func (r *PostRepository) CreatePost(post model.CreatePostRequest, userID int) (int64, error) {
 	query := `INSERT INTO posts (user_id, title, group_id, content, image_url, privacy_setting) 
 	VALUES (?, ?, ?, ?, ?, ?)`
@@ -200,4 +210,14 @@ func (r *PostRepository) GetPostsByUserGroups(userID int) ([]model.Post, error) 
         return nil, err
     }
     return posts, nil
+}
+
+func (r *PostRepository) GetPostOwnerIDByPostID(postID int) (int64, error) {
+    query := `SELECT user_id FROM posts WHERE id = ?`
+    var id int64
+    err := r.db.QueryRow(query, postID).Scan(&id)
+    if err != nil {
+        return 0, err
+    }
+    return id, nil
 }

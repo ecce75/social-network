@@ -35,6 +35,7 @@ func (h *NotificationHandler) GetAllNotificationsHandler(w http.ResponseWriter, 
 	json.NewEncoder(w).Encode(notifications)
 }
 
+// DEPRECATED: notifications are now created in the functions that trigger them
 // CreateNotificationHandler creates a new notification based on the request body and user session.
 func (h *NotificationHandler) CreateNotificationHandler(w http.ResponseWriter, r *http.Request) {
 	var newNotification model.Notification

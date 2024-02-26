@@ -4,9 +4,11 @@ import (
 	"backend/pkg/handler"
 	"backend/pkg/repository"
 	"database/sql"
+	"net/http"
+	"os"
+
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
-	"net/http"
 )
 
 // API layer, handlers, and routing
@@ -47,7 +49,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/profile/posts/{id}", postHandler.GetAllUserPostsHandler).Methods("GET")
 
 	// Comments
-	commentHandler := handler.NewCommentHandler(commentRepository, sessionRepository)
+	commentHandler := handler.NewCommentHandler(commentRepository, sessionRepository, notificationRepository, postRepository, userRepository)
 	mux.HandleFunc("/post/{id}/comments", commentHandler.GetCommentsByUserIDorPostID).Methods("GET")
 	mux.HandleFunc("/post/comment", commentHandler.CreateCommentHandler).Methods("POST")
 	mux.HandleFunc("/post/comment/{id}", commentHandler.DeleteCommentHandler).Methods("DELETE")
@@ -90,7 +92,8 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/notifications/{id}", notificationHandler.MarkNotificationAsReadHandler).Methods("PUT")
 
 	// Friends
-	friendHandler := handler.NewFriendHandler(friendsRepository, sessionRepository)
+	friendHandler := handler.NewFriendHandler(friendsRepository, sessionRepository, notificationRepository, userRepository)
+	mux.HandleFunc("/friends/requests", friendHandler.GetFriendRequestsHandler).Methods("GET")
 	mux.HandleFunc("/friends/request/{id}", friendHandler.SendFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/accept/{id}", friendHandler.AcceptFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/decline", friendHandler.DeclineFriendRequestHandler).Methods("POST")
@@ -104,9 +107,18 @@ func Router(mux *mux.Router, db *sql.DB) {
 	http.HandleFunc("/images/", func(w http.ResponseWriter, r *http.Request) {
 		http.StripPrefix("/images/", http.FileServer(http.Dir("./pkg/db/images"))).ServeHTTP(w, r)
 	})
+
+	address := os.Getenv("BACKEND_URL")
+	port := os.Getenv("FE_DEV_PORT")
+	if address == "" {
+		address = "http://localhost"
+	} else if port == "" {
+		port = "3000"
+	}
+
 	// CORS
 	corsOptions := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},                   // Replace with your frontend's origin
+		AllowedOrigins:   []string{address + port},                   // Replace with your frontend's origin
 		AllowCredentials: true,                                                // Important for cookies, authorization headers with HTTPS
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},           // You can adjust this based on your needs
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // Adjust the methods based on your requirements

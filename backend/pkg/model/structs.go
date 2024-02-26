@@ -100,7 +100,7 @@ type UpdatePostRequest struct {
 type Comment struct {
 	Id        int       `json:"id"`
 	PostID    int       `json:"post_id"`
-	UserID    int       `json:"user_id"`
+	UserID    int       `json:"user_id,omitempty"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 }
@@ -137,6 +137,15 @@ type Friend struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
+type FriendRequest struct {
+	Id        int    `json:"id"`
+	UserId    int    `json:"user_id"`
+	FirstName string `json:"first_name"`
+	LastName  string `json:"last_name"`
+	AvatarURL string `json:"avatar_url"`
+	Username  string `json:"username"`
+}
+
 // Required information for the friends list
 type FriendList struct {
 	UserID    int    `json:"id"`
@@ -149,6 +158,7 @@ type FriendList struct {
 type Notification struct {
 	Id        int       `json:"id"`
 	UserId    int       `json:"user_id"`
+	SenderId  int       `json:"sender_id,omitempty"`
 	Type      string    `json:"type"`
 	Message   string    `json:"message"`
 	IsRead    bool      `json:"is_read"`

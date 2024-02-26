@@ -43,6 +43,11 @@ func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	// TODO: notify group members of new post
+	// if request.GroupID != 0 {
+
+	// }
+
 	// Successful response
 	response := map[string]interface{}{
 		"message": "Post created successfully",

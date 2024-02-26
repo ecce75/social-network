@@ -573,7 +573,7 @@ mux.HandleFunc("/events", eventHandler.CreateEventHandler).Methods("POST")
 - **Get Event by ID:** (GET) `/events/{id}` - Retrieves details of a specific event by its ID.
 
 ```go
-	mux.HandleFunc("/events/{id}", eventHandler.GetEventByIDHandler).Methods("GET")
+mux.HandleFunc("/events/{id}", eventHandler.GetEventByIDHandler).Methods("GET")
 ```
 
 ---
@@ -622,24 +622,24 @@ mux.HandleFunc("/events/{id}", eventHandler.GetAttendanceByEventIDHandler).Metho
 
 ```go
 type Event struct {
-	Id          int       `json:"id"`
-	CreatorId   int       `json:"creator_id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Location    string    `json:"location"`
-	StartTime   time.Time `json:"start_time"`
-	EndTime     time.Time `json:"end_time"`
-	CreatedAt   time.Time `json:"created_at"`
+  Id          int       `json:"id"`
+  CreatorId   int       `json:"creator_id"`
+  Title       string    `json:"title"`
+  Description string    `json:"description"`
+  Location    string    `json:"location"`
+  StartTime   time.Time `json:"start_time"`
+  EndTime     time.Time `json:"end_time"`
+  CreatedAt   time.Time `json:"created_at"`
 }
 ```
 
 ```go
 type EventAttendance struct {
-	Id        int       `json:"id"`
-	EventId   int       `json:"event_id"`
-	UserId    int       `json:"user_id"`
-	Status    string    `json:"status"`
-	CreatedAt time.Time `json:"created_at"`
+  Id        int       `json:"id"`
+  EventId   int       `json:"event_id"`
+  UserId    int       `json:"user_id"`
+  Status    string    `json:"status"`
+  CreatedAt time.Time `json:"created_at"`
 }
 ```
 
@@ -689,12 +689,12 @@ mux.HandleFunc("/notifications/{id}", notificationHandler.MarkNotificationAsRead
 
 ```go
 type Notification struct {
-	Id        int       `json:"id"`
-	UserId    int       `json:"user_id"`
-	Type      string    `json:"type"`
-	Message   string    `json:"message"`
-	IsRead    bool      `json:"is_read"`
-	CreatedAt time.Time `json:"created_at"`
+  Id        int       `json:"id"`
+  UserId    int       `json:"user_id"`
+  Type      string    `json:"type"`
+  Message   string    `json:"message"`
+  IsRead    bool      `json:"is_read"`
+  CreatedAt time.Time `json:"created_at"`
 }
 ```
 
