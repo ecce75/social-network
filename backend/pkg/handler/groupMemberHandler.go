@@ -21,8 +21,8 @@ type GroupMemberHandler struct {
 	groupRepo        *repository.GroupRepository
 }
 
-func NewGroupMemberHandler(groupMemberRepo *repository.GroupMemberRepository, invitationRepo *repository.InvitationRepository, sessionRepo *repository.SessionRepository) *GroupMemberHandler {
-	return &GroupMemberHandler{groupMemberRepo: groupMemberRepo, invitationRepo: invitationRepo, sessionRepo: sessionRepo}
+func NewGroupMemberHandler(groupMemberRepo *repository.GroupMemberRepository, invitationRepo *repository.InvitationRepository, sessionRepo *repository.SessionRepository, notificationRepo *repository.NotificationRepository, groupRepo *repository.GroupRepository) *GroupMemberHandler {
+	return &GroupMemberHandler{groupMemberRepo: groupMemberRepo, invitationRepo: invitationRepo, sessionRepo: sessionRepo, notificationRepo: notificationRepo, groupRepo: groupRepo}
 }
 
 // RemoveMemberFromGroup removes a user from a group. It takes two parameters: the ID of the group
@@ -181,8 +181,8 @@ func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter
 		return
 	}
 
-	// Delete the invitation from the database
-	err = deleteGroupInvitation(h.invitationRepo, id)
+	// Mark the invitation as accepted in the database
+	err = markGroupInvitationAs(h.invitationRepo, id)
 	if err != nil {
 		http.Error(w, "Failed to delete group invitation: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -207,7 +207,7 @@ func notifyUserRequestApproved(notificationRepo *repository.NotificationReposito
 }
 
 // deleteGroupInvitation deletes a group invitation from the database.
-func deleteGroupInvitation(invitationRepo *repository.InvitationRepository, id string) error {
+func markGroupInvitationAs(invitationRepo *repository.InvitationRepository, id string) error {
 	invitationID, err := strconv.Atoi(id)
 	if err != nil {
 		return err
@@ -244,8 +244,8 @@ func (h *GroupMemberHandler) DeclineGroupMembershipHandler(w http.ResponseWriter
 		return
 	}
 
-	// You can delete the request from the database.
-	err = deleteGroupInvitation(h.invitationRepo, id)
+	// Mark invitation as
+	err = markGroupInvitationAs(h.invitationRepo, id)
 	if err != nil {
 		// Handle the error if deleting the request fails.
 		http.Error(w, "Failed to delete request from the database: "+err.Error(), http.StatusInternalServerError)
@@ -295,8 +295,15 @@ func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *
 		return
 	}
 
+	groupID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	newInvitation.GroupId = groupID
+
 	// Notify the user that they have been invited to join a group
-	err = notifyUserInvitation(h.notificationRepo, newInvitation.InviteUserId, "You have been invited to join a group.")
+	err = notifyUserInvitation(h.notificationRepo, newInvitation.InviteUserId, newInvitation.GroupId, "You have been invited to join a group.")
 	if err != nil {
 		http.Error(w, "Failed to notify user about the invitation: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -308,10 +315,11 @@ func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *
 // -------- Notification Functions -------- //
 
 // notifyUserInvitation notifies the user about the group invitation.
-func notifyUserInvitation(notificationRepo *repository.NotificationRepository, userID int, message string) error {
+func notifyUserInvitation(notificationRepo *repository.NotificationRepository, userID, groupID int, message string) error {
 	// Create a new notification for the user
 	newNotification := model.Notification{
 		UserId:  userID,
+		GroupId: groupID,
 		Type:    "group_invitation",
 		Message: message,
 		IsRead:  false,
@@ -424,7 +432,7 @@ func (h *GroupMemberHandler) DeclineGroupInvitationHandler(w http.ResponseWriter
 	}
 
 	// This deletes the invitation from the database
-	err = deleteGroupInvitation(h.invitationRepo, id)
+	err = markGroupInvitationAs(h.invitationRepo, id)
 	if err != nil {
 		// Handle the error if deleting the invitation fails.
 		http.Error(w, "Failed to delete invitation from the database: "+err.Error(), http.StatusInternalServerError)
@@ -445,11 +453,12 @@ func notifyInvitationDecline(invitationRepo *repository.InvitationRepository, no
 	}
 
 	// Construct a notification message.
-	message := fmt.Sprintf("Your invitation to join the group %d has been declined by the user %d.", invitation.GroupId, invitation.JoinUserId)
+	message := fmt.Sprintf("Your invitation to join the group %d has been declined by the user %d.", invitation.GroupId, invitation.InviteUserId)
 
 	// Create a new notification.
 	newNotification := model.Notification{
-		UserId:    invitation.InviteUserId, // Sender's user ID
+		UserId:    invitation.InviteUserId, // Group owner's user ID
+		GroupId:   invitation.GroupId,
 		Type:      "invitation_declined",
 		Message:   message,
 		IsRead:    false,

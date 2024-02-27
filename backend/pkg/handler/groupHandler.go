@@ -19,8 +19,8 @@ type GroupHandler struct {
 	notificationRepo *repository.NotificationRepository
 }
 
-func NewGroupHandler(groupRepo *repository.GroupRepository, sessionRepo *repository.SessionRepository) *GroupHandler {
-	return &GroupHandler{groupRepo: groupRepo, sessionRepo: sessionRepo}
+func NewGroupHandler(groupRepo *repository.GroupRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, notificationRepo *repository.NotificationRepository) *GroupHandler {
+	return &GroupHandler{groupRepo: groupRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, notificationRepo: notificationRepo}
 }
 
 // Group Handlers
@@ -144,13 +144,6 @@ func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request
 	err = notifyGroupDeletion(h.groupMemberRepo, h.notificationRepo, id)
 	if err != nil {
 		http.Error(w, "Failed to notify group members about group deletion: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Remove all group members
-	err = h.groupMemberRepo.RemoveGroupMembers(id)
-	if err != nil {
-		http.Error(w, "Failed to remove group members: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

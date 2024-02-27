@@ -42,8 +42,8 @@ func (r *GroupMemberRepository) RemoveMemberFromGroup(groupId, userId int) error
 // CreateGroupInvitation creates a new invitation in the database.
 // It returns an error if any.
 func (r *InvitationRepository) CreateGroupInvitation(invitation model.GroupInvitation) error {
-	query := `INSERT INTO group_invitations (group_id, user_id, status) VALUES (?, ?, ?)`
-	_, err := r.db.Exec(query, invitation.GroupId, invitation.JoinUserId, &invitation.InviteUserId, "pending")
+	query := `INSERT INTO group_invitations (group_id, join_user_id, invite_user_id, status) VALUES (?, ?, ?)`
+	_, err := r.db.Exec(query, invitation.GroupId, invitation.JoinUserId, invitation.InviteUserId, "pending")
 	return err
 }
 
@@ -103,19 +103,6 @@ func (r *InvitationRepository) GetAllGroupInvitations() ([]model.GroupInvitation
 // GetGroupInvitationByID retrieves an invitation by ID from the database.
 // It returns the GroupInvitation object and an error if any.
 func (r *InvitationRepository) GetGroupInvitationByID(id string) (model.GroupInvitation, error) {
-	query := `SELECT * FROM group_invitations WHERE id = ?`
-	row := r.db.QueryRow(query, id)
-
-	var invitation model.GroupInvitation
-	if err := row.Scan(&invitation.Id, &invitation.GroupId, &invitation.JoinUserId, &invitation.InviteUserId, &invitation.Status); err != nil {
-		return model.GroupInvitation{}, err
-	}
-	return invitation, nil
-}
-
-// GetGroupInvitationByID retrieves an invitation by ID from the database.
-// It returns the GroupInvitation object and an error if any.
-func (r *GroupMemberRepository) GetGroupInvitationByID(id string) (model.GroupInvitation, error) {
 	query := `SELECT * FROM group_invitations WHERE id = ?`
 	row := r.db.QueryRow(query, id)
 
@@ -196,4 +183,33 @@ func (r *InvitationRepository) GetPendingGroupInvitationsForUser(userID int) ([]
 	}
 
 	return invitations, nil
+}
+
+// GetPendingGroupInvitationsForOwner retrieves all pending group invitations for the owner.
+func (r *InvitationRepository) GetPendingGroupInvitationsForOwner(userID int) ([]model.GroupInvitation, error) {
+	query := `SELECT * FROM group_invitations WHERE join_user_id = ? AND (status = 'pending' OR status = 'declined')`
+	rows, err := r.db.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var invitations []model.GroupInvitation
+	for rows.Next() {
+		var invitation model.GroupInvitation
+		err := rows.Scan(&invitation.Id, &invitation.GroupId, &invitation.JoinUserId, &invitation.InviteUserId, &invitation.Status, &invitation.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		invitations = append(invitations, invitation)
+	}
+
+	return invitations, nil
+}
+
+// RemoveGroupMembers removes all group members of a specific group.
+func (r *GroupMemberRepository) RemoveGroupMembers(groupID int) error {
+	query := `DELETE FROM group_members WHERE group_id = ?`
+	_, err := r.db.Exec(query, groupID)
+	return err
 }
