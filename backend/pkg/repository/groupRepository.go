@@ -32,7 +32,7 @@ func (r *GroupRepository) GetAllGroups() ([]model.Group, error) {
 	var groups []model.Group
 	for rows.Next() {
 		var group model.Group
-		if err := rows.Scan(&group.Id, &group.Title, &group.Description, &group.CreatedAt); err != nil {
+		if err := rows.Scan(&group.Id, &group.Title, &group.Description, &group.CreatedAt, &group.UpdatedAt); err != nil {
 			return nil, err
 		}
 		groups = append(groups, group)
@@ -65,7 +65,7 @@ func (r *GroupRepository) GetGroupByID(id int) (model.Group, error) {
 	query := `SELECT * FROM groups WHERE id = ?`
 	row := r.db.QueryRow(query, id)
 	var group model.Group
-	err := row.Scan(&group.Id, &group.CreatorId, &group.Title, &group.Description, &group.CreatedAt)
+	err := row.Scan(&group.Id, &group.CreatorId, &group.Title, &group.Description, &group.CreatedAt, &group.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return model.Group{}, nil
@@ -88,5 +88,12 @@ func (r *GroupRepository) UpdateGroup(group model.Group) error {
 func (r *GroupRepository) DeleteGroup(id int) error {
 	query := `DELETE FROM groups WHERE id = ?`
 	_, err := r.db.Exec(query, id)
+	return err
+}
+
+// LogGroupDeletion logs the deletion of a group.
+func (r *GroupRepository) LogGroupDeletion(groupID int) error {
+	query := `UPDATE groups SET deleted = true WHERE id = ?`
+	_, err := r.db.Exec(query, groupID)
 	return err
 }
