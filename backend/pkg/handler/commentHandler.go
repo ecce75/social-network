@@ -73,7 +73,11 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 		Message: message,
 		IsRead: false,
 	}
-	h.notificationRepo.CreateNotification(notification)
+	_, err = h.notificationRepo.CreateNotification(notification)
+	if err != nil {
+		http.Error(w, "Failed to create notification: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Successful response
 	response := map[string]interface{}{

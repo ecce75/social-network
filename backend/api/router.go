@@ -55,7 +55,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/post/comment/{id}", commentHandler.DeleteCommentHandler).Methods("DELETE")
 
 	// Groups
-	groupHandler := handler.NewGroupHandler(groupRepository, sessionRepository)
+	groupHandler := handler.NewGroupHandler(groupRepository, sessionRepository, groupMemberRepository, notificationRepository)
 	mux.HandleFunc("/groups", groupHandler.GetAllGroupsHandler).Methods("GET")
 	mux.HandleFunc("/groups", groupHandler.CreateGroupHandler).Methods("POST")
 	mux.HandleFunc("/groups/{id}", groupHandler.GetGroupByIDHandler).Methods("GET")
@@ -63,7 +63,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/groups/{id}", groupHandler.DeleteGroupHandler).Methods("DELETE")
 
 	// Group invitations & requests
-	groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepository, invitationRepository, sessionRepository)
+	groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepository, invitationRepository, sessionRepository, notificationRepository, groupRepository)
 	mux.HandleFunc("/invitations", groupMemberHandler.GetAllGroupInvitationsHandler).Methods("GET")
 	mux.HandleFunc("/invitations", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
 	mux.HandleFunc("/invitations/{id}", groupMemberHandler.GetGroupInvitationByIDHandler).Methods("GET")

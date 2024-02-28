@@ -118,7 +118,9 @@ type Group struct {
 	CreatorId   int       `json:"creator_id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
+	Deleted     bool      `json:"deleted"`
 	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 type GroupMember struct {
@@ -158,6 +160,7 @@ type FriendList struct {
 type Notification struct {
 	Id        int       `json:"id"`
 	UserId    int       `json:"user_id"`
+	GroupId   int       `json:"group_id,omitempty"`
 	SenderId  int       `json:"sender_id,omitempty"`
 	Type      string    `json:"type"`
 	Message   string    `json:"message"`

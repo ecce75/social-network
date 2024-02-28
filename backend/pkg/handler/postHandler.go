@@ -45,7 +45,7 @@ func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) 
 
 	// TODO: notify group members of new post
 	// if request.GroupID != 0 {
-
+		
 	// }
 
 	// Successful response
