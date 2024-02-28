@@ -25,6 +25,8 @@ func Router(mux *mux.Router, db *sql.DB) {
 	sessionRepository := repository.NewSessionRepository(db)
 	friendsRepository := repository.NewFriendsRepository(db)
 
+	notificationHandler := handler.NewNotificationHandler(notificationRepository, sessionRepository, groupMemberRepository, groupRepository, userRepository, invitationRepository)
+
 	userHandler := handler.NewUserHandler(userRepository, sessionRepository, friendsRepository)
 	mux.HandleFunc("/api/users/register", userHandler.UserRegisterHandler).Methods("POST")
 	// User login and logout
@@ -49,13 +51,13 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/profile/posts/{id}", postHandler.GetAllUserPostsHandler).Methods("GET")
 
 	// Comments
-	commentHandler := handler.NewCommentHandler(commentRepository, sessionRepository, notificationRepository, postRepository, userRepository)
+	commentHandler := handler.NewCommentHandler(commentRepository, sessionRepository, notificationHandler, postRepository, userRepository)
 	mux.HandleFunc("/post/{id}/comments", commentHandler.GetCommentsByUserIDorPostID).Methods("GET")
 	mux.HandleFunc("/post/comment", commentHandler.CreateCommentHandler).Methods("POST")
 	mux.HandleFunc("/post/comment/{id}", commentHandler.DeleteCommentHandler).Methods("DELETE")
 
 	// Groups
-	groupHandler := handler.NewGroupHandler(groupRepository, sessionRepository, groupMemberRepository, notificationRepository)
+	groupHandler := handler.NewGroupHandler(groupRepository, sessionRepository, groupMemberRepository, notificationHandler)
 	mux.HandleFunc("/groups", groupHandler.GetAllGroupsHandler).Methods("GET")
 	mux.HandleFunc("/groups", groupHandler.CreateGroupHandler).Methods("POST")
 	mux.HandleFunc("/groups/{id}", groupHandler.GetGroupByIDHandler).Methods("GET")
@@ -63,7 +65,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/groups/{id}", groupHandler.DeleteGroupHandler).Methods("DELETE")
 
 	// Group invitations & requests
-	groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepository, invitationRepository, sessionRepository, notificationRepository, groupRepository)
+	groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepository, invitationRepository, sessionRepository, notificationHandler, groupRepository, userRepository)
 	mux.HandleFunc("/invitations", groupMemberHandler.GetAllGroupInvitationsHandler).Methods("GET")
 	mux.HandleFunc("/invitations", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
 	mux.HandleFunc("/invitations/{id}", groupMemberHandler.GetGroupInvitationByIDHandler).Methods("GET")
@@ -85,20 +87,16 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/events/{id}", eventHandler.GetAttendanceByEventIDHandler).Methods("GET")
 
 	// Notifications
-	notificationHandler := handler.NewNotificationHandler(notificationRepository, sessionRepository)
 	mux.HandleFunc("/notifications", notificationHandler.GetAllNotificationsHandler).Methods("GET")
-	mux.HandleFunc("/notifications", notificationHandler.CreateNotificationHandler).Methods("POST")
 	mux.HandleFunc("/notifications/{id}", notificationHandler.GetNotificationByIDHandler).Methods("GET")
 	mux.HandleFunc("/notifications/{id}", notificationHandler.MarkNotificationAsReadHandler).Methods("PUT")
 
 	// Friends
-	friendHandler := handler.NewFriendHandler(friendsRepository, sessionRepository, notificationRepository, userRepository)
+	friendHandler := handler.NewFriendHandler(friendsRepository, sessionRepository, notificationHandler, userRepository)
 	mux.HandleFunc("/friends/requests", friendHandler.GetFriendRequestsHandler).Methods("GET")
 	mux.HandleFunc("/friends/request/{id}", friendHandler.SendFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/accept/{id}", friendHandler.AcceptFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/decline", friendHandler.DeclineFriendRequestHandler).Methods("POST")
-	mux.HandleFunc("/friends/block", friendHandler.BlockUserHandler).Methods("POST")
-	mux.HandleFunc("/friends/unblock", friendHandler.UnblockUserHandler).Methods("POST")
 	mux.HandleFunc("/friends/check/{id}", friendHandler.CheckFriendStatusHandler).Methods("GET")
 
 	mux.HandleFunc("/friends", friendHandler.GetFriendsHandler).Methods("GET")
@@ -109,11 +107,11 @@ func Router(mux *mux.Router, db *sql.DB) {
 	})
 
 	address := os.Getenv("BACKEND_URL")
-	port := os.Getenv("FE_DEV_PORT")
+	port := os.Getenv("HTTPS_PORT")
 	if address == "" {
-		address = "http://localhost"
+		address = "http://localhost" // fallback address
 	} else if port == "" {
-		port = "3000"
+		port = "3000" // fallback port
 	}
 
 	// CORS

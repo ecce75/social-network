@@ -5,24 +5,22 @@ import (
 	"backend/pkg/repository"
 	"backend/util"
 	"encoding/json"
-	"fmt"
+	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
-	"time"
-
-	"github.com/gorilla/mux"
 )
 
 type GroupMemberHandler struct {
-	groupMemberRepo  *repository.GroupMemberRepository
-	invitationRepo   *repository.InvitationRepository
-	sessionRepo      *repository.SessionRepository
-	notificationRepo *repository.NotificationRepository
-	groupRepo        *repository.GroupRepository
+	groupMemberRepo     *repository.GroupMemberRepository
+	invitationRepo      *repository.InvitationRepository
+	sessionRepo         *repository.SessionRepository
+	notificationHandler *NotificationHandler
+	groupRepo           *repository.GroupRepository
+	userRepo            *repository.UserRepository
 }
 
-func NewGroupMemberHandler(groupMemberRepo *repository.GroupMemberRepository, invitationRepo *repository.InvitationRepository, sessionRepo *repository.SessionRepository, notificationRepo *repository.NotificationRepository, groupRepo *repository.GroupRepository) *GroupMemberHandler {
-	return &GroupMemberHandler{groupMemberRepo: groupMemberRepo, invitationRepo: invitationRepo, sessionRepo: sessionRepo, notificationRepo: notificationRepo, groupRepo: groupRepo}
+func NewGroupMemberHandler(groupMemberRepo *repository.GroupMemberRepository, invitationRepo *repository.InvitationRepository, sessionRepo *repository.SessionRepository, notificationHandler *NotificationHandler, groupRepo *repository.GroupRepository, userRepo *repository.UserRepository) *GroupMemberHandler {
+	return &GroupMemberHandler{groupMemberRepo: groupMemberRepo, invitationRepo: invitationRepo, sessionRepo: sessionRepo, notificationHandler: notificationHandler, groupRepo: groupRepo, userRepo: userRepo}
 }
 
 // RemoveMemberFromGroup removes a user from a group. It takes two parameters: the ID of the group
@@ -102,48 +100,13 @@ func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter
 	}
 
 	// Notify the group admin
-	err = notifyGroupAdmin(h.notificationRepo, request.GroupId, userID)
+	err = h.notificationHandler.NotifyGroupAdmin(request.GroupId, userID)
 	if err != nil {
 		http.Error(w, "Failed to notify group admin: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Notify the user
-	err = notifyUserRequestSent(h.notificationRepo, userID)
-	if err != nil {
-		http.Error(w, "Failed to notify user: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	w.WriteHeader(http.StatusCreated)
-}
-
-// -------- Notification Functions -------- //
-
-// notifyGroupAdmin notifies the group admin that a user has requested to join the group.
-func notifyGroupAdmin(notificationRepo *repository.NotificationRepository, groupID, userID int) error {
-	message := fmt.Sprintf("User %d has requested to join the group %d.", userID, groupID)
-	newNotification := model.Notification{
-		UserId:  userID,
-		Type:    "GroupRequest",
-		Message: message,
-		IsRead:  false,
-	}
-	_, err := notificationRepo.CreateNotification(newNotification)
-	return err
-}
-
-// notifyUserRequestSent notifies the user that their request was sent and is pending.
-func notifyUserRequestSent(notificationRepo *repository.NotificationRepository, userID int) error {
-	message := "Your request to join the group has been sent and is pending approval."
-	notification := model.Notification{
-		UserId:  userID,
-		Type:    "RequestSent",
-		Message: message,
-		IsRead:  false,
-	}
-	_, err := notificationRepo.CreateNotification(notification)
-	return err
 }
 
 // ----------------------------------------------------------------------------------------------------------
@@ -175,44 +138,13 @@ func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter
 	}
 
 	// Notify the user that their request was approved
-	err = notifyUserRequestApproved(h.notificationRepo, groupInvitation.JoinUserId, groupInvitation.GroupId)
+	err = h.notificationHandler.NotifyUserRequestApproved(groupInvitation.JoinUserId, groupInvitation.GroupId)
 	if err != nil {
-		http.Error(w, "Failed to notify user: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// Mark the invitation as accepted in the database
-	err = markGroupInvitationAs(h.invitationRepo, id)
-	if err != nil {
-		http.Error(w, "Failed to delete group invitation: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to notify user about request approval: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-// -------- Notification Functions -------- //
-
-// notifyUserRequestApproved notifies the user that their request was approved.
-func notifyUserRequestApproved(notificationRepo *repository.NotificationRepository, userID, groupID int) error {
-	message := fmt.Sprintf("Your request to join the group %d has been approved.", groupID)
-	newNotification := model.Notification{
-		UserId:  userID,
-		Type:    "RequestApproved",
-		Message: message,
-		IsRead:  false,
-	}
-	_, err := notificationRepo.CreateNotification(newNotification)
-	return err
-}
-
-// deleteGroupInvitation deletes a group invitation from the database.
-func markGroupInvitationAs(invitationRepo *repository.InvitationRepository, id string) error {
-	invitationID, err := strconv.Atoi(id)
-	if err != nil {
-		return err
-	}
-	return invitationRepo.DeleteGroupInvitation(invitationID)
 }
 
 // ----------------------------------------------------------------------------------------------------------
@@ -224,52 +156,34 @@ func (h *GroupMemberHandler) DeclineGroupMembershipHandler(w http.ResponseWriter
 	id := vars["id"]
 
 	// Retrieve the user ID from the session token
-	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	// userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	// if err != nil {
+	// 	http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// Update the status of the membership request to "declined"
+	err := h.invitationRepo.DeclineGroupInvitation(id)
 	if err != nil {
-		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Update the status of the membership request to "declined"
-	err = h.invitationRepo.DeclineGroupInvitation(id)
+	// get groupId from the request invitation that was accepted
+	groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(id)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Notify the user that their request was declined
-	err = notifyUserDecline(h.notificationRepo, userID, "Your group membership request was declined.")
+	err = h.notificationHandler.NotifyUserDecline(groupInvitation.JoinUserId, groupInvitation.GroupId)
 	if err != nil {
 		http.Error(w, "Failed to notify user about request decline: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// Mark invitation as
-	err = markGroupInvitationAs(h.invitationRepo, id)
-	if err != nil {
-		// Handle the error if deleting the request fails.
-		http.Error(w, "Failed to delete request from the database: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	w.WriteHeader(http.StatusOK)
-}
-
-// -------- Notification Functions -------- //
-
-// Function to notify the user about the declined request.
-func notifyUserDecline(notificationRepo *repository.NotificationRepository, userID int, message string) error {
-	// Create a Notification object
-	newNotification := model.Notification{
-		UserId:  userID,
-		Type:    "decline", // You can customize the type based on your needs
-		Message: message,
-		IsRead:  false, // Assuming the notification is initially unread
-	}
-
-	// Add the notification to the database
-	_, err := notificationRepo.CreateNotification(newNotification)
-	return err
 }
 
 // ----------------------------------------------------------------------------------------------------------
@@ -277,8 +191,8 @@ func notifyUserDecline(notificationRepo *repository.NotificationRepository, user
 // InviteMemberHandler sends an invitation to a user to join a group.
 // It creates an invitation in the database that can be accepted or declined by the user.
 func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *http.Request) {
-	var newInvitation model.GroupInvitation
-	err := json.NewDecoder(r.Body).Decode(&newInvitation)
+	var invitationRequest model.GroupInvitationRequest
+	err := json.NewDecoder(r.Body).Decode(&invitationRequest)
 	if err != nil {
 		http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
 		return
@@ -288,46 +202,26 @@ func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *
 		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	newInvitation.InviteUserId = userID
+	//
+	newInvitation := model.GroupInvitation{
+		GroupId:      invitationRequest.GroupId,
+		JoinUserId:   invitationRequest.JoinUserId,
+		InviteUserId: userID,
+	}
 	err = h.invitationRepo.CreateGroupInvitation(newInvitation)
 	if err != nil {
 		http.Error(w, "Failed to create invitation: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	groupID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
-	if err != nil {
-		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	newInvitation.GroupId = groupID
-
 	// Notify the user that they have been invited to join a group
-	err = notifyUserInvitation(h.notificationRepo, newInvitation.InviteUserId, newInvitation.GroupId, "You have been invited to join a group.")
+	err = h.notificationHandler.NotifyUserInvitation(invitationRequest.JoinUserId, invitationRequest.GroupId)
 	if err != nil {
 		http.Error(w, "Failed to notify user about the invitation: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
-}
-
-// -------- Notification Functions -------- //
-
-// notifyUserInvitation notifies the user about the group invitation.
-func notifyUserInvitation(notificationRepo *repository.NotificationRepository, userID, groupID int, message string) error {
-	// Create a new notification for the user
-	newNotification := model.Notification{
-		UserId:  userID,
-		GroupId: groupID,
-		Type:    "group_invitation",
-		Message: message,
-		IsRead:  false,
-	}
-
-	// Add the notification to the database
-	_, err := notificationRepo.CreateNotification(newNotification)
-	return err
 }
 
 // ----------------------------------------------------------------------------------------------------------
@@ -353,10 +247,9 @@ func (h *GroupMemberHandler) AcceptGroupInvitationHandler(w http.ResponseWriter,
 		http.Error(w, "Error adding member to the group: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// FUTURE TODO: this notify the group list of the new member
 
 	// Notify the group list of the new member.
-	err = notifyGroupOfNewMember(h.groupRepo, h.notificationRepo, h.groupMemberRepo, groupInvitation.GroupId, groupInvitation.JoinUserId)
+	err = h.notificationHandler.NotifyGroupOfNewMember(groupInvitation.GroupId, groupInvitation.JoinUserId)
 	if err != nil {
 		// Handle the error if notifying the group fails.
 		http.Error(w, "Failed to notify group about new member: "+err.Error(), http.StatusInternalServerError)
@@ -364,51 +257,6 @@ func (h *GroupMemberHandler) AcceptGroupInvitationHandler(w http.ResponseWriter,
 	}
 
 	w.WriteHeader(http.StatusOK)
-}
-
-// -------- Notification Functions -------- //
-
-// notifyGroupOfNewMember notifies the group members about the new member.
-func notifyGroupOfNewMember(groupRepo *repository.GroupRepository, notificationRepo *repository.NotificationRepository, groupMemberRepo *repository.GroupMemberRepository, groupID, JoinUserId int) error {
-	// Get the details of the group.
-	group, err := groupRepo.GetGroupByID(groupID)
-	if err != nil {
-		return err
-	}
-
-	// Construct a notification message.
-	message := fmt.Sprintf("A new member has joined the group '%s'.", group.Title)
-
-	// Get the list of group members.
-	members, err := groupMemberRepo.GetGroupMembers(groupID)
-	if err != nil {
-		return err
-	}
-
-	// Create notifications for each group member.
-	for _, member := range members {
-		// Skip notifying the new member.
-		if member.UserId == JoinUserId {
-			continue
-		}
-
-		// Create a new notification.
-		newNotification := model.Notification{
-			UserId:    member.UserId,
-			Type:      "new_group_member",
-			Message:   message,
-			IsRead:    false,
-			CreatedAt: time.Now(),
-		}
-
-		// Add the notification to the database.
-		_, err := notificationRepo.CreateNotification(newNotification)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
 }
 
 // ----------------------------------------------------------------------------------------------------------
@@ -424,54 +272,14 @@ func (h *GroupMemberHandler) DeclineGroupInvitationHandler(w http.ResponseWriter
 	}
 
 	// You can call a notification function here to notify the sender about the decline.
-	err = notifyInvitationDecline(h.invitationRepo, h.notificationRepo, id)
+	err = h.notificationHandler.NotifyInvitationDecline(id)
 	if err != nil {
 		// Handle the error if notifying the sender fails.
 		http.Error(w, "Failed to notify invitation sender about decline: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// This deletes the invitation from the database
-	err = markGroupInvitationAs(h.invitationRepo, id)
-	if err != nil {
-		// Handle the error if deleting the invitation fails.
-		http.Error(w, "Failed to delete invitation from the database: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
 	w.WriteHeader(http.StatusOK)
-}
-
-// -------- Notification Functions -------- //
-
-// NotifyInvitationDecline notifies the sender about the declined invitation.
-func notifyInvitationDecline(invitationRepo *repository.InvitationRepository, notificationRepo *repository.NotificationRepository, id string) error {
-	// Get the invitation details from the repository based on the ID.
-	invitation, err := invitationRepo.GetGroupInvitationByID(id)
-	if err != nil {
-		return err
-	}
-
-	// Construct a notification message.
-	message := fmt.Sprintf("Your invitation to join the group %d has been declined by the user %d.", invitation.GroupId, invitation.InviteUserId)
-
-	// Create a new notification.
-	newNotification := model.Notification{
-		UserId:    invitation.InviteUserId, // Group owner's user ID
-		GroupId:   invitation.GroupId,
-		Type:      "invitation_declined",
-		Message:   message,
-		IsRead:    false,
-		CreatedAt: time.Now(),
-	}
-
-	// Add the notification to the database.
-	_, err = notificationRepo.CreateNotification(newNotification)
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 // ----------------------------------------------------------------------------------------------------------
@@ -522,6 +330,44 @@ func (h *GroupMemberHandler) GetAllGroupInvitationsHandler(w http.ResponseWriter
 
 	// Encode the invitations in the response.
 	json.NewEncoder(w).Encode(invitations)
+}
+
+func (h *GroupMemberHandler) GetAllGroupRequestsHandler(w http.ResponseWriter, r *http.Request) {
+
+	vars := mux.Vars(r)
+	id := vars["id"]
+	groupID, err := strconv.Atoi(id)
+	if err != nil {
+		http.Error(w, "Invalid group ID: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	// Extract the user ID from the cookie.
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error extracting user ID from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// check if user group owner
+	isAuthorized, err := h.groupMemberRepo.IsUserGroupOwner(userID, groupID)
+	if err != nil {
+		http.Error(w, "Failed to check if user is group owner: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	if isAuthorized {
+		// Get all pending group requests for the user.
+		requests, err := h.invitationRepo.GetPendingGroupRequestsForOwner(groupID)
+		if err != nil {
+			http.Error(w, "Failed to get group requests: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(requests)
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"message": "No pending group requests found"})
+	}
 }
 
 // ----------------------------------------------------------------------------------------------

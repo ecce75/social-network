@@ -15,7 +15,7 @@ export default function FriendsList() {
     const [friends, setFriends] = useState<FriendProps[]>([]);
 
     useEffect(() => {
-        fetch('http://localhost:8080/friends', {
+        fetch(`${process.env.FRONTEND_URL}:${process.env.BACKEND_PORT}/friends`, {
             method: 'GET',
             credentials: 'include' // Send cookies with the request
         })

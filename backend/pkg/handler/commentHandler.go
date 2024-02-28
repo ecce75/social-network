@@ -14,13 +14,13 @@ import (
 type CommentHandler struct {
 	commentRepo *repository.CommentRepository
 	sessionRepo *repository.SessionRepository
-	notificationRepo *repository.NotificationRepository
+	notificationHandler *NotificationHandler
 	postRepo *repository.PostRepository
 	userRepo *repository.UserRepository
 }
 
-func NewCommentHandler(commentRepo *repository.CommentRepository, sessionRepo *repository.SessionRepository, notificationRepo *repository.NotificationRepository, postRepo *repository.PostRepository, userRepo *repository.UserRepository) *CommentHandler {
-	return &CommentHandler{commentRepo: commentRepo, sessionRepo: sessionRepo, notificationRepo: notificationRepo, postRepo: postRepo, userRepo: userRepo}
+func NewCommentHandler(commentRepo *repository.CommentRepository, sessionRepo *repository.SessionRepository, notificationHandler *NotificationHandler, postRepo *repository.PostRepository, userRepo *repository.UserRepository) *CommentHandler {
+	return &CommentHandler{commentRepo: commentRepo, sessionRepo: sessionRepo, notificationHandler: notificationHandler, postRepo: postRepo, userRepo: userRepo}
 }
 
 func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +47,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	// TODO: notify post creator of new comment
+	// notify post creator of new comment
 	id, err := h.postRepo.GetPostOwnerIDByPostID(newComment.PostID)
 	if err != nil {
 		http.Error(w, "Failed to get post owner id: "+err.Error(), http.StatusInternalServerError)
@@ -66,14 +66,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	}
 
 	message := username + "commented on your post: " + post.Title
-	notification := model.Notification{
-		UserId: int(id),
-		SenderId: userID,
-		Type: "comment",
-		Message: message,
-		IsRead: false,
-	}
-	_, err = h.notificationRepo.CreateNotification(notification)
+	err = h.notificationHandler.CreateNotification(int(id), userID, "post", message)
 	if err != nil {
 		http.Error(w, "Failed to create notification: "+err.Error(), http.StatusInternalServerError)
 		return

@@ -97,3 +97,14 @@ func (r *GroupRepository) LogGroupDeletion(groupID int) error {
 	_, err := r.db.Exec(query, groupID)
 	return err
 }
+
+func (r *GroupRepository) GetGroupTitleByID(id int) (string, error) {
+	query := `SELECT title FROM groups WHERE id = ?`
+	row := r.db.QueryRow(query, id)
+	var title string
+	err := row.Scan(&title)
+	if err != nil {
+		return "", err
+	}
+	return title, nil
+}

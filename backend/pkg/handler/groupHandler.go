@@ -7,8 +7,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
-	"time"
-
 	"github.com/gorilla/mux"
 )
 
@@ -16,11 +14,11 @@ type GroupHandler struct {
 	groupRepo        *repository.GroupRepository
 	groupMemberRepo  *repository.GroupMemberRepository
 	sessionRepo      *repository.SessionRepository
-	notificationRepo *repository.NotificationRepository
+	notificationHandler *NotificationHandler
 }
 
-func NewGroupHandler(groupRepo *repository.GroupRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, notificationRepo *repository.NotificationRepository) *GroupHandler {
-	return &GroupHandler{groupRepo: groupRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, notificationRepo: notificationRepo}
+func NewGroupHandler(groupRepo *repository.GroupRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, notificationHandler *NotificationHandler) *GroupHandler {
+	return &GroupHandler{groupRepo: groupRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, notificationHandler: notificationHandler}
 }
 
 // Group Handlers
@@ -141,7 +139,7 @@ func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request
 	}
 
 	// Notify all group members that the group has been deleted
-	err = notifyGroupDeletion(h.groupMemberRepo, h.notificationRepo, id)
+	err = h.notificationHandler.NotifyGroupDeletion(id)
 	if err != nil {
 		http.Error(w, "Failed to notify group members about group deletion: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -167,36 +165,3 @@ func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(response)
 }
 
-// -------- Notification Function -------- //
-
-// notifyGroupDeletion notifies all group members about the group deletion.
-func notifyGroupDeletion(groupMemberRepo *repository.GroupMemberRepository, notificationRepo *repository.NotificationRepository, groupID int) error {
-	// Get the list of group members.
-	members, err := groupMemberRepo.GetGroupMembers(groupID)
-	if err != nil {
-		return err
-	}
-
-	// Construct a notification message.
-	message := "The group has been deleted."
-
-	// Create notifications for each group member.
-	for _, member := range members {
-		// Create a new notification.
-		newNotification := model.Notification{
-			UserId:    member.UserId,
-			Type:      "group_deletion",
-			Message:   message,
-			IsRead:    false,
-			CreatedAt: time.Now(),
-		}
-
-		// Add the notification to the database.
-		_, err := notificationRepo.CreateNotification(newNotification)
-		if err != nil {
-			return err
-		}
-	}
-
-	return nil
-}

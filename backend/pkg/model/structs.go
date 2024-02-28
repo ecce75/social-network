@@ -177,6 +177,11 @@ type GroupInvitation struct {
 	CreatedAt    time.Time `json:"created_at"`
 }
 
+type GroupInvitationRequest struct {
+	GroupId      int    `json:"group_id"`
+	JoinUserId   int    `json:"join_user_id"`
+}
+
 type Event struct {
 	Id          int       `json:"id"`
 	CreatorId   int       `json:"creator_id"`

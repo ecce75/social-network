@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"backend/pkg/model"
 	"backend/pkg/repository"
 	"backend/util"
 	"database/sql"
@@ -16,13 +15,13 @@ type FriendHandler struct {
 	userRepository   *repository.UserRepository
 	friendRepository  *repository.FriendsRepository
 	sessionRepository *repository.SessionRepository
-	notificationRepository *repository.NotificationRepository
+	notificationHandler *NotificationHandler
 }
 
-func NewFriendHandler(friendRepository *repository.FriendsRepository, sessionRepository *repository.SessionRepository, notificationRepository *repository.NotificationRepository, userRepository *repository.UserRepository) *FriendHandler {
+func NewFriendHandler(friendRepository *repository.FriendsRepository, sessionRepository *repository.SessionRepository, notificationHandler *NotificationHandler, userRepository *repository.UserRepository) *FriendHandler {
 	return &FriendHandler{friendRepository: friendRepository,
 		sessionRepository: sessionRepository,
-		notificationRepository: notificationRepository, 
+		notificationHandler: notificationHandler, 
 		userRepository: userRepository,
 	}
 }
@@ -100,13 +99,7 @@ func (h *FriendHandler) SendFriendRequestHandler(w http.ResponseWriter, r *http.
 	}
 
 	message := user.FirstName + " " + user.LastName + " sent you a friend request"
-	// TODO: notification to the friend
-	_, err = h.notificationRepository.CreateNotification(model.Notification{
-		UserId: friendID,
-		Type: "friend_request",
-		Message: message,
-		IsRead: false,
-	})
+	err = h.notificationHandler.CreateNotification(friendID, userID, "friend", message)
 	if err != nil {
 		http.Error(w, "Error sending notification "+err.Error(), http.StatusInternalServerError)
 		return
@@ -144,15 +137,9 @@ func (h *FriendHandler) AcceptFriendRequestHandler(w http.ResponseWriter, r *htt
 		http.Error(w, "Error getting friend data: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// Notification
 	message := "You are now friends with " + addedFriend.FirstName + " " + addedFriend.LastName
-	// TODO: notification to the request sender that the request has been accepted
-	_, err = h.notificationRepository.CreateNotification(model.Notification{
-		UserId: addedFriend.UserID,
-		SenderId: userID,
-		Type: "friend_request",
-		Message: message,
-		IsRead: false,
-	})
+	err = h.notificationHandler.CreateNotification(addedFriend.UserID, userID, "friend", message)
 	if err != nil {
 		http.Error(w, "Error sending notification "+err.Error(), http.StatusInternalServerError)
 		return
@@ -188,63 +175,6 @@ func (h *FriendHandler) DeclineFriendRequestHandler(w http.ResponseWriter, r *ht
 	w.WriteHeader(http.StatusOK)
 }
 
-
-// DEPRECATED: no need for blocking and unblocking users
-// BlockUserHandler handles the blocking of a user.
-// It requires the user to be authenticated and the friend ID to be valid.
-// If successful, it updates the friend status to "blocked" and returns a status code of 200.
-// If there is an error, it returns an appropriate HTTP error response.
-func (h *FriendHandler) BlockUserHandler(w http.ResponseWriter, r *http.Request) {
-	sessionToken := util.GetSessionToken(r)
-	userID, err := h.sessionRepository.GetUserIDFromSessionToken(sessionToken)
-	if err != nil {
-		http.Error(w, "User not authenticated", http.StatusUnauthorized)
-		return
-	}
-
-	friendID, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		http.Error(w, "Invalid friend ID: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = h.friendRepository.UpdateFriendStatus(userID, friendID, "blocked")
-	if err != nil {
-		http.Error(w, "Error blocking user: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
-// DEPRECATED: no need for blocking and unblocking users
-// UnblockUserHandler handles the HTTP request to unblock a user.
-// It requires the user to be authenticated and the friend ID to be valid.
-// If successful, it updates the friend status to "accepted" and returns a 200 OK response.
-// If there is an error, it returns an appropriate HTTP error response.
-func (h *FriendHandler) UnblockUserHandler(w http.ResponseWriter, r *http.Request) {
-	sessionToken := util.GetSessionToken(r)
-	userID, err := h.sessionRepository.GetUserIDFromSessionToken(sessionToken)
-	if err != nil {
-		http.Error(w, "User not authenticated", http.StatusUnauthorized)
-		return
-	}
-
-	friendID, err := strconv.Atoi(mux.Vars(r)["id"])
-	if err != nil {
-		http.Error(w, "Invalid friend ID: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	err = h.friendRepository.UpdateFriendStatus(userID, friendID, "accepted")
-	if err != nil {
-		http.Error(w, "Error unblocking user: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-}
-
 // GetFriendsHandler handles the HTTP request for retrieving the friends of a user.
 // It requires a valid session token in the request header for authentication.
 // If the user is not authenticated, it returns a 401 Unauthorized error.
@@ -260,25 +190,25 @@ func (h *FriendHandler) GetFriendsHandler(w http.ResponseWriter, r *http.Request
 
 	friends, err := h.friendRepository.GetFriends(userID)
 	if err != nil {
-		// w.Header().Set("Content-Type", "application/json")
-		// json.NewEncoder(w).Encode(map[string]string{"message": "No friends found"})
-		// TODO: Sample friends - remove this later
-		friends := []model.FriendList{
-			{
-				UserID:    1,
-				FirstName: "John",
-				LastName:  "Doe",
-				AvatarURL: "avatar1.png",
-				Username:  "user1",
-			},
-			{
-				UserID:    2,
-				FirstName: "Jane",
-				LastName:  "Smith",
-				AvatarURL: "avatar2.png",
-				Username:  "user2",
-			},
-		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{"message": "No friends found"})
+		// // TODO: Sample friends - remove this later
+		// friends := []model.FriendList{
+		// 	{
+		// 		UserID:    1,
+		// 		FirstName: "John",
+		// 		LastName:  "Doe",
+		// 		AvatarURL: "avatar1.png",
+		// 		Username:  "user1",
+		// 	},
+		// 	{
+		// 		UserID:    2,
+		// 		FirstName: "Jane",
+		// 		LastName:  "Smith",
+		// 		AvatarURL: "avatar2.png",
+		// 		Username:  "user2",
+		// 	},
+		// }
 
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(friends)

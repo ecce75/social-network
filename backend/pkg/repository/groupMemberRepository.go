@@ -125,6 +125,18 @@ func (r *GroupMemberRepository) IsUserGroupOwner(userId, groupId int) (bool, err
 	return creatorId == userId, nil
 }
 
+func (r *GroupMemberRepository) GetGroupAdminByID(groupId int) (int, error) {
+	query := `SELECT creator_id FROM groups WHERE id = ?`
+	row := r.db.QueryRow(query, groupId)
+
+	var creatorId int
+	err := row.Scan(&creatorId)
+	if err != nil {
+		return 0, err
+	}
+	return creatorId, nil
+}
+
 func (r *GroupMemberRepository) IsUserGroupMember(userId, groupId int) (bool, error) {
 	query := `SELECT user_id FROM group_members WHERE group_id = ? AND user_id = ?`
 	row := r.db.QueryRow(query, groupId, userId)
@@ -186,9 +198,9 @@ func (r *InvitationRepository) GetPendingGroupInvitationsForUser(userID int) ([]
 }
 
 // GetPendingGroupInvitationsForOwner retrieves all pending group invitations for the owner.
-func (r *InvitationRepository) GetPendingGroupInvitationsForOwner(userID int) ([]model.GroupInvitation, error) {
-	query := `SELECT * FROM group_invitations WHERE join_user_id = ? AND (status = 'pending' OR status = 'declined')`
-	rows, err := r.db.Query(query, userID)
+func (r *InvitationRepository) GetPendingGroupRequestsForOwner(groupID int) ([]model.GroupInvitation, error) {
+	query := `SELECT * FROM group_invitations WHERE group_id = ? AND (status = 'pending' OR status = 'declined')`
+	rows, err := r.db.Query(query, groupID)
 	if err != nil {
 		return nil, err
 	}
