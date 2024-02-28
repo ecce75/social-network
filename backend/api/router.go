@@ -66,14 +66,18 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	// Group invitations & requests
 	groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepository, invitationRepository, sessionRepository, notificationHandler, groupRepository, userRepository)
+	//for user
 	mux.HandleFunc("/invitations", groupMemberHandler.GetAllGroupInvitationsHandler).Methods("GET")
-	mux.HandleFunc("/invitations", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
 	mux.HandleFunc("/invitations/{id}", groupMemberHandler.GetGroupInvitationByIDHandler).Methods("GET")
 	mux.HandleFunc("/invitations/{id}", groupMemberHandler.DeclineGroupInvitationHandler).Methods("PUT")
 	mux.HandleFunc("/invitations/{id}", groupMemberHandler.AcceptGroupInvitationHandler).Methods("PUT")
 	mux.HandleFunc("/invitations/request/{id}", groupMemberHandler.RequestGroupMembershipHandler).Methods("POST")
+	// for group owner
+	mux.HandleFunc("/invitations", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
 	mux.HandleFunc("/groups/{groupId}/members/{userId}", groupMemberHandler.RemoveMemberHandler).Methods("DELETE")
 	mux.HandleFunc("/invitations/approve/{id}", groupMemberHandler.ApproveGroupMembershipHandler).Methods("PUT")
+	mux.HandleFunc("/invitations/decline/{id}", groupMemberHandler.DeclineGroupMembershipHandler).Methods("PUT")
+	mux.HandleFunc("/groups/{groupId}/requests", groupMemberHandler.GetAllGroupRequestsHandler).Methods("GET")
 
 	// Events
 	eventHandler := handler.NewEventHandler(eventRepository, sessionRepository, groupMemberRepository)

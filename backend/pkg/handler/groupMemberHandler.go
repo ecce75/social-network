@@ -335,7 +335,7 @@ func (h *GroupMemberHandler) GetAllGroupInvitationsHandler(w http.ResponseWriter
 func (h *GroupMemberHandler) GetAllGroupRequestsHandler(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
-	id := vars["id"]
+	id := vars["groupId"]
 	groupID, err := strconv.Atoi(id)
 	if err != nil {
 		http.Error(w, "Invalid group ID: "+err.Error(), http.StatusBadRequest)
