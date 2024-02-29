@@ -38,8 +38,9 @@ export default function FriendsList() {
                 friends.map(friend =>
                     <UserTab
                         key={friend.id}
+                        userID={friend.id}
                         userName={friend.username}
-                        avatarUrl={friend.avatar_url}
+                        avatar={friend.avatar_url}
                     />
                     // <FriendsListContent
                     //     key={friend.id}

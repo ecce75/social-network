@@ -74,14 +74,14 @@ function ProfileIconDM() {
             <div className="dropdown dropdown-end">
                 <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar"
                      style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>
-                    <div className="w-10 rounded-full">
+                    <div className="w-12 rounded-full">
                         <img alt="Tailwind CSS Navbar component" src={profileData.avatar_url}/>
                         <p>{profileData.avatar_url}</p>
                     </div>
                 </div>
                 {/* Dropdown menu */}
                 <ul tabIndex={0} className="menu menu-lg dropdown-content mt-5 z-[1] p-3 shadow bg-primary rounded-box w-72 border-2 border-green-800">
-                    <h1 className="text-center text-2xl text-white p-2">{profileData.username}</h1>
+                    <h1 className="text-center font-extrabold text-2xl text-white p-2">{profileData.username}</h1>
                     <ul className="flex justify-between menu menu-horizontal bg-secondary rounded-box">
                         <li onClick={placeholderprofile}>
                             <a>

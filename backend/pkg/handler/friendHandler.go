@@ -6,6 +6,7 @@ import (
 	"backend/util"
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -67,7 +68,7 @@ func (h *FriendHandler) SendFriendRequestHandler(w http.ResponseWriter, r *http.
 		http.Error(w, "Error sending friend request "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	fmt.Println("Friend request sent", userID, friendID, status, err)
 	w.WriteHeader(http.StatusCreated)
 }
 

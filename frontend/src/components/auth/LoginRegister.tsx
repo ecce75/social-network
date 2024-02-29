@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { Formik, Field, Form, FormikHelpers, useFormikContext, FieldProps } from "formik";
+import React from "react";
+import { Formik, Field, Form, FormikHelpers, FieldProps } from "formik";
 import "../../../styles/styles.css";
 import { useRouter} from 'next/navigation';
 
@@ -52,9 +52,10 @@ const handleLogin = (
 	  router.push('/');
 	})
 	.catch(error => {
-	  formikHelpers.setSubmitting(false);
-	  console.error('Catch Error:', error);
-	  alert("Invalid username or password")
+		formikHelpers.setSubmitting(false);
+		if (JSON.parse(error.message).error === "Incorrect login credentials.") {
+			alert("Invalid username or password")
+		}
 	});
   };
  
@@ -168,7 +169,7 @@ const handleRegister = (
                 handleRegister(values, formikHelpers, router)
             }
         >
-            {({ values, setFieldValue }) => (
+            {({ setFieldValue }) => (
                 <Form>
                     <div
                         style={{ backgroundColor: '#e5e7eb' }}

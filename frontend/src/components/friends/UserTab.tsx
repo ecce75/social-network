@@ -3,17 +3,20 @@
 import React, {useEffect, useRef, useState} from 'react';
 import { useRouter } from 'next/navigation'; 
 import UserInformation from './UserInformation';
+import {ChatBox} from "@/components/chat/ChatBox";
+import {useChat} from "@/components/chat/ChatContext";
 
 
 interface UserTabProps {
+    userID: number;
     userName: string;
-    avatarUrl: string;
+    avatar: string;
     friendStatus?: 'pending' | 'pending_confirmation' | 'accepted' | 'declined' | 'none'; // Possible friend statuses
     onAddFriend?: () => void; // Optional prop for the add friend functionality
     onAcceptRequest?: () => void; // Optional prop for the Accept request functionality
 }
 
-const UserTab: React.FC<UserTabProps> = ({ userName, avatarUrl, friendStatus, onAddFriend, onAcceptRequest  }) => {
+const UserTab: React.FC<UserTabProps> = ({ userID, userName, avatar, friendStatus, onAddFriend, onAcceptRequest  }) => {
     const router = useRouter();
     const [showDialog, setShowDialog] = useState(false);
     const [dialogPosition, setDialogPosition] = useState({ x: 0, y: 0 });
@@ -42,24 +45,29 @@ const UserTab: React.FC<UserTabProps> = ({ userName, avatarUrl, friendStatus, on
         };
     }, [dialogRef]);
 
-    const handleViewProfile = () => {
-        router.push('/dashboard/profile/placeholderprofile');
+    const handleViewProfile = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation()
         setShowDialog(false);
+        router.push('/dashboard/profile/placeholderprofile');
+        // setShowDialog(false);
     };
 
-    const handleSendMessage = () => {
-        // Implement your send message functionality here
-        alert('Send message functionality not implemented');
+    const { openChat } = useChat();
+
+    const handleChat = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.stopPropagation()
         setShowDialog(false);
+        openChat({userID, userName, avatar });
+        // Any additional logic for opening a chat
     };
 
 
     return (
-        <div className="flex justify-between items-center border-2 border-gray-300 bg-primary rounded-md mb-1 cursor-pointer" onClick={handleOpenDialog}>
+        <div className="flex justify-between items-center border-2 border-gray-300 bg-primary rounded-md mt-2 cursor-pointer" onClick={handleOpenDialog}>
             {/* Group Content */}
             <UserInformation
                 userName={userName} // Pass title prop to GroupContent
-                pictureUrl={avatarUrl}
+                pictureUrl={avatar}
                 // placeholderuserName="Mari Tänav"
                 // placeholderPictureUrl="https://daisyui.com/images/stock/photo-1534528741775-53994a69daeb.jpg"
             />
@@ -75,12 +83,12 @@ const UserTab: React.FC<UserTabProps> = ({ userName, avatarUrl, friendStatus, on
                 >
                     <ul>
                         <li>
-                            <button onClick={handleViewProfile}
+                            <button onClick={(e) => handleViewProfile(e)}
                             style={{ fontSize: '0.875rem', padding: '4px 8px' }} // Smaller font size and padding
                             >View Profile</button>
                         </li>
                         <li>
-                            <button onClick={handleSendMessage}
+                            <button onClick={(e) => handleChat(e)}
                             style={{ fontSize: '0.875rem', padding: '4px 8px' }} // Smaller font size and padding
                             >Send Message</button>
                         </li>

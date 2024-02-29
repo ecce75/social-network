@@ -3,6 +3,7 @@ package api
 import (
 	"backend/pkg/handler"
 	"backend/pkg/repository"
+	"backend/pkg/ws"
 	"database/sql"
 	"github.com/gorilla/mux"
 	"github.com/rs/cors"
@@ -22,6 +23,13 @@ func Router(mux *mux.Router, db *sql.DB) {
 	eventRepository := repository.NewEventRepository(db)
 	sessionRepository := repository.NewSessionRepository(db)
 	friendsRepository := repository.NewFriendsRepository(db)
+	chatRepository := ws.NewChatRepository(db)
+
+	chatHandler := ws.NewChatHandler(chatRepository, sessionRepository)
+	hub := ws.NewHub(chatHandler)
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		hub.ServeWs(w, r)
+	})
 
 	userHandler := handler.NewUserHandler(userRepository, sessionRepository, friendsRepository)
 	mux.HandleFunc("/api/users/register", userHandler.UserRegisterHandler).Methods("POST")
@@ -104,6 +112,8 @@ func Router(mux *mux.Router, db *sql.DB) {
 	http.HandleFunc("/images/", func(w http.ResponseWriter, r *http.Request) {
 		http.StripPrefix("/images/", http.FileServer(http.Dir("./pkg/db/images"))).ServeHTTP(w, r)
 	})
+
+	go hub.Run()
 	// CORS
 	corsOptions := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},                   // Replace with your frontend's origin
