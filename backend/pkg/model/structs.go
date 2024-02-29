@@ -81,6 +81,29 @@ type Post struct {
 	CreatedAt      time.Time `json:"created_at"`
 }
 
+type PostsResponse struct {
+	Id             int       `json:"id"`
+	UserID         int       `json:"user_id"`
+	GroupID        int       `json:"group_id,omitempty"`
+	Title          string    `json:"title"`
+	Content        string    `json:"content,omitempty"`
+	ImageURL       string    `json:"image_url,omitempty"`
+	PrivacySetting string    `json:"privacy_setting"`
+	CreatedAt      time.Time `json:"created_at"`
+	Likes          int       `json:"likes"`
+	Dislikes       int       `json:"dislikes"`
+}
+
+type CommentsResponse struct {
+	Id        int       `json:"id"`
+	PostID    int       `json:"post_id"`
+	UserID    int       `json:"user_id,omitempty"`
+	Content   string    `json:"content"`
+	CreatedAt time.Time `json:"created_at"`
+	Likes     int       `json:"likes"`
+	Dislikes  int       `json:"dislikes"`
+}
+
 type CreatePostRequest struct {
 	Title          string `json:"title"`
 	Content        string `json:"content,omitempty"`
@@ -118,9 +141,9 @@ type Group struct {
 	CreatorId   int       `json:"creator_id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
-	Deleted     bool      `json:"deleted"`
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
+	Deleted     bool      `json:"deleted,omitempty"`
+	CreatedAt   time.Time `json:"created_at,omitempty"`
+	UpdatedAt   time.Time `json:"updated_at,omitempty"`
 }
 
 type GroupMember struct {
@@ -178,8 +201,8 @@ type GroupInvitation struct {
 }
 
 type GroupInvitationRequest struct {
-	GroupId      int    `json:"group_id"`
-	JoinUserId   int    `json:"join_user_id"`
+	GroupId    int `json:"group_id"`
+	JoinUserId int `json:"join_user_id"`
 }
 
 type Event struct {
@@ -200,4 +223,10 @@ type EventAttendance struct {
 	UserId    int       `json:"user_id"`
 	Status    string    `json:"status"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type VoteData struct {
+	Item   string `json:"item"`    // 'comment' or 'post'
+	ItemID int    `json:"item_id"` // comment or post id
+	Action string `json:"action"`  // 'like' or 'dislike'
 }

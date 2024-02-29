@@ -3,6 +3,7 @@ package handler
 import (
 	"backend/pkg/model"
 	"backend/pkg/repository"
+	"backend/util"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -15,29 +16,30 @@ import (
 type NotificationHandler struct {
 	notificationRepo *repository.NotificationRepository
 	sessionRepo      *repository.SessionRepository
-	groupMemberRepo *repository.GroupMemberRepository
-	groupRepo *repository.GroupRepository
-	userRepo *repository.UserRepository
-	invitationRepo *repository.InvitationRepository
+	groupMemberRepo  *repository.GroupMemberRepository
+	groupRepo        *repository.GroupRepository
+	userRepo         *repository.UserRepository
+	invitationRepo   *repository.InvitationRepository
+	eventRepo        *repository.EventRepository
 }
 
 // NewNotificationHandler creates a new instance of NotificationHandler.
 // It takes a NotificationRepository and a SessionRepository as parameters.
 // Returns a pointer to the newly created NotificationHandler.
-func NewNotificationHandler(notificationRepo *repository.NotificationRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, groupRepo *repository.GroupRepository, userRepo *repository.UserRepository, invitationRepo *repository.InvitationRepository) *NotificationHandler {
-	return &NotificationHandler{notificationRepo: notificationRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, groupRepo: groupRepo, userRepo: userRepo, invitationRepo: invitationRepo}
+func NewNotificationHandler(notificationRepo *repository.NotificationRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, groupRepo *repository.GroupRepository, userRepo *repository.UserRepository, invitationRepo *repository.InvitationRepository, eventRepo *repository.EventRepository) *NotificationHandler {
+	return &NotificationHandler{notificationRepo: notificationRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, groupRepo: groupRepo, userRepo: userRepo, invitationRepo: invitationRepo, eventRepo: eventRepo}
 }
 
 func (h *NotificationHandler) CreateNotification(userID, senderID int, messageType, message string) error {
-    notification := model.Notification{
-        UserId:   userID,
-        SenderId: senderID,
-        Type:     messageType,
-        Message:  message,
-        IsRead:   false,
-    }
-    _, err := h.notificationRepo.CreateNotification(notification)
-    return err
+	notification := model.Notification{
+		UserId:   userID,
+		SenderId: senderID,
+		Type:     messageType,
+		Message:  message,
+		IsRead:   false,
+	}
+	_, err := h.notificationRepo.CreateNotification(notification)
+	return err
 }
 
 func (h *NotificationHandler) CreateGroupNotification(userID, groupID int, message string) error {
@@ -50,6 +52,34 @@ func (h *NotificationHandler) CreateGroupNotification(userID, groupID int, messa
 	}
 	_, err := h.notificationRepo.CreateNotification(notification)
 	return err
+}
+
+func (h *NotificationHandler) DeleteNotificationHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid notification ID", http.StatusBadRequest)
+	}
+
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
+	}
+	notification, err := h.notificationRepo.GetNotificationByID(id)
+	if err != nil {
+		http.Error(w, "Failed to get notification: "+err.Error(), http.StatusInternalServerError)
+	}
+	if notification.UserId != userID {
+		http.Error(w, "User not authorized to delete this notification", http.StatusUnauthorized)
+		return
+	}
+
+	err = h.notificationRepo.DeleteNotification(id)
+	if err != nil {
+		http.Error(w, "Failed to delete notification: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
 }
 
 // GetAllNotificationsHandler retrieves all notifications and responds
@@ -104,26 +134,28 @@ func (h *NotificationHandler) MarkNotificationAsReadHandler(w http.ResponseWrite
 
 func (h *NotificationHandler) NotifyGroupDeletion(groupID int) error {
 	// Get the list of group members.
-    members, err := h.groupMemberRepo.GetGroupMembers(groupID); if err != nil {
-        return err
-    }
-	// Get the group title.
-	groupTitle, err := h.groupRepo.GetGroupTitleByID(groupID); if err != nil {
+	members, err := h.groupMemberRepo.GetGroupMembers(groupID)
+	if err != nil {
 		return err
 	}
-    // Construct a notification message.
-    message := fmt.Sprintf("The group '%s' has been deleted.", groupTitle)
+	// Get the group title.
+	groupTitle, err := h.groupRepo.GetGroupTitleByID(groupID)
+	if err != nil {
+		return err
+	}
+	// Construct a notification message.
+	message := fmt.Sprintf("The group '%s' has been deleted.", groupTitle)
 
-    // Create notifications for each group member.
-    for _, member := range members {
-        // Create a new notification.
+	// Create notifications for each group member.
+	for _, member := range members {
+		// Create a new notification.
 		err = h.CreateNotification(member.UserId, 0, "group", message)
-        if err != nil {
-            return err
-        }
-    }
+		if err != nil {
+			return err
+		}
+	}
 
-    return nil
+	return nil
 }
 
 // notifyGroupAdmin notifies the group admin that a user has requested to join the group.
@@ -148,7 +180,11 @@ func (h *NotificationHandler) NotifyGroupAdmin(groupID, userID int) error {
 
 // notifyUserRequestApproved notifies the user that their request was approved.
 func (h *NotificationHandler) NotifyUserRequestApproved(userID, groupID int) error {
-	message := fmt.Sprintf("Your request to join the group %d has been approved.", groupID)
+	groupTitle, err := h.groupRepo.GetGroupTitleByID(groupID)
+	if err != nil {
+		return err
+	}
+	message := fmt.Sprintf("Your request to join the group %s has been approved.", groupTitle)
 	return h.CreateNotification(userID, 0, "group", message)
 }
 
@@ -206,17 +242,47 @@ func (h *NotificationHandler) NotifyGroupOfNewMember(groupID, joinUserID int) er
 // NotifyInvitationDecline notifies the group owner about the declined invitation.
 func (h *NotificationHandler) NotifyInvitationDecline(id string) error {
 	// Get the invitation details from the repository based on the ID.
-	invitation, err := h.invitationRepo.GetGroupInvitationByID(id); if err != nil {
+	invitation, err := h.invitationRepo.GetGroupInvitationByID(id)
+	if err != nil {
 		return err
 	}
-	username, err := h.userRepo.GetUsernameByID(invitation.JoinUserId); if err != nil {
+	username, err := h.userRepo.GetUsernameByID(invitation.JoinUserId)
+	if err != nil {
 		return err
 	}
-	groupTitle, err := h.groupRepo.GetGroupTitleByID(invitation.GroupId); if err != nil {
+	groupTitle, err := h.groupRepo.GetGroupTitleByID(invitation.GroupId)
+	if err != nil {
 		return err
 	}
 	// Construct a notification message.
 	message := fmt.Sprintf("The user %s has declined your invitation to join the group %s.", username, groupTitle)
 
 	return h.CreateGroupNotification(invitation.InviteUserId, invitation.GroupId, message)
+}
+
+func (h *NotificationHandler) NotifyGroupOfEvent(groupID, eventID int) error {
+	event, err := h.eventRepo.GetEventByID(groupID)
+	if err != nil {
+		return err
+	}
+
+	username, err := h.userRepo.GetUsernameByID(event.CreatorId)
+	if err != nil {
+		return err
+	}
+
+	message := fmt.Sprintf("'%s' created an event '%s'.", username, event.Title)
+
+	members, err := h.groupMemberRepo.GetGroupMembers(groupID)
+	if err != nil {
+		return err
+	}
+
+	for _, member := range members {
+		err := h.CreateGroupNotification(member.UserId, groupID, message)
+		if err != nil {
+			return err
+		}
+	}
+	return err
 }

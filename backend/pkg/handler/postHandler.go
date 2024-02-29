@@ -16,10 +16,11 @@ type PostHandler struct {
 	sessionRepo *repository.SessionRepository
 	friendsRepo *repository.FriendsRepository
 	groupMemberRepo *repository.GroupMemberRepository
+	voteHandler *VoteHandler
 }
 
-func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository, friendsRepo *repository.FriendsRepository, groupMemberRepo *repository.GroupMemberRepository) *PostHandler {
-	return &PostHandler{postRepo: postRepo, sessionRepo: sessionRepo, friendsRepo: friendsRepo, groupMemberRepo: groupMemberRepo}
+func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository, friendsRepo *repository.FriendsRepository, groupMemberRepo *repository.GroupMemberRepository, voteHandler *VoteHandler) *PostHandler {
+	return &PostHandler{postRepo: postRepo, sessionRepo: sessionRepo, friendsRepo: friendsRepo, groupMemberRepo: groupMemberRepo, voteHandler: voteHandler}
 }
 
 func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -146,8 +147,15 @@ func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request)
 	}
 	posts = append(posts, userGroupsPosts...)
 
+	// Append the votes to the posts
+	postsResponse, err := h.voteHandler.AppendVotesToPostsResponse(posts)
+	if err != nil {
+		http.Error(w, "Failed to append votes to posts: " + err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(posts)
+	json.NewEncoder(w).Encode(postsResponse)
 }
 
 // GetAllUserPosts retrieves all posts for a specific user.
@@ -203,8 +211,16 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 			}
 		}
 	}
+
+	// Append the votes to the posts
+	postsResponse, err := h.voteHandler.AppendVotesToPostsResponse(posts)
+	if err != nil {
+		http.Error(w, "Failed to append votes to posts: " + err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(posts)
+	json.NewEncoder(w).Encode(postsResponse)
 }
 
 // ---------------------------------------------- //
@@ -246,6 +262,13 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	// Append the votes to the posts
+	postsResponse, err := h.voteHandler.AppendVotesToPostsResponse(posts)
+	if err != nil {
+		http.Error(w, "Failed to append votes to posts: " + err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(posts)
+	json.NewEncoder(w).Encode(postsResponse)
 }

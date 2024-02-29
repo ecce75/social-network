@@ -15,10 +15,12 @@ type EventHandler struct {
 	eventRepo   *repository.EventRepository
 	groupMemberRepo *repository.GroupMemberRepository
 	sessionRepo *repository.SessionRepository
+	userRepo *repository.UserRepository
+	notificationHandler *NotificationHandler
 }
 
-func NewEventHandler(eventRepo *repository.EventRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository) *EventHandler {
-	return &EventHandler{eventRepo: eventRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo}
+func NewEventHandler(eventRepo *repository.EventRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, userRepo *repository.UserRepository, notificationHandler *NotificationHandler) *EventHandler {
+	return &EventHandler{eventRepo: eventRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, userRepo: userRepo, notificationHandler: notificationHandler}
 }
 
 // Event Handlers
@@ -56,9 +58,16 @@ func (h *EventHandler) CreateEventHandler(w http.ResponseWriter, r *http.Request
 	}
 	newEvent.CreatorId = userID
 	// creating the event in db
-	_, err = h.eventRepo.CreateEvent(newEvent)
+	eventID, err := h.eventRepo.CreateEvent(newEvent)
 	if err != nil {
 		http.Error(w, "Failed to create group: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// notify group members of new event
+	err = h.notificationHandler.NotifyGroupOfEvent(newEvent.GroupId, int(eventID))
+	if err != nil {
+		http.Error(w, "Failed to notify group members of new event: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	w.WriteHeader(http.StatusCreated)

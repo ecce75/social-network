@@ -24,8 +24,10 @@ func Router(mux *mux.Router, db *sql.DB) {
 	eventRepository := repository.NewEventRepository(db)
 	sessionRepository := repository.NewSessionRepository(db)
 	friendsRepository := repository.NewFriendsRepository(db)
+	voteRepository := repository.NewVoteRepository(db)
 
-	notificationHandler := handler.NewNotificationHandler(notificationRepository, sessionRepository, groupMemberRepository, groupRepository, userRepository, invitationRepository)
+	notificationHandler := handler.NewNotificationHandler(notificationRepository, sessionRepository, groupMemberRepository, groupRepository, userRepository, invitationRepository, eventRepository)
+	voteHandler := handler.NewVoteHandler(voteRepository, sessionRepository)
 
 	userHandler := handler.NewUserHandler(userRepository, sessionRepository, friendsRepository)
 	mux.HandleFunc("/api/users/register", userHandler.UserRegisterHandler).Methods("POST")
@@ -36,7 +38,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/api/users/list", userHandler.ListUsersHandler).Methods("GET")
 
 	// Posts
-	postHandler := handler.NewPostHandler(postRepository, sessionRepository, friendsRepository, groupMemberRepository)
+	postHandler := handler.NewPostHandler(postRepository, sessionRepository, friendsRepository, groupMemberRepository, voteHandler)
 	mux.HandleFunc("/post", postHandler.GetAllPostsHandler).Methods("GET") // Main feed, all public posts + user groups posts
 	mux.HandleFunc("/post", postHandler.CreatePostHandler).Methods("POST")
 	// mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
@@ -51,10 +53,13 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/profile/posts/{id}", postHandler.GetAllUserPostsHandler).Methods("GET")
 
 	// Comments
-	commentHandler := handler.NewCommentHandler(commentRepository, sessionRepository, notificationHandler, postRepository, userRepository)
+	commentHandler := handler.NewCommentHandler(commentRepository, sessionRepository, notificationHandler, postRepository, userRepository, voteHandler)
 	mux.HandleFunc("/post/{id}/comments", commentHandler.GetCommentsByUserIDorPostID).Methods("GET")
 	mux.HandleFunc("/post/comment", commentHandler.CreateCommentHandler).Methods("POST")
 	mux.HandleFunc("/post/comment/{id}", commentHandler.DeleteCommentHandler).Methods("DELETE")
+
+	// Likes & dislikes for comments and posts ... the getPosts and getComments methods return the number of likes and dislikes with each post/comment
+	mux.HandleFunc("/vote", voteHandler.VotePostOrCommentHandler).Methods("POST")
 
 	// Groups
 	groupHandler := handler.NewGroupHandler(groupRepository, sessionRepository, groupMemberRepository, notificationHandler)
@@ -80,7 +85,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/groups/{groupId}/requests", groupMemberHandler.GetAllGroupRequestsHandler).Methods("GET")
 
 	// Events
-	eventHandler := handler.NewEventHandler(eventRepository, sessionRepository, groupMemberRepository)
+	eventHandler := handler.NewEventHandler(eventRepository, sessionRepository, groupMemberRepository, userRepository, notificationHandler)
 	mux.HandleFunc("/events", eventHandler.GetAllEventsHandler).Methods("GET")
 	mux.HandleFunc("/events", eventHandler.CreateEventHandler).Methods("POST")
 	mux.HandleFunc("/events/{id}", eventHandler.GetEventByIDHandler).Methods("GET")
@@ -94,6 +99,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/notifications", notificationHandler.GetAllNotificationsHandler).Methods("GET")
 	mux.HandleFunc("/notifications/{id}", notificationHandler.GetNotificationByIDHandler).Methods("GET")
 	mux.HandleFunc("/notifications/{id}", notificationHandler.MarkNotificationAsReadHandler).Methods("PUT")
+	mux.HandleFunc("/notifications/{id}", notificationHandler.DeleteNotificationHandler).Methods("DELETE")
 
 	// Friends
 	friendHandler := handler.NewFriendHandler(friendsRepository, sessionRepository, notificationHandler, userRepository)

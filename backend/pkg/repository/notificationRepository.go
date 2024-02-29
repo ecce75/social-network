@@ -73,3 +73,10 @@ func (r *NotificationRepository) MarkNotificationAsRead(id int) error {
 	_, err := r.db.Exec(query, id)
 	return err
 }
+
+
+func (r *NotificationRepository) DeleteNotification(id int) error {
+	query := `DELETE FROM notifications WHERE id = ?`
+	_, err := r.db.Exec(query, id)
+	return err
+}

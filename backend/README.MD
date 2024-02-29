@@ -12,6 +12,7 @@
   - [Profile](#profile)
   - [Events](#events)
   - [Notifications](#notifications)
+  - [Votes](#votes)
 - [Backend contribution](#backend-contribution)
 - [Future Work](#future-work)
 - [Extra](#extra)
@@ -661,14 +662,6 @@ mux.HandleFunc("/notifications", notificationHandler.GetAllNotificationsHandler)
 
 ---
 
-- **Create Notification:** (POST) /notifications - Creates a new notification. Requires authentication.
-
-```go
-mux.HandleFunc("/notifications", notificationHandler.CreateNotificationHandler).Methods("POST")
-```
-
----
-
 - **Get Notification by ID:** (GET) /notifications/{id} - Retrieves details of a specific notification by its ID.
 
 ```go
@@ -695,6 +688,52 @@ type Notification struct {
   Message   string    `json:"message"`
   IsRead    bool      `json:"is_read"`
   CreatedAt time.Time `json:"created_at"`
+}
+```
+
+```sql
+
+```
+
+---
+
+### Votes
+
+- **Vote post or comment** (POST) `/vote` - Like or dislike a comment/post, removing the vote works through same endpoint by sending the already selected vote again.
+
+```go
+mux.HandleFunc("/vote", voteHandler.VotePostOrCommentHandler).Methods("POST")
+```
+
+The endpoint requires 3 values: item, item_id, action
+
+- item - 'comment' or 'post'
+- item_id - id of the comment or post
+- action - 'like' or 'dislike'
+
+---
+
+Logic behind votes:
+
+- post request with all required fields
+- check user auth
+- check if item and action values are correct
+- call the repository function
+- repository level checks if the vote for specific comment or post exists
+- if vote doesn't exist -> create it
+- if it exists -> check if same type(action)
+- if same type -> remove the vote
+- if different type(change like to dislike for example) -> update the vote
+
+---
+
+#### Votes related code
+
+```go
+type VoteData struct {
+  Item   string `json:"item"`    // 'comment' or 'post'
+  ItemID int    `json:"item_id"` // comment or post id
+  Action string `json:"action"`  // 'like' or 'dislike'
 }
 ```
 
