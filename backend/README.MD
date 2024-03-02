@@ -296,32 +296,149 @@ type Comment struct {
 }
 ```
 
+---
+---
+
 ### Groups
 
 The Groups functionality allows for the creation, management, and deletion of user groups. It supports operations such as creating a new group, editing group details, deleting a group, and managing group memberships and invitations.
 
 #### Group Endpoints
 
-- **Create Group:** (POST) `/groups` - Allows authenticated users to create a new group.
 - **Get All Groups:** (GET) `/groups` - Retrieves all groups.
+- **Create Group:** (POST) `/groups` - Allows authenticated users to create a new group.
 - **Get Group by ID:** (GET) `/groups/{id}` - Retrieves details of a specific group by its ID.
 - **Edit Group:** (PUT) `/groups/{id}` - Allows editing of group details.
 - **Delete Group:** (DELETE) `/groups/{id}` - Deletes a group by its ID.
 
 ---
 
+```go
+mux.HandleFunc("/groups", groupHandler.GetAllGroupsHandler).Methods("GET")
+```
+
+This endpoint retrieves all groups.
+
+---
+
+```go
+mux.HandleFunc("/groups", groupHandler.CreateGroupHandler).Methods("POST")
+```
+
+This endpoint creates a new group. Requires Title and Description in the request body. Checks for user authorization via SessionToken and attaches userID as CreatorId.
+
+---
+
+```go
+mux.HandleFunc("/groups/{id}", groupHandler.GetGroupByIDHandler).Methods("GET")
+```
+
+This endpoint retrieves a group by its ID. It requires the ID as a URL parameter.
+
+---
+
+```go
+mux.HandleFunc("/groups/{id}", groupHandler.EditGroupHandler).Methods("PUT")
+```
+
+This endpoint allows a user to edit a certain group. Requires the ID as URL parameter. Checks if the user is authorized to edit via SessionToken.
+
+---
+
+```go
+mux.HandleFunc("/groups/{id}", groupHandler.DeleteGroupHandler).Methods("DELETE")
+```
+
+This endpoint allows a user to delete a certain group. Requires the ID as URL parameter. Checks if the user is authorized to delete via SessionToken.
+
+---
 ---
 
 #### Group Membership and Invitations
 
+- **Get All Group Invitations:** (GET) `/invitations` - Gets all group invitations.
 - **Invite Group Member:** (POST) `/invitations` - Enables group admins to send invitations to users.
-- **Approve Group Membership:** (PUT) `/invitations/approve/{id}` - Allows group admins to approve membership requests.
+- **Get Group Invitation By ID:** (GET) `/invitations/{id}` - Gets group invitation by ID.
+- **Accept Group Membership:** (PUT) `/invitations/approve/{id}` - Allows group admins to approve membership requests.
 - **Decline Group Membership:** (PUT) `/invitations/{id}` - Used by admins to decline membership requests or by users to decline invitations.
 - **Request Group Membership:** (POST) `/invitations/request/{id}` - Allows users to request membership to a group.
 - **Accept Group Invitation:** (PUT) `/invitations/{id}` - Allows users to accept group invitations.
 - **Remove Group Member:** (DELETE) `/groups/{groupId}/members/{userId}` - Admins can remove users from their group.
 
 ---
+
+```go
+mux.HandleFunc("/invitations", groupMemberHandler.GetAllGroupInvitationsHandler).Methods("GET")
+```
+
+This endpoint retrieves all pending group invitations. Extracts userID from the cookie.
+
+---
+
+```go
+mux.HandleFunc("/invitations", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
+```
+
+This endpoint enables users to be invited into a group. Requires groupID, inviteUserID.
+
+The request then is processed and user authentication is double checked via cookie and userID attached to the invitation request as inviteUserID. After request data is decoded and stored it will return the id of the invitation.
+
+---
+
+```go
+mux.HandleFunc("/invitations/{id}", groupMemberHandler.GetGroupInvitationByIDHandler).Methods("GET")
+
+```
+
+This endpoint provides group invitations via ID. Requires ID as URL parameter. Checks if the user is authorized via Sessiontoken.
+
+---
+
+```go
+mux.HandleFunc("/invitations/{id}", groupMemberHandler.DeclineGroupInvitationHandler).Methods("PUT")
+```
+
+This endpoint enables users to decline a group invitation. It notifices the sender about the decline and then deletes the invitation from the database.
+
+---
+
+```go
+mux.HandleFunc("/invitations/{id}", groupMemberHandler.AcceptGroupInvitationHandler).Methods("PUT")
+```
+
+Requires ID as URL parameter. This endpoint enables users to accept a group invitation. It notifices the sender about the decline and then deletes the invitation from the database.
+
+---
+
+```go
+mux.HandleFunc("/invitations/request/{id}", groupMemberHandler.RequestGroupMembershipHandler).Methods("POST")
+```
+
+This endpoint enables a user to request membership to a group. Requires groupID and userID
+
+The request then is processed and user authentication is double checked via cookie and userID attached to the request as joinUserID. After request data is decoded and stored it will notify the group admin and user of the sent request.
+---
+
+```go
+mux.HandleFunc("/groups/{groupId}/members/{userId}", groupMemberHandler.RemoveMemberHandler).Methods("DELETE")
+```
+
+This endpoint enables removing a member from a group. Needs the groupID, userID as URL parameters.
+
+Checks if there is a groupID and userID in the first place, then checks for authorization via SessionToken. Then checks if the user trying to remove another user is the group owner.
+
+---
+
+```go
+mux.HandleFunc("/invitations/approve/{id}", groupMemberHandler.ApproveGroupMembershipHandler).Methods("PUT")
+```
+
+This endpoint enables group owner to approve a user's membership request. Expects group invitation ID as URL parameter.
+
+Accepts the group invitation and updates the membership status to "approved."
+Adds the user to the specified group.
+Notifies the user of the approval.
+Marks the group invitation as accepted in the database.
 
 ---
 
@@ -340,11 +457,13 @@ type GroupInvitation struct {
 
 ```go
 type Group struct {
- Id          int       `json:"id"`
- CreatorId   int       `json:"creator_id"`
- Title       string    `json:"title"`
- Description string    `json:"description"`
- CreatedAt   time.Time `json:"created_at"`
+	Id          int       `json:"id"`
+	CreatorId   int       `json:"creator_id"`
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Deleted     bool      `json:"deleted"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 ```
 
@@ -555,66 +674,77 @@ The Event functionality encompasses operations related to events, offering funct
 ---
 
 - **Get All Events:** (GET) `/events` - Retrieves a list of all events.
+- **Create Event:** (POST) `/events` - Creates a new event. Requires authentication.
+- **Get Event by ID:** (GET) `/events/{id}` - Retrieves details of a specific event by its ID.
+- **Edit Event:** (PUT) `/events/{id}` - Updates details of a specific event. Requires authentication and ownership verification.
+- **Delete Event:** (DELETE) `/events/{id}` - Deletes a specific event. Requires authentication and ownership verification.
+- **Get Events by Group ID:** (GET) `/events/{id}` - Retrieves events associated with a specific group.
+- **Add or Update Attendance:** (PUT) `/events/{id}` - Adds or updates attendance for a user at a specific event. Requires authentication.
+- **Get Attendance by Event ID:** (GET) `/events/{id}` - Retrieves attendance records for a specific event.
+
+---
 
 ```go
 mux.HandleFunc("/events", eventHandler.GetAllEventsHandler).Methods("GET")
 ```
 
----
+This endpoint retrieves all events. 
 
-- **Create Event:** (POST) `/events` - Creates a new event. Requires authentication.
+---
 
 ```go
 mux.HandleFunc("/events", eventHandler.CreateEventHandler).Methods("POST")
 ```
 
----
+This endpoint processes an HTTP request to create a new event. It decodes the request body, authenticates the user through the SessionToken, checks group membership, sets the creator ID, and stores the event in the database. The response includes a status code indicating success or specific error details if applicable.
 
-- **Get Event by ID:** (GET) `/events/{id}` - Retrieves details of a specific event by its ID.
+---
 
 ```go
 	mux.HandleFunc("/events/{id}", eventHandler.GetEventByIDHandler).Methods("GET")
 ```
 
----
+This endpoint processes an HTTP request to retrieve details for a specific event based on its ID. It parses the event ID from the request parameters, validates it, retrieves the event details from the repository, and responds with the event data in JSON format. Error responses cover issues such as invalid event IDs or errors in retrieving event details, ensuring appropriate handling of potential failures.
 
-- **Edit Event:** (PUT) `/events/{id}` - Updates details of a specific event. Requires authentication and ownership verification.
+---
 
 ```go
 mux.HandleFunc("/events/{id}", eventHandler.EditEventHandler).Methods("PUT")
 ```
 
----
+This endpoint enables a user to edit an existing event. Decodes the request body, confirms user authentication via ID from request parameters, checks if the user is the event creator, updates the event in the database, and responds with the updated event details in JSON format upon success. Error responses are provided for decoding issues, authentication failures, unauthorized access, or database update errors.
 
-- **Delete Event:** (DELETE) `/events/{id}` - Deletes a specific event. Requires authentication and ownership verification.
+---
 
 ```go
 mux.HandleFunc("/events/{id}", eventHandler.DeleteEventHandler).Methods("DELETE")
 ```
 
----
+This endpoint processes an HTTP request to delete an event. It confirms user authentication, retrieves and validates the event ID from request parameters, checks if the user is the event creator, deletes the event from the database, and responds with a success message in JSON format. Error responses cover issues such as authentication errors, invalid event IDs, unauthorized access, or database deletion failures.
 
-- **Get Events by Group ID:** (GET) `/events/{id}` - Retrieves events associated with a specific group.
+---
 
 ```go
 mux.HandleFunc("/events/{id}", eventHandler.GetEventsByGroupIDHandler).Methods("GET")
 ```
 
----
+This endpoint handles an HTTP request to retrieve events based on a group ID. It parses the group ID from the request parameters, validates it, retrieves the associated events from the repository, and responds with the events in JSON format. Error responses cover issues such as parsing errors, missing group ID parameters, or failures in retrieving events from the repository.
 
-- **Add or Update Attendance:** (PUT) `/events/{id}` - Adds or updates attendance for a user at a specific event. Requires authentication.
+---
 
 ```go
 mux.HandleFunc("/events/{id}", eventHandler.AddOrUpdateAttendanceHandler).Methods("PUT")
 ```
 
----
+This endpoint processes an HTTP request to add or update attendance for a specific event and user. It extracts event ID, user ID, and attendance status from the request parameters, validates them, and invokes the corresponding repository method. The function responds with the attendance ID in JSON format upon success, handling errors such as missing parameters or failures in parsing and updating attendance with appropriate error responses.
 
-- **Get Attendance by Event ID:** (GET) `/events/{id}` - Retrieves attendance records for a specific event.
+---
 
 ```go
 mux.HandleFunc("/events/{id}", eventHandler.GetAttendanceByEventIDHandler).Methods("GET")
 ```
+
+This endpoint handles an HTTP request to retrieve attendance for a specific event. It parses the event ID from the request parameters, validates it, retrieves the attendance list from the repository, and responds with the attendance data in JSON format. Error responses cover issues such as missing event ID parameters or parsing errors, ensuring appropriate handling of potential failures.
 
 ---
 
@@ -654,34 +784,41 @@ The Notification functionality facilitates operations related to user notificati
 ---
 
 - **Get All Notifications:** (GET) /notifications - Retrieves a list of all notifications for the authenticated user.
+- **Create Notification:** (POST) /notifications - Creates a new notification. Requires authentication.
+- **Get Notification by ID:** (GET) /notifications/{id} - Retrieves details of a specific notification by its ID.
+- **Mark Notification as Read:** (PUT) /notifications/{id} - Marks a specific notification as read. Requires authentication.
+
+---
 
 ```go
 mux.HandleFunc("/notifications", notificationHandler.GetAllNotificationsHandler).Methods("GET")
 ```
 
----
+This endpoint manages an HTTP request to retrieve all notifications. It fetches the notifications from the repository, responds with the data in JSON format, and handles potential errors, providing appropriate error responses for failures in retrieving notifications.
 
-- **Create Notification:** (POST) /notifications - Creates a new notification. Requires authentication.
+---
 
 ```go
 mux.HandleFunc("/notifications", notificationHandler.CreateNotificationHandler).Methods("POST")
 ```
 
----
+This endpoint handles an HTTP request to create a new notification. It decodes the request body, validates user authentication, assigns the user ID, and creates the notification in the database. The function responds with a success status (201 Created) or appropriate error messages for issues such as decoding errors or database creation failures.
 
-- **Get Notification by ID:** (GET) /notifications/{id} - Retrieves details of a specific notification by its ID.
+---
 
 ```go
 mux.HandleFunc("/notifications/{id}", notificationHandler.GetNotificationByIDHandler).Methods("GET")
 ```
 
----
+This endpoint processes an HTTP request to retrieve details for a specific notification based on its ID. It parses the notification ID from the request parameters, validates it, retrieves the notification details from the repository, and responds with the data in JSON format. Error responses cover issues such as invalid notification IDs or errors in retrieving notification details, ensuring appropriate handling of potential failures.
 
-- **Mark Notification as Read:** (PUT) /notifications/{id} - Marks a specific notification as read. Requires authentication.
+---
 
 ```go
 mux.HandleFunc("/notifications/{id}", notificationHandler.MarkNotificationAsReadHandler).Methods("PUT")
 ```
+
+This endpoint handles an HTTP request to mark a notification as read. It parses the notification ID from the request parameters, validates it, and updates the notification status in the repository. The function responds with a success status (200 OK) or appropriate error messages for issues such as invalid notification IDs or failures in updating the notification status.
 
 ---
 

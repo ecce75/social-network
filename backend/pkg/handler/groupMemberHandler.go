@@ -295,12 +295,12 @@ func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *
 		return
 	}
 
-	groupID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	groupID, err := h.groupRepo.GetGroupByID(newInvitation.GroupId)
 	if err != nil {
-		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to get group id from session token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	newInvitation.GroupId = groupID
+	newInvitation.GroupId = groupID.Id
 
 	// Notify the user that they have been invited to join a group
 	err = notifyUserInvitation(h.notificationRepo, newInvitation.InviteUserId, newInvitation.GroupId, "You have been invited to join a group.")
