@@ -64,7 +64,7 @@ func (h *UserHandler) UserRegisterHandler(w http.ResponseWriter, r *http.Request
 	http.SetCookie(w, &http.Cookie{
 		Name:   "session_token",
 		Value:  sessionToken,
-		MaxAge: 60 * 15, // 15 minutes
+		MaxAge: 60 * 30, // 30 minutes
 		Path:   "/",     // Make cookie available for all paths
 	})
 

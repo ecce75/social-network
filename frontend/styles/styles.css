@@ -15,3 +15,20 @@
 .buttonStyle {
 @apply bg-green-700 hover:bg-green-800 text-white font-bold py-2 px-4 rounded mt-2;
 }
+
+.chat-manager {
+    display: flex;
+    flex-direction: row-reverse; /* Aligns items to the right and orders them from right to left */
+    align-items: flex-end; /* Aligns items to the bottom */
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    max-width: 100%;
+}
+
+.chatbox-wrapper {
+    margin-left: 10px; /* Spacing between chatboxes */
+    width: 300px;
+    height: 400px;
+    /* No fixed width; the chatbox can grow based on its content */
+}

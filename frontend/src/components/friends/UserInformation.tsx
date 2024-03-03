@@ -12,10 +12,10 @@ const UserInformation: React.FC<GroupInformationProps> = ({ userName, pictureUrl
     const textColor = 'white'; // Set text color to black
 
     return (
-        <div style={{ display: 'flex', alignItems: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', padding: '4px'}}>
             {pictureUrl && (
                 <div className="avatar" style={{ marginRight: '10px' }}>
-                    <div className="w-16  rounded-full">
+                    <div className="w-12  rounded-full">
                         <img src={pictureUrl} alt="Uploaded Picture" />
                     </div>
                 </div>

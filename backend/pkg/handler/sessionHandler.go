@@ -27,15 +27,18 @@ func (h *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	user, err := h.userRepo.GetUserByEmailOrNickname(logData.Username)
 	if err != nil {
-		http.Error(w, "user not found", http.StatusNotFound)
+		w.WriteHeader(http.StatusUnauthorized)
+		response := map[string]string{"error": "Incorrect login credentials."}
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
 	// Compare hashed password with provided password
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(logData.Password))
 	if err != nil { // Wrong password
-		fmt.Println("Error comparing password: ", err)
-		http.Error(w, "Couldn't compare password with hashed variant: "+err.Error(), http.StatusUnauthorized)
+		w.WriteHeader(http.StatusUnauthorized)
+		response := map[string]string{"error": "Incorrect login credentials."}
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 
@@ -47,7 +50,7 @@ func (h *UserHandler) LoginHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &http.Cookie{
 		Name:   "session_token",
 		Value:  sessionToken,
-		MaxAge: 60 * 15, // 15 minutes
+		MaxAge: 60 * 30, // 30 minutes
 		Path:   "/",     // Make cookie available for all paths
 	})
 

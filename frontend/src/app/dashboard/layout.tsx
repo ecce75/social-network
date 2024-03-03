@@ -3,6 +3,8 @@ import MainHeader from '@/components/headers/MainHeader';
 import background from '../../../public/assets/background.png';
 import Footer from '@/components/headers/Footer';
 
+import {ChatProvider, ChatManager} from '@/components/chat/ChatContext';
+
 
 
 
@@ -13,6 +15,7 @@ export default function DashboardLayout({
     children: React.ReactNode
   }) {
     return (
+        <ChatProvider>
         <div style={{
           backgroundImage: `url("${background.src}")`,
           backgroundSize: 'cover',
@@ -22,11 +25,10 @@ export default function DashboardLayout({
         
         <MainHeader/>
         {children}
-        
+        <ChatManager/>
         <Footer/>
         </div>
-      
-        
+      </ChatProvider>
     )
   }
 

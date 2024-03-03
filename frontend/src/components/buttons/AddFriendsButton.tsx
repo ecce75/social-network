@@ -105,13 +105,15 @@ const AddFriendsButton: React.FC = () => {
             modal.showModal();
         }
     };
-
+    console.log(users, friendStatuses, "users and friendStatuses", users && users.length > 0)
     return (
         <>
+            {users && users.length > 0 ? (
+                <>
             <button className="btn btn-secondary text-white mt-2 rounded-xl" onClick={openModal}>
                 Add Friends
             </button>
-            {users != null ? (
+
             <dialog id="addFriendsModal" className="modal">
                 <div className="modal-box" style={{ maxWidth: 'none', width: '50%', height: '50%', overflowY: 'auto' }}>
                     <h3 className="font-bold text-lg">Choose friends to add</h3>
@@ -119,7 +121,7 @@ const AddFriendsButton: React.FC = () => {
                         <UserTab
                             key={user.id}
                             userName={user.username}
-                            avatarUrl={user.avatar_url}
+                            avatar={user.avatar_url}
                             friendStatus={friendStatuses[user.id]}
                             onAddFriend={() => handleAddFriend(user.id)}
                             onAcceptRequest={() => handleAcceptRequest(user.id)}
@@ -130,8 +132,9 @@ const AddFriendsButton: React.FC = () => {
                     <button>close</button>
                 </form>
             </dialog>
+            </>
             ) : (
-                <p>No new friends to add</p>
+                <h2 className="flex justify-center items-center font-semibold mt-2 text-lg">No new friends to add</h2>
             )}
         </>
     );
