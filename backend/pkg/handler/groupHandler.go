@@ -8,6 +8,7 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+
 )
 
 type GroupHandler struct {
@@ -28,7 +29,7 @@ func (h *GroupHandler) GetAllGroupsHandler(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		http.Error(w, "Failed to get groups: "+err.Error(), http.StatusInternalServerError)
 		return
-	}
+	} 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(groups)
 }

@@ -7,7 +7,6 @@ import { PostProps } from '../postcreation/Post';
 const PostFeed: React.FC = () => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
-    console.log(BE_PORT, FE_URL);
     const [posts, setPosts] = useState<PostProps[]>([]);
 
     useEffect(() => {

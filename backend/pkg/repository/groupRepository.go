@@ -23,7 +23,7 @@ func NewGroupRepository(db *sql.DB) *GroupRepository {
 // It returns a slice of Group objects and an error if any.
 func (r *GroupRepository) GetAllGroups() ([]model.Group, error) {
 	// SQL query to select all groups
-	query := `SELECT * FROM groups`
+	query := `SELECT id, creator_id, title, description, image_url, created_at, updated_at FROM groups`
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -33,7 +33,8 @@ func (r *GroupRepository) GetAllGroups() ([]model.Group, error) {
 	var groups []model.Group
 	for rows.Next() {
 		var group model.Group
-		if err := rows.Scan(&group.Id, &group.Title, &group.Description, &group.CreatedAt, &group.UpdatedAt); err != nil {
+		err := rows.Scan(&group.Id, &group.CreatorId, &group.Title, &group.Description, &group.Image, &group.CreatedAt, &group.UpdatedAt)
+		if err != nil && err != sql.ErrNoRows{
 			return nil, err
 		}
 		groups = append(groups, group)

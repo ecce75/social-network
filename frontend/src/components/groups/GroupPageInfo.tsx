@@ -20,9 +20,6 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({ title, text, pictureUrl }
                     title={title} // Pass title prop to GroupContent
                     text={text}
                     pictureUrl={pictureUrl}
-                    placeholderTitle="Shoe Emporium"
-                    placeholderText="Join us for footwear everything!"
-                    placeholderPictureUrl="https://iili.io/J1ucEoF.jpg"
                 />
             </div>
                 <div className="flex flex-col lg:flex-row justify-between border-2 border-gray-300 bg-primary rounded-lg p-5 mb-5">
@@ -42,8 +39,8 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({ title, text, pictureUrl }
                 {/* List */}
                 <ul style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
                     {/* Map through the list of people and render each item */}
-                    <UserTab/>
-                    <UserTab/>
+                    {/* <UserTab/>
+                    <UserTab/> */}
 
                 </ul>
             </div>
