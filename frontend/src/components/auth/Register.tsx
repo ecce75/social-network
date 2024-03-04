@@ -34,7 +34,7 @@ const handleRegister = (
 
 	// Form submission logic
 	// TODO: change localhost to iriesphere url
-	fetch(`${process.env.FRONTEND_URL}:${process.env.BACKEND_PORT}/api/users/register`, {
+	fetch(`${process.env.NEXT_PUBLIC_FRONTEND_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api/users/register`, {
 	  method: 'POST',
 	  body: formData,
 	  credentials: 'include' // Send cookies with the request

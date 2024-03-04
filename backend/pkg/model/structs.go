@@ -79,6 +79,7 @@ type Post struct {
 	ImageURL       string    `json:"image_url,omitempty"`
 	PrivacySetting string    `json:"privacy_setting"`
 	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 type PostsResponse struct {

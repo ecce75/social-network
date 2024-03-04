@@ -85,8 +85,18 @@ func (h *VoteHandler) AppendVotesToPostsResponse(posts []model.Post) ([]model.Po
 		if err != nil {
 			return nil, err
 		}
-		postsResponse[i].Likes = likes
-		postsResponse[i].Dislikes = dislikes
+		postsResponse[i] = model.PostsResponse{
+            Id:             post.Id,
+            UserID:         post.UserID,
+            GroupID:        post.GroupID,
+            Title:          post.Title,
+            Content:        post.Content,
+            ImageURL:       post.ImageURL,
+            PrivacySetting: post.PrivacySetting,
+            CreatedAt:      post.CreatedAt,
+            Likes:          likes,
+            Dislikes:       dislikes,
+        }
 	}
 	return postsResponse, nil
 }

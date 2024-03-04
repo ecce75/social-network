@@ -62,9 +62,10 @@ function ProfileIconDM() {
     };
 
 
-    const placeholderprofile = () => {
-        router.push('/dashboard/profile/placeholderprofile'); // Redirect to groups page
+    const myProfile = () => {
+        router.push('/dashboard/profile/me');
     };
+
     if (profileData === null) {
         return <span className="loading loading-spinner loading-lg"></span>;
     }
@@ -83,7 +84,7 @@ function ProfileIconDM() {
                 <ul tabIndex={0} className="menu menu-lg dropdown-content mt-5 z-[1] p-3 shadow bg-primary rounded-box w-72 border-2 border-green-800">
                     <h1 className="text-center font-extrabold text-2xl text-white p-2">{profileData.username}</h1>
                     <ul className="flex justify-between menu menu-horizontal bg-secondary rounded-box">
-                        <li onClick={placeholderprofile}>
+                        <li onClick={myProfile}>
                             <a>
                                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none"
                                      viewBox="0 0 20 20" stroke="currentColor">

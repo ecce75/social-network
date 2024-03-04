@@ -25,7 +25,6 @@ func (r *PostRepository) GetPostByID(postID int) (model.Post, error) {
 }
 
 func (r *PostRepository) CreatePost(post model.CreatePostRequest, userID int) (int64, error) {
-
 	query := `INSERT INTO posts (user_id, title, group_id, content, privacy_setting) 
 	VALUES (?, ?, ?, ?, ?)`
 	result, err := r.db.Exec(query, userID, post.Title, post.GroupID, post.Content, post.PrivacySetting)
@@ -34,6 +33,9 @@ func (r *PostRepository) CreatePost(post model.CreatePostRequest, userID int) (i
 		return 0, err
 	}
 	postID, err := result.LastInsertId()
+	if err != nil {
+		fmt.Println("Error getting last inserted post id")
+	}
 
 	post.ImageURL = "http://localhost:8080/images/posts/" + fmt.Sprint(postID) + ".jpg"
 	query = `UPDATE posts SET image_url = ? WHERE id = ?`
@@ -75,7 +77,7 @@ func (r *PostRepository) GetAllPostsWithUserIDAccess(userID int) ([]model.Post, 
 	var posts []model.Post
 	for rows.Next() {
 		var post model.Post
-		if err := rows.Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+		if err := rows.Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.PrivacySetting, &post.CreatedAt, &post.UpdatedAt); err != nil {
 			return nil, err
 		}
 		posts = append(posts, post)
@@ -98,7 +100,7 @@ func (r *PostRepository) GetAllUserPosts(userID int) ([]model.Post, error) {
 	var posts []model.Post
 	for rows.Next() {
 		var post model.Post
-		if err := rows.Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+		if err := rows.Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.PrivacySetting, &post.CreatedAt, &post.UpdatedAt); err != nil {
 			return nil, err
 		}
 		posts = append(posts, post)
@@ -120,7 +122,7 @@ func (r *PostRepository) GetAllUserPublicPosts(userID int) ([]model.Post, error)
 	var posts []model.Post
 	for rows.Next() {
 		var post model.Post
-		if err := rows.Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+		if err := rows.Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.PrivacySetting, &post.CreatedAt, &post.UpdatedAt); err != nil {
 			return nil, err
 		}
 		posts = append(posts, post)
@@ -207,7 +209,7 @@ func (r *PostRepository) GetPostsByUserGroups(userID int) ([]model.Post, error) 
 	var posts []model.Post
 	for rows.Next() {
 		var post model.Post
-		if err := rows.Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt); err != nil {
+		if err := rows.Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt, &post.UpdatedAt); err != nil {
 			return nil, err
 		}
 		posts = append(posts, post)

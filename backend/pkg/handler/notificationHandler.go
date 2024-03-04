@@ -132,6 +132,19 @@ func (h *NotificationHandler) MarkNotificationAsReadHandler(w http.ResponseWrite
 	w.Write([]byte("Notification marked as read successfully!"))
 }
 
+// func (h *NotificationHandler) NotifyPostOwnerOfNewComment(postID, commentID, userID int) error {
+// 	post, err := h.notificationRepo.GetPostByID(postID)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	username, err := h.userRepo.GetUsernameByID(userID)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// }
+
 func (h *NotificationHandler) NotifyGroupDeletion(groupID int) error {
 	// Get the list of group members.
 	members, err := h.groupMemberRepo.GetGroupMembers(groupID)

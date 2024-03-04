@@ -49,7 +49,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	}
 	util.ImageSave(w, r, strconv.Itoa(int(commentID)), "comment")
 
-	// notify post creator of new comment
+	// NOTIFICATION
 	postOwnerId, err := h.postRepo.GetPostOwnerIDByPostID(newComment.PostID)
 	if err != nil {
 		http.Error(w, "Failed to get post owner id: "+err.Error(), http.StatusInternalServerError)

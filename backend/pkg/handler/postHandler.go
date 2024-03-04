@@ -188,7 +188,7 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 	if requestingUserID == intUserID {
 		posts, err = h.postRepo.GetAllUserPosts(requestingUserID)
 		if err != nil {
-			http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to retrieve all user posts: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
@@ -202,13 +202,13 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 		if status == "accepted" {
 			posts, err = h.postRepo.GetAllUserPosts(intUserID)
 			if err != nil {
-				http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
+				http.Error(w, "Failed to retrieve friend's posts: "+err.Error(), http.StatusInternalServerError)
 				return
 			}
 		} else {
 			posts, err = h.postRepo.GetAllUserPublicPosts(intUserID)
 			if err != nil {
-				http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
+				http.Error(w, "Failed to retrieve user public posts: "+err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}

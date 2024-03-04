@@ -48,6 +48,8 @@ function CreatePost() {
         }
         if (selectedGroup) {
             formData.append('group', selectedGroup);
+        } else {
+            formData.append('group', "0")
         }
         try {
             const response = await fetch('http://localhost:8080/post', {

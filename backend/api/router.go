@@ -48,7 +48,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	// Posts
 	postHandler := handler.NewPostHandler(postRepository, sessionRepository, friendsRepository, groupMemberRepository, voteHandler)
-	mux.HandleFunc("/post", postHandler.GetAllPostsHandler).Methods("GET") // Main feed, all public posts + user groups posts
+	mux.HandleFunc("/posts", postHandler.GetAllPostsHandler).Methods("GET") // Main feed, all public posts + user groups posts
 	mux.HandleFunc("/post", postHandler.CreatePostHandler).Methods("POST")
 	// mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
 	mux.HandleFunc("/post/{id}", postHandler.EditPostHandler).Methods("PUT")      // Edit a post
