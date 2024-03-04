@@ -109,7 +109,6 @@ func (r *FriendsRepository) GetFriendStatus(userID, friendID int) (string, error
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("status: ", status, "userID: ", userID)
 
 	// If the status is 'pending', further clarify based on who initiated the request
 	if status == "pending" {
@@ -121,7 +120,6 @@ func (r *FriendsRepository) GetFriendStatus(userID, friendID int) (string, error
 			status = "pending"
 		}
 	}
-	fmt.Println(status)
 	return status, nil
 }
 

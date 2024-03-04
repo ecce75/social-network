@@ -26,9 +26,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose, soc
     const [allFetched, setAllFetched] = useState(false);
     const messageListRef = useRef<HTMLDivElement>(null); // Ref for the message list container
 
-    useEffect(() => {
-        console.log("Messages after fetching:", messages);
-    }, [messages]);
+
 
     // Initialize WebSocket connection
     useEffect(() => {
@@ -51,7 +49,6 @@ const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose, soc
             }
             if (message.action === "chat_history") {
                 const fetchedMessages = message.content; // Assuming this is the array of messages
-                console.log("Fetched messages:", ...fetchedMessages);
 
                 if (fetchedMessages.length > 0) {
                     const previousScrollHeight = messageListRef.current?.scrollHeight || 0
@@ -92,9 +89,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose, soc
             user: userID,
             page: page,
         };
-        console.log("Fetching messages for page", page);
         if (socket.readyState === WebSocket.OPEN) {
-            console.log("Sending request for page", page);
             // Send the request via WebSocket
             socket.send(JSON.stringify(requestData));
             // Prepare for the next page

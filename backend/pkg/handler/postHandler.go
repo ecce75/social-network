@@ -33,7 +33,7 @@ func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) 
 	request.Title = r.FormValue("title")
 	request.Content = r.FormValue("content")
 	request.GroupID, _ = strconv.Atoi(r.FormValue("group"))
-	request.PrivacySetting = r.FormValue("privacy")
+	request.PrivacySetting = r.FormValue("privacy-setting")
 
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
@@ -52,7 +52,6 @@ func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) 
 	// if request.GroupID != 0 {
 
 	// }
-
 	util.ImageSave(w, r, strconv.Itoa(int(postID)), "post")
 	// Successful response
 	response := map[string]interface{}{

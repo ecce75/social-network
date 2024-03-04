@@ -49,13 +49,10 @@ const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus
     const handleViewProfile = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation()
         setShowDialog(false);
-        console.log(userID)
         router.push(`/dashboard/profile/${userID}`);
     };
 
-    useEffect(() => {
-        console.log(friendStatus);
-    },[friendStatus])
+
 
     const {openChat} = useChat();
 

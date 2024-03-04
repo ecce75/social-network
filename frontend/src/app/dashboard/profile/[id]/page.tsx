@@ -26,7 +26,6 @@ export default function Profile({
 
             if (response.ok) {
                 const data: ProfileProps = await response.json();
-                console.log(data)
                 setProfileData(data);
             } else {
                 console.error('Failed to fetch profile data');
@@ -52,9 +51,6 @@ export default function Profile({
             .catch(error => console.error('Error fetching friends:', error));
     }, [params.id]);
 
-    useEffect(() => {
-        console.log(friends)
-    }, [friends]);
 
     return (
 

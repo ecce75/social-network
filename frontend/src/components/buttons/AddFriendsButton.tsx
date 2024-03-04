@@ -40,7 +40,6 @@ const AddFriendsButton: React.FC = () => {
         })
             .then(response => response.json())
             .then(data => {
-                console.log('Friend status:', userId, data);
                 setFriendStatuses(prevStatuses => ({
                     ...prevStatuses,
                     [userId]: data || 'none', // Set to 'none' if no status is returned

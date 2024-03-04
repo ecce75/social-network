@@ -13,7 +13,7 @@ interface RegisterValues {
 	first_name: string;
 	last_name: string;
 	dob: string;
-	avatar: File | null;
+	image: File | null;
 	username: string;
 	about: string;
 }
@@ -48,7 +48,6 @@ const handleRegister = (
 		return response.json()
 	})
 	.then(data => {
-	  console.log(data);
 	  formikHelpers.setSubmitting(false);
 	  router.push('/');
 	})
@@ -76,7 +75,7 @@ const handleRegister = (
                 first_name: '',
                 last_name: '',
                 dob: '',
-                avatar: null as File | null,
+                image: null as File | null,
                 username: '',
                 about: '',
             }}
@@ -132,7 +131,7 @@ const handleRegister = (
                                             onChange={(event) => {
                                                 if (event.currentTarget.files) {
                                                     const file = event.currentTarget.files[0];
-                                                    setFieldValue("avatar", file);
+                                                    setFieldValue("image", file);
                                                 }
                                             }}
                                         />
@@ -144,10 +143,10 @@ const handleRegister = (
                                             Browse
                                         </label>
                                         {/* Display the image preview */}
-                                        {form.values.avatar ? (
+                                        {form.values.image ? (
                                             <div className="avatar-preview">
                                                 <img
-                                                    src={URL.createObjectURL(form.values.avatar)}
+                                                    src={URL.createObjectURL(form.values.image)}
                                                     alt="Avatar Preview"
                                                     className="rounded-full"
                                                     style={{ width: 100, height: 100 }}

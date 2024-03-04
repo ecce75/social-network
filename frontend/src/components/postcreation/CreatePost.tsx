@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 
 function CreatePost() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -26,6 +26,7 @@ function CreatePost() {
     };
 
 
+
     const handleGroupSelect = (group: string) => {
         setSelectedGroup(group);
     };
@@ -37,25 +38,19 @@ function CreatePost() {
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault(); // Prevent default form submission behavior
 
-        if (!selectedFile) {
-            console.error('A file is required');
-            return;
-        }
 
         const formData = new FormData();
-        formData.append('file', selectedFile);
         formData.append('title', title);
         formData.append('content', message);
-        formData.append('privacy', privacy);
+        formData.append('privacy-setting', privacy);
         if (selectedFile) {
-            formData.append('file', selectedFile);
+            formData.append('image', selectedFile);
         }
         if (selectedGroup) {
             formData.append('group', selectedGroup);
         }
-
         try {
-            const response = await fetch('http://localhost:8080/api/posts', {
+            const response = await fetch('http://localhost:8080/post', {
                 method: 'POST',
                 credentials: 'include', // If you're handling sessions
                 body: formData, // Send the form data
@@ -66,7 +61,6 @@ function CreatePost() {
             }
 
             const data = await response.json();
-            console.log('Success:', data);
             // Handle success (e.g., clear form, show success message)
         } catch (error) {
             console.error('Error submitting post:', error);
@@ -78,10 +72,11 @@ function CreatePost() {
             <div className="flex justify-between">
                     <div>
                     {/* Top message box */}
-                    <input type="text" value= "text" placeholder="Title" className="input mt-2 w-full max-w-sm" onChange={handleTitleChange} />
+                    <input type="text" placeholder="Title" className="input mt-2 w-full max-w-sm" onChange={handleTitleChange} />
                     </div>
-                    
+
                     <div>
+
                         <div>
                                 {/* Selected Group button*/}
                                 {selectedGroup && (
@@ -113,9 +108,9 @@ function CreatePost() {
                                             <a onClick={() => handleGroupSelect('Group2')}>Group2</a>
                                         </li>
                                     </ul>
-                                
+
                                 </div>
-                                
+
 
                             </div>
                         </div>
@@ -162,7 +157,7 @@ function CreatePost() {
 
                 {/* Post button*/}
                 <div className="flex-grow" />
-                <button type="submit" className="btn">Post</button>
+                <button type="submit" onClick={handleSubmit} className="btn">Post</button>
             </div>
         </div>
     );

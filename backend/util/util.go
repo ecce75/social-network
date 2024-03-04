@@ -24,24 +24,23 @@ func GenerateSessionToken() string {
 }
 
 func ImageSave(w http.ResponseWriter, r *http.Request, key string, action string) {
-	file, _, err := r.FormFile("avatar")
+	fmt.Println("Saving image")
+	file, _, err := r.FormFile("image")
 	if err != nil {
-		fmt.Println("No image uploaded on register")
 		return
 	}
 	defer file.Close()
-
 	var imagePath string
 	switch action {
 	case "register":
 		imagePath = filepath.Join(".", "pkg", "db", "images", key+".jpg")
 		// v is now of type *model.RegistrationData
 	case "post":
-		imagePath = filepath.Join(".", "pkg", "db", "images", "post", key+".jpg")
+		imagePath = filepath.Join(".", "pkg", "db", "images", "posts", key+".jpg")
 		// Handle PostData
 		// v is now of type *model.PostData
 	case "comment":
-		imagePath = filepath.Join(".", "pkg", "db", "images", "comment", key+".jpg")
+		imagePath = filepath.Join(".", "pkg", "db", "images", "comments", key+".jpg")
 		// Handle CommentData
 		// v is now of type *model.CommentData
 	default:

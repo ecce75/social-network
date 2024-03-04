@@ -25,28 +25,26 @@ func (r *PostRepository) GetPostByID(postID int) (model.Post, error) {
 }
 
 func (r *PostRepository) CreatePost(post model.CreatePostRequest, userID int) (int64, error) {
+
 	query := `INSERT INTO posts (user_id, title, group_id, content, privacy_setting) 
-	VALUES (?, ?, ?, ?, ?, ?)`
-	result, err := r.db.Exec(query, userID, post.GroupID, post.Title, post.Content, post.PrivacySetting)
+	VALUES (?, ?, ?, ?, ?)`
+	result, err := r.db.Exec(query, userID, post.Title, post.GroupID, post.Content, post.PrivacySetting)
 	if err != nil {
 		fmt.Println("Error inserting post into database: ", err)
 		return 0, err
 	}
-	lastInsertID, err := result.LastInsertId()
-	r.AddImageUrlToPost(int(lastInsertID), post.ImageURL)
+	postID, err := result.LastInsertId()
+
+	post.ImageURL = "http://localhost:8080/images/posts/" + fmt.Sprint(postID) + ".jpg"
+	query = `UPDATE posts SET image_url = ? WHERE id = ?`
+	_, err = r.db.Exec(query, post.ImageURL, postID)
+	if err != nil {
+		return 0, err
+	}
 	if err != nil {
 		fmt.Println("Error getting last inserted post id")
 	}
-	return lastInsertID, nil
-}
-
-func (r *PostRepository) AddImageUrlToPost(postID int, imageURL string) error {
-	query := `UPDATE posts SET image_url = ? WHERE id = ?`
-	_, err := r.db.Exec(query, imageURL, postID)
-	if err != nil {
-		return err
-	}
-	return nil
+	return postID, nil
 }
 
 // GetAllPostsWithUserIDAccess retrieves all posts with the given user ID access.
