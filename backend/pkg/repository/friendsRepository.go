@@ -76,13 +76,14 @@ func (r *FriendsRepository) GetFriendByRequestID(requestID int) (model.FriendLis
 	return friend, nil
 }
 
-func (r *FriendsRepository) UpdateFriendStatus(userID, friendRequestID int, status string) error {
+func (r *FriendsRepository) UpdateFriendStatus(userID, friendID int, status string) error {
+	fmt.Println("Updating friend status", userID, friendID, status)
 	query := `
         UPDATE friends
         SET status = ?, action_user_id = ?
-        WHERE (id = ?)
+        WHERE (user_id1 = ? AND user_id2 = ?) OR (user_id1 = ? AND user_id2 = ?)
     `
-	_, err := r.db.Exec(query, status, userID, friendRequestID)
+	_, err := r.db.Exec(query, status, userID, userID, friendID, friendID, userID)
 	return err
 }
 
@@ -97,22 +98,22 @@ func (r *FriendsRepository) RemoveFriend(userID, friendID int) error {
 
 func (r *FriendsRepository) GetFriendStatus(userID, friendID int) (string, error) {
 	query := `
-        SELECT status, user_id1 FROM friends
+        SELECT status, action_user_id FROM friends
         WHERE (user_id1 = ? AND user_id2 = ?) OR (user_id1 = ? AND user_id2 = ?)
     `
 	var (
-		status  string
-		user1ID int
+		status       string
+		actionUserID int
 	)
-	err := r.db.QueryRow(query, userID, friendID, friendID, userID).Scan(&status, &user1ID)
+	err := r.db.QueryRow(query, userID, friendID, friendID, userID).Scan(&status, &actionUserID)
 	if err != nil {
 		return "", err
 	}
-	fmt.Println("status: ", status, "user1ID: ", user1ID, "userID: ", userID)
+	fmt.Println("status: ", status, "userID: ", userID)
 
 	// If the status is 'pending', further clarify based on who initiated the request
 	if status == "pending" {
-		if user1ID != userID {
+		if actionUserID != userID {
 			// The current user sent the friend request
 			status = "pending_confirmation"
 		} else {
