@@ -40,6 +40,7 @@ const AddFriendsButton: React.FC = () => {
         })
             .then(response => response.json())
             .then(data => {
+                console.log('Friend status:', userId, data);
                 setFriendStatuses(prevStatuses => ({
                     ...prevStatuses,
                     [userId]: data || 'none', // Set to 'none' if no status is returned
@@ -60,15 +61,11 @@ const AddFriendsButton: React.FC = () => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                // Assuming the server responds with the updated friend status
-                return response.json();
-            })
-            .then(data => {
-                console.log('Friend request sent:', data);
+                console.log('Friend request sent:', response);
                 // Update the friend status for this user
                 setFriendStatuses(prevStatuses => ({
                     ...prevStatuses,
-                    [userId]: data.status,
+                    [userId]: 'pending',
                 }));
             })
             .catch(error => console.error('Error:', error));
@@ -81,19 +78,35 @@ const AddFriendsButton: React.FC = () => {
                 'Content-Type': 'application/json',
             },
         })
+             .then(response => {
+                 if (!response.ok) {
+                     throw new Error('Network response was not ok');
+                 }
+                 console.log('Friend request sent:', response);
+                 // Update the friend status for this user
+                 setFriendStatuses(prevStatuses => ({
+                     ...prevStatuses,
+                     [userId]: 'accepted',
+                 }));
+             })
+            .catch(error => console.error('Error:', error));
+    };
+
+    const handleDeclineRequest = (userId: string) => {
+        fetch(`http://localhost:8080/friends/decline/${userId}`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                // Assuming the server responds with the updated friend status
-                return response.json();
-            })
-            .then(data => {
-                console.log('Friend request accepted:', data);
-                // Update the friend status for this user
                 setFriendStatuses(prevStatuses => ({
                     ...prevStatuses,
-                    [userId]: 'accepted',
+                    [userId]: 'declined',
                 }));
             })
             .catch(error => console.error('Error:', error));
@@ -105,10 +118,9 @@ const AddFriendsButton: React.FC = () => {
             modal.showModal();
         }
     };
-    console.log(users, friendStatuses, "users and friendStatuses", users && users.length > 0)
     return (
         <>
-            {users && users.length > 0 ? (
+            {users && users.filter(user => friendStatuses[user.id] !== 'accepted').length > 0 ? (
                 <>
             <button className="btn btn-secondary text-white mt-2 rounded-xl" onClick={openModal}>
                 Add Friends
@@ -117,7 +129,7 @@ const AddFriendsButton: React.FC = () => {
             <dialog id="addFriendsModal" className="modal">
                 <div className="modal-box" style={{ maxWidth: 'none', width: '50%', height: '50%', overflowY: 'auto' }}>
                     <h3 className="font-bold text-lg">Choose friends to add</h3>
-                    {users.map((user) => (
+                    {users.filter(user => friendStatuses[user.id] !== 'accepted').map((user) => (
                         <UserTab
                             key={user.id}
                             userName={user.username}
@@ -125,6 +137,7 @@ const AddFriendsButton: React.FC = () => {
                             friendStatus={friendStatuses[user.id]}
                             onAddFriend={() => handleAddFriend(user.id)}
                             onAcceptRequest={() => handleAcceptRequest(user.id)}
+                            onDeclineRequest={() => handleDeclineRequest(user.id)}
                         />
                     ))}
                 </div>
@@ -134,7 +147,7 @@ const AddFriendsButton: React.FC = () => {
             </dialog>
             </>
             ) : (
-                <h2 className="flex justify-center items-center font-semibold mt-2 text-lg">No new friends to add</h2>
+                <h2 className="flex justify-center items-center font-semibold mt-2 text-base ">No new friends to add</h2>
             )}
         </>
     );

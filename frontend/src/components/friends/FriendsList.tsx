@@ -15,14 +15,14 @@ export default function FriendsList() {
     const [friends, setFriends] = useState<FriendProps[]>([]);
 
     useEffect(() => {
-        fetch(`${process.env.FRONTEND_URL}:${process.env.BACKEND_PORT}/friends`, {
+        // fetch(`${process.env.FRONTEND_URL}:${process.env.BACKEND_PORT}/friends`, {
+        fetch (`http://localhost:8080/friends/me`, {
             method: 'GET',
             credentials: 'include' // Send cookies with the request
         })
             .then(response => response.json())
             .then(data => {
-                if (data.message === "No friends found") {
-                    // TODO: Handle no friends found
+                if (data === null) {
                     return;
                 }
                 setFriends(data)
@@ -40,6 +40,7 @@ export default function FriendsList() {
                         key={friend.id}
                         userID={friend.id}
                         userName={friend.username}
+                        friendStatus={'accepted'}
                         avatar={friend.avatar_url}
                     />
                     // <FriendsListContent

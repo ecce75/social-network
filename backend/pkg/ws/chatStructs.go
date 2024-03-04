@@ -37,9 +37,9 @@ type FetchMessage struct {
 }
 
 type ChatMessage struct {
-	MessageID  int
-	SenderID   int
-	ReceiverID int
-	Message    string
-	CreatedAt  string
+	MessageID  int    `json:"id"`
+	SenderID   int    `json:"sender"`
+	ReceiverID int    `json:"receiver"`
+	Message    string `json:"text"`
+	CreatedAt  string `json:"timestamp"`
 }

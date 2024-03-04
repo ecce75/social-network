@@ -1,6 +1,6 @@
 import Image from "next/image"
 import rastaLionImage from '../../../public/assets/rasta_lion.png';
-import { LoginForm } from "../auth/LoginRegister";
+import LoginForm from "../auth/Login";
 
 
 function LoginHeader() {

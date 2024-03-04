@@ -12,12 +12,12 @@ import (
 )
 
 type CommentHandler struct {
-	commentRepo *repository.CommentRepository
-	sessionRepo *repository.SessionRepository
+	commentRepo         *repository.CommentRepository
+	sessionRepo         *repository.SessionRepository
 	notificationHandler *NotificationHandler
-	postRepo *repository.PostRepository
-	userRepo *repository.UserRepository
-	VoteHandler *VoteHandler
+	postRepo            *repository.PostRepository
+	userRepo            *repository.UserRepository
+	VoteHandler         *VoteHandler
 }
 
 func NewCommentHandler(commentRepo *repository.CommentRepository, sessionRepo *repository.SessionRepository, notificationHandler *NotificationHandler, postRepo *repository.PostRepository, userRepo *repository.UserRepository, voteHandler *VoteHandler) *CommentHandler {
@@ -25,14 +25,15 @@ func NewCommentHandler(commentRepo *repository.CommentRepository, sessionRepo *r
 }
 
 func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Request) {
-	// TODO: id may not come from request and will cause error - added omitempty
-	var newComment model.Comment
-	err := json.NewDecoder(r.Body).Decode(&newComment)
-	if err != nil {
-		http.Error(w, "Error decoding request body: "+err.Error(), http.StatusBadRequest)
+	err1 := r.ParseMultipartForm(10 << 20) // Maximum memory 10MB, change this based on your requirements
+	if err1 != nil {
+		http.Error(w, "Error parsing form data: "+err1.Error(), http.StatusBadRequest)
 		return
 	}
-
+	// TODO: id may not come from request and will cause error
+	var newComment model.Comment
+	newComment.Content = r.FormValue("content")
+	newComment.PostID, _ = strconv.Atoi(r.FormValue("post_id"))
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
@@ -41,12 +42,12 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	newComment.UserID = userID
 
 	// Insert the comment into the database
-	// TODO: should it return the new comment?
-	createdCommentId, err := h.commentRepo.CreateComment(newComment)
+	commentID, err := h.commentRepo.CreateComment(newComment)
 	if err != nil {
 		http.Error(w, "Failed to create comment: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	util.ImageSave(w, r, strconv.Itoa(int(commentID)), "comment")
 
 	// notify post creator of new comment
 	postOwnerId, err := h.postRepo.GetPostOwnerIDByPostID(newComment.PostID)
@@ -76,7 +77,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	// Successful response
 	response := map[string]interface{}{
 		"message": "Comment created successfully",
-		"data":    createdCommentId,
+		"data":    commentID,
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)

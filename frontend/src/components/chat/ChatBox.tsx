@@ -1,8 +1,7 @@
 "use client"
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 
-import {useChat} from "@/components/chat/ChatContext";
 import "../../../styles/styles.css";
 import MessageInput from "@/components/chat/MessageInput";
 import MessageList from "@/components/chat/MessageList";
@@ -12,35 +11,125 @@ interface ChatBoxProps {
     userName: string;
     avatar: string;
     onClose: () => void; // Assuming onClose is a function that takes no arguments
+    socket: WebSocket;
 }
 
-const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose}) => {
-    const [messages, setMessages] = useState<Array<{id: number, text: string, sender: string, timestamp: string}>>([]); // Example message state
-    const [socket, setSocket] = useState<WebSocket | null>(null);
+const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose, socket}) => {
+    const [messages, setMessages] = useState<Array<{
+        id: number,
+        text: string,
+        sender: string,
+        timestamp: string
+    }>>([]); // Example message state
+    // const [socket, setSocket] = useState<WebSocket | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [allFetched, setAllFetched] = useState(false);
+    const messageListRef = useRef<HTMLDivElement>(null); // Ref for the message list container
+
+    useEffect(() => {
+        console.log("Messages after fetching:", messages);
+    }, [messages]);
 
     // Initialize WebSocket connection
     useEffect(() => {
-        const newSocket = new WebSocket("ws://localhost:8080/ws");
-        setSocket(newSocket);
+        // if (!socket || socket.readyState === WebSocket.CLOSED) {
+        //     const newSocket = new WebSocket("ws://localhost:8080/ws");
+        //     setSocket(newSocket);
 
-        newSocket.onmessage = (event) => {
+        fetchMessages(userID, currentPage);
+
+        socket.onmessage = (event) => {
             const message = JSON.parse(event.data);
             // Handle different types of messages here
-            if (message.action === "send_message") {
-                console.log("Received message:", message);
-                setMessages((prevMessages) => [...prevMessages, { id: prevMessages.length + 1, text: message.content, sender: "them", timestamp: message.timestamp}]);
+            if (message.action === "send_message" && message.sender === userID) {
+                setMessages((prevMessages) => [...prevMessages, {
+                    id: message.id,
+                    text: message.content,
+                    sender: "them",
+                    timestamp: message.timestamp
+                }]);
+            }
+            if (message.action === "chat_history") {
+                const fetchedMessages = message.content; // Assuming this is the array of messages
+                console.log("Fetched messages:", ...fetchedMessages);
+
+                if (fetchedMessages.length > 0) {
+                    const previousScrollHeight = messageListRef.current?.scrollHeight || 0
+                    // There are messages, so append them to the current messages
+                    setMessages((prevMessages) => [
+                        ...prevMessages,
+                        ...fetchedMessages.map((msg: any) => ({
+                            id: msg.id,
+                            text: msg.text,
+                            sender: msg.sender === userID ? "me" : "them",
+                            timestamp: msg.timestamp,
+                        })),
+                    ]);
+                    // After state update, adjust scroll to maintain position
+                    setTimeout(() => {
+                        const currentScrollHeight = messageListRef.current?.scrollHeight || 0;
+                        const scrollOffset = currentScrollHeight - previousScrollHeight;
+                        if (messageListRef.current) {
+                            messageListRef.current.scrollTop += scrollOffset;
+                        }
+                    }, 0);
+                } else {
+                    // The list is empty, so there are no more messages to fetch
+                    setAllFetched(true);
+                }
             }
             // Add other message handling logic here
         };
 
-        return () => {
-            newSocket.close();
-        };
+        // }
     }, []);
 
 
+    const fetchMessages = (userID: number, page: number) => {
+        // Construct the request for fetching messages
+        const requestData = {
+            action: "fetch_chat_history",
+            user: userID,
+            page: page,
+        };
+        console.log("Fetching messages for page", page);
+        if (socket.readyState === WebSocket.OPEN) {
+            console.log("Sending request for page", page);
+            // Send the request via WebSocket
+            socket.send(JSON.stringify(requestData));
+            // Prepare for the next page
+            setCurrentPage(page + 1);
+        } else {
+            console.log("Socket not ready, cannot fetch messages");
+        }
+    };
+
+    const loadMoreMessages = () => {
+        if (!allFetched && messageListRef.current) {
+            const {scrollTop} = messageListRef.current;
+            if (scrollTop < 20) { // You might adjust this threshold
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    fetchMessages(userID, currentPage);
+                }
+            }
+        }
+    };
+
+    useEffect(() => {
+        const messageListElement = messageListRef.current;
+        if (messageListElement) {
+            messageListElement.addEventListener('scroll', loadMoreMessages);
+
+            // Cleanup
+            return () => {
+                messageListElement.removeEventListener('scroll', loadMoreMessages);
+            };
+        }
+    }, [currentPage, allFetched]);
+
     const handleSend = (text: string) => {
-        const newMessage = { id: messages.length + 1, text, sender: "me", timestamp: new Date().toISOString()  }; // Example new message
+        const tempID = Date.now();
+        const newMessage = {id: tempID, text, sender: "me", timestamp: new Date().toISOString()}; // Example new message
         setMessages([...messages, newMessage]);
         if (socket && socket.readyState === WebSocket.OPEN) {
             const jsonData = {
@@ -54,22 +143,23 @@ const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose}) =>
 
 
     return (
-        <div className="chatbox-wrapper bottom-0 right-0 mb-4 mr-4 max-w-xs w-full bg-white shadow-lg rounded-lg flex flex-col">
+        <div
+            className="chatbox-wrapper bottom-0 right-0 mb-4 mr-4 max-w-xs w-full bg-white shadow-lg rounded-lg flex flex-col">
             <div className="header p-3 border-b bg-primary rounded-t-lg">
                 <div className="flex justify-between">
                     <div className="flex justify-start">
-                    <div className="avatar">
-                        <div className="w-12  rounded-full">
-                            <img src={avatar} alt="User avatar"/>
+                        <div className="avatar">
+                            <div className="w-12  rounded-full">
+                                <img src={avatar} alt="User avatar"/>
+                            </div>
                         </div>
+
+                        <h2 className="font-bold text-xl ml-4 mt-2">{userName}</h2>
                     </div>
 
-                    <h2 className="font-bold text-xl ml-4 mt-2">{userName}</h2>
-                </div>
-
-                    {/*<button onClick={onClose} className="btn relative bottom-6 left-24">X</button>*/}
                     <button onClick={onClose} className="btn btn-xs btn-circle relative bottom-1 bg-primary">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white " fill="none" viewBox="0 0 24 24"
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white " fill="none"
+                             viewBox="0 0 24 24"
                              stroke="currentColor">
                             <path className="bg-primary" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2"
                                   d="M6 18L18 6M6 6l12 12"/>
@@ -77,7 +167,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose}) =>
                     </button>
                 </div>
             </div>
-            <MessageList messages={messages} userName={userName}/>
+            <MessageList ref={messageListRef} messages={messages} userName={userName}/>
             <MessageInput onSend={handleSend}/>
         </div>
     );

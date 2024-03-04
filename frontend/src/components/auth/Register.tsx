@@ -5,10 +5,6 @@ import { Formik, Field, Form, FormikHelpers, FieldProps } from "formik";
 import "../../../styles/styles.css";
 import { useRouter} from 'next/navigation';
 
-interface LoginValues {
-	username: string;
-	password: string;
-}
 
 interface RegisterValues {
 	[key: string]: any;
@@ -23,87 +19,6 @@ interface RegisterValues {
 }
 
 
-const handleLogin = (
-	values: LoginValues,
-	formikHelpers: FormikHelpers<LoginValues>,
-	router: any
-  ) => {
-
-	// Form submission logic
-	fetch('http://localhost:8080/api/users/login', {
-	  method: 'POST',
-	  headers: {
-		'Content-Type': 'application/json'
-	  },
-	  body: JSON.stringify(values),
-	  credentials: 'include' // Send cookies with the request
-	})
-	.then(response => {
-		if (!response.ok) {
-			return response.text().then(text => {
-				throw new Error(text);
-			  });
-		  }
-		return response.json()
-	})
-	.then(data => {
-	  console.log(data);
-	  formikHelpers.setSubmitting(false);
-	  router.push('/');
-	})
-	.catch(error => {
-		formikHelpers.setSubmitting(false);
-		if (JSON.parse(error.message).error === "Incorrect login credentials.") {
-			alert("Invalid username or password")
-		}
-	});
-  };
- 
-
-const LoginForm = (({}) => {
-	const router = useRouter();
-	return ( 
-		<Formik
-			initialValues={{
-				username: "",
-				password: "",
-			}}
-			onSubmit={(values, formikHelpers) => handleLogin(values, formikHelpers, router)}
-		>	
-
-			<Form className="flex items-center">
-				<div className="mr-2">
-					<Field
-						className="rounded-md p-2 border border-black w-32 focus:outline-none"
-						id="username"
-						name="username"
-						placeholder="Username"
-						autoComplete="off"
-					/>
-				</div>
-
-				<div className="mr-2">
-					
-					<Field
-						className="rounded-md p-2 border border-black w-32 focus:outline-none"
-						id="password"
-						name="password"
-						placeholder="Password"
-						type="password"
-						autoComplete="off"
-					/>
-				</div>
-
-				<button
-					type="submit"
-					className="bg-green-500 hover:bg-primary text-white px-4 py-2 rounded"
-				>
-					Login
-				</button>
-			</Form>
-		</Formik>
-	);
-});
 
 const handleRegister = (
 	values: RegisterValues,
@@ -274,7 +189,6 @@ const handleRegister = (
 };
 export default RegisterForm;
 
-export { LoginForm, RegisterForm };
 	
 
 

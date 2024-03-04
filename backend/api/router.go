@@ -114,10 +114,10 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/friends/requests", friendHandler.GetFriendRequestsHandler).Methods("GET")
 	mux.HandleFunc("/friends/request/{id}", friendHandler.SendFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/accept/{id}", friendHandler.AcceptFriendRequestHandler).Methods("POST")
-	mux.HandleFunc("/friends/decline", friendHandler.DeclineFriendRequestHandler).Methods("POST")
+	mux.HandleFunc("/friends/decline/{id}", friendHandler.DeclineFriendRequestHandler).Methods("POST")
 	mux.HandleFunc("/friends/check/{id}", friendHandler.CheckFriendStatusHandler).Methods("GET")
 
-	mux.HandleFunc("/friends", friendHandler.GetFriendsHandler).Methods("GET")
+	mux.HandleFunc("/friends/{id}", friendHandler.GetFriendsHandler).Methods("GET")
 
 	// route to serve images
 	http.HandleFunc("/images/", func(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +136,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	// CORS
 	corsOptions := cors.New(cors.Options{
-		AllowedOrigins:   []string{address + port},                   // Replace with your frontend's origin
+		AllowedOrigins:   []string{"http://localhost:3000"},                   // Replace with your frontend's origin
 		AllowCredentials: true,                                                // Important for cookies, authorization headers with HTTPS
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},           // You can adjust this based on your needs
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // Adjust the methods based on your requirements

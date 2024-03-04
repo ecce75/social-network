@@ -6,7 +6,6 @@ import (
 	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
-	"strconv"
 )
 
 var newline = []byte{'\n'}
@@ -64,7 +63,7 @@ func (c *Client) readPump() {
 			c.Hub.ChatHandler.SendMessage(messageData, c)
 		case "fetch_chat_history":
 			// Convert the "user" value to an integer
-			userStr, userOK := messageData["user"].(string)
+			userID, userOK := messageData["user"].(float64)
 
 			pageInt, pageOK := messageData["page"].(float64)
 			if !userOK || !pageOK {
@@ -72,8 +71,7 @@ func (c *Client) readPump() {
 				log.Printf("Invalid or missing parameters: userOK=%v, pageOK=%v, perPageOK=%v", userOK, pageOK)
 				continue
 			}
-			userInt, _ := strconv.Atoi(userStr)
-			c.Hub.ChatHandler.FetchChatHistory(c, userInt, int(pageInt))
+			c.Hub.ChatHandler.FetchChatHistory(c, int(userID), int(pageInt))
 		default:
 			// Handle other actions as needed
 		}

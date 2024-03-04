@@ -105,6 +105,7 @@ type CommentsResponse struct {
 }
 
 type CreatePostRequest struct {
+	PostID         int    `json:"id"`
 	Title          string `json:"title"`
 	Content        string `json:"content,omitempty"`
 	GroupID        int    `json:"group_id,omitempty"`
@@ -125,6 +126,7 @@ type Comment struct {
 	PostID    int       `json:"post_id"`
 	UserID    int       `json:"user_id,omitempty"`
 	Content   string    `json:"content"`
+	Image     string    `json:"image"`
 	CreatedAt time.Time `json:"created_at"`
 }
 

@@ -13,17 +13,17 @@ import (
 )
 
 type FriendHandler struct {
-	userRepository   *repository.UserRepository
-	friendRepository  *repository.FriendsRepository
-	sessionRepository *repository.SessionRepository
+	userRepository      *repository.UserRepository
+	friendRepository    *repository.FriendsRepository
+	sessionRepository   *repository.SessionRepository
 	notificationHandler *NotificationHandler
 }
 
 func NewFriendHandler(friendRepository *repository.FriendsRepository, sessionRepository *repository.SessionRepository, notificationHandler *NotificationHandler, userRepository *repository.UserRepository) *FriendHandler {
 	return &FriendHandler{friendRepository: friendRepository,
-		sessionRepository: sessionRepository,
-		notificationHandler: notificationHandler, 
-		userRepository: userRepository,
+		sessionRepository:   sessionRepository,
+		notificationHandler: notificationHandler,
+		userRepository:      userRepository,
 	}
 }
 
@@ -71,7 +71,18 @@ func (h *FriendHandler) SendFriendRequestHandler(w http.ResponseWriter, r *http.
 
 	switch status {
 	case "":
-		// No friend request exists, proceed to send one
+		err = h.friendRepository.AddFriend(userID, friendID)
+		if err != nil {
+			http.Error(w, "Error sending friend request "+err.Error(), http.StatusInternalServerError)
+			return
+		} // No friend request exists, proceed to send one
+	case "declined":
+		err = h.friendRepository.UpdateFriendStatus(userID, friendID, "pending")
+		if err != nil {
+			http.Error(w, "Error sending friend request "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		// The user has declined a friend request from the other user, proceed to send a new friend request
 	case "pending":
 		http.Error(w, "A friend request is already pending between these users", http.StatusConflict)
 		return
@@ -83,12 +94,6 @@ func (h *FriendHandler) SendFriendRequestHandler(w http.ResponseWriter, r *http.
 		return
 	default:
 		http.Error(w, "Unknown friend status: "+status, http.StatusInternalServerError)
-		return
-	}
-
-	err = h.friendRepository.AddFriend(userID, friendID)
-	if err != nil {
-		http.Error(w, "Error sending friend request "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -182,11 +187,15 @@ func (h *FriendHandler) DeclineFriendRequestHandler(w http.ResponseWriter, r *ht
 // If there is an error retrieving the friends, it returns a 500 Internal Server Error.
 // The response is encoded in JSON format.
 func (h *FriendHandler) GetFriendsHandler(w http.ResponseWriter, r *http.Request) {
-	sessionToken := util.GetSessionToken(r)
-	userID, err := h.sessionRepository.GetUserIDFromSessionToken(sessionToken)
+
+	userID, err := strconv.Atoi(mux.Vars(r)["id"])
 	if err != nil {
-		http.Error(w, "User not authenticated", http.StatusUnauthorized)
-		return
+		sessionToken := util.GetSessionToken(r)
+		userID, err = h.sessionRepository.GetUserIDFromSessionToken(sessionToken)
+		if err != nil {
+			http.Error(w, "User not authenticated", http.StatusUnauthorized)
+			return
+		}
 	}
 
 	friends, err := h.friendRepository.GetFriends(userID)

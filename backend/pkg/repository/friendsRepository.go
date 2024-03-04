@@ -4,6 +4,7 @@ import (
 	"backend/pkg/model"
 	"database/sql"
 	"errors"
+	"fmt"
 )
 
 type FriendsRepository struct {
@@ -107,6 +108,7 @@ func (r *FriendsRepository) GetFriendStatus(userID, friendID int) (string, error
 	if err != nil {
 		return "", err
 	}
+	fmt.Println("status: ", status, "user1ID: ", user1ID, "userID: ", userID)
 
 	// If the status is 'pending', further clarify based on who initiated the request
 	if status == "pending" {
@@ -118,7 +120,7 @@ func (r *FriendsRepository) GetFriendStatus(userID, friendID int) (string, error
 			status = "pending"
 		}
 	}
-
+	fmt.Println(status)
 	return status, nil
 }
 
@@ -133,7 +135,7 @@ func (r *FriendsRepository) FriendRequestExists(userID, friendID int) (bool, err
 		return false, err
 	}
 	// A friend request exists if the status is not an empty string
-	return status != "", nil
+	return status != "" && status != "declined", nil
 }
 
 func (r *FriendsRepository) GetFriendRequests(userID int) ([]model.FriendRequest, error) {

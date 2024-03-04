@@ -12,11 +12,11 @@ import (
 )
 
 type PostHandler struct {
-	postRepo *repository.PostRepository
-	sessionRepo *repository.SessionRepository
-	friendsRepo *repository.FriendsRepository
+	postRepo        *repository.PostRepository
+	sessionRepo     *repository.SessionRepository
+	friendsRepo     *repository.FriendsRepository
 	groupMemberRepo *repository.GroupMemberRepository
-	voteHandler *VoteHandler
+	voteHandler     *VoteHandler
 }
 
 func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository, friendsRepo *repository.FriendsRepository, groupMemberRepo *repository.GroupMemberRepository, voteHandler *VoteHandler) *PostHandler {
@@ -24,16 +24,20 @@ func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository
 }
 
 func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
-	var request model.CreatePostRequest
-	err := json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		http.Error(w, "Failed to decode request data", http.StatusBadRequest)
+	err1 := r.ParseMultipartForm(10 << 20) // Maximum memory 10MB, change this based on your requirements
+	if err1 != nil {
+		http.Error(w, "Error parsing form data: "+err1.Error(), http.StatusBadRequest)
 		return
 	}
+	var request model.CreatePostRequest
+	request.Title = r.FormValue("title")
+	request.Content = r.FormValue("content")
+	request.GroupID, _ = strconv.Atoi(r.FormValue("group"))
+	request.PrivacySetting = r.FormValue("privacy")
 
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
-		http.Error(w, "Error confirming authentication: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error confirming authentication: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -46,13 +50,14 @@ func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) 
 
 	// TODO: notify group members of new post
 	// if request.GroupID != 0 {
-		
+
 	// }
 
+	util.ImageSave(w, r, strconv.Itoa(int(postID)), "post")
 	// Successful response
 	response := map[string]interface{}{
 		"message": "Post created successfully",
-		"data": postID,
+		"data":    postID,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -71,7 +76,7 @@ func (h *PostHandler) EditPostHandler(w http.ResponseWriter, r *http.Request) {
 	// Confirm user auth and get userid
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
-		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Error confirming user authentication: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
@@ -90,14 +95,13 @@ func (h *PostHandler) EditPostHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(response)
 }
 
-
 func (h *PostHandler) DeletePostHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the post ID from the URL
 	vars := mux.Vars(r)
 	postID, ok := vars["id"]
 	intpostID, err := strconv.Atoi(postID)
 	if err != nil {
-		http.Error(w, "Failed to parse post ID: " +err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to parse post ID: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !ok {
@@ -127,22 +131,21 @@ func (h *PostHandler) DeletePostHandler(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(response)
 }
 
-
 func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
-		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Error confirming user authentication: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 
 	userGroupsPosts, err := h.postRepo.GetPostsByUserGroups(userID)
 	if err != nil {
-		http.Error(w, "Failed to retrieve posts by user groups: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to retrieve posts by user groups: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	posts, err := h.postRepo.GetAllPostsWithUserIDAccess(userID)
 	if err != nil {
-		http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	posts = append(posts, userGroupsPosts...)
@@ -150,7 +153,7 @@ func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request)
 	// Append the votes to the posts
 	postsResponse, err := h.voteHandler.AppendVotesToPostsResponse(posts)
 	if err != nil {
-		http.Error(w, "Failed to append votes to posts: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to append votes to posts: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -170,7 +173,7 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 	userID, ok := vars["id"]
 	intUserID, err := strconv.Atoi(userID)
 	if err != nil {
-		http.Error(w, "Failed to parse user ID: " +err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to parse user ID: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !ok {
@@ -179,34 +182,34 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 	}
 	requestingUserID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
-		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Error confirming user authentication: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 	var posts []model.Post
 	if requestingUserID == intUserID {
 		posts, err = h.postRepo.GetAllUserPosts(requestingUserID)
 		if err != nil {
-			http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 	} else {
 		// check if the users are friends
 		status, err := h.friendsRepo.GetFriendStatus(requestingUserID, intUserID)
 		if err != nil {
-			http.Error(w, "Failed to retrieve friend status: " + err.Error(), http.StatusInternalServerError)
+			http.Error(w, "Failed to retrieve friend status: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 		// retrieve users public posts, and private posts if they are friends
 		if status == "accepted" {
 			posts, err = h.postRepo.GetAllUserPosts(intUserID)
 			if err != nil {
-				http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+				http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
 				return
 			}
 		} else {
 			posts, err = h.postRepo.GetAllUserPublicPosts(intUserID)
 			if err != nil {
-				http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+				http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
 				return
 			}
 		}
@@ -215,7 +218,7 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 	// Append the votes to the posts
 	postsResponse, err := h.voteHandler.AppendVotesToPostsResponse(posts)
 	if err != nil {
-		http.Error(w, "Failed to append votes to posts: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to append votes to posts: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -233,7 +236,7 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 	groupID, ok := vars["id"]
 	intGroupID, err := strconv.Atoi(groupID)
 	if err != nil {
-		http.Error(w, "Failed to parse group ID: " +err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to parse group ID: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !ok {
@@ -242,13 +245,13 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 	}
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
-		http.Error(w, "Error confirming user authentication: " + err.Error(), http.StatusUnauthorized)
+		http.Error(w, "Error confirming user authentication: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
 	// check if user is in group
 	isMember, err := h.groupMemberRepo.IsUserGroupMember(userID, intGroupID)
 	if err != nil {
-		http.Error(w, "Failed to check if user is in group: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to check if user is in group: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	if !isMember {
@@ -258,14 +261,14 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 
 	posts, err := h.postRepo.GetPostsByGroupID(intGroupID)
 	if err != nil {
-		http.Error(w, "Failed to retrieve posts: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Append the votes to the posts
 	postsResponse, err := h.voteHandler.AppendVotesToPostsResponse(posts)
 	if err != nil {
-		http.Error(w, "Failed to append votes to posts: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to append votes to posts: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
