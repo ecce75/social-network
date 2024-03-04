@@ -5,6 +5,7 @@ import (
 	"backend/pkg/repository"
 	"backend/pkg/ws"
 	"database/sql"
+	"fmt"
 	"net/http"
 	"os"
 
@@ -126,17 +127,19 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	go hub.Run()
 
-	address := os.Getenv("BACKEND_URL")
-	port := os.Getenv("HTTPS_PORT")
+	address := os.Getenv("NEXT_PUBLIC_BACKEND_URL")
+	port := os.Getenv("NEXT_PUBLIC_HTTPS_PORT")
 	if address == "" {
 		address = "http://localhost" // fallback address
 	} else if port == "" {
 		port = "3000" // fallback port
 	}
 
+	fmt.Println("Cors address: " + address + ":" + port)
+
 	// CORS
 	corsOptions := cors.New(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:3000"},                   // Replace with your frontend's origin
+		AllowedOrigins:   []string{address + ":" + port},                   // Replace with your frontend's origin
 		AllowCredentials: true,                                                // Important for cookies, authorization headers with HTTPS
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},           // You can adjust this based on your needs
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // Adjust the methods based on your requirements

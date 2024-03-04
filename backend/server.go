@@ -4,10 +4,11 @@ import (
 	"backend/api"
 	"backend/pkg/db/sqlite"
 	"fmt"
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
-	"github.com/gorilla/mux"
 )
 
 func main() {
@@ -21,17 +22,24 @@ func main() {
 		log.Fatal("Failed to connect to the database:", err)
 	}
 	defer db.Close()
+	// ENV variables
 
-	api.Router(mux, db)
+	err = godotenv.Load("../.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
 
-	port := os.Getenv("BACKEND_PORT")
+	port := os.Getenv("NEXT_PUBLIC_BACKEND_PORT")
 	if port == "" {
-		port = "8080"
+		port = "empty"
 	}
-	address := os.Getenv("BACKEND_URL")
+	address := os.Getenv("NEXT_PUBLIC_BACKEND_URL")
 	if address == "" {
-		address = "localhost"
+		address = "empty"
 	}
+
+	// Start the router
+	api.Router(mux, db)
 
 	fmt.Println("Server is running on " + address + ":" + port)
 	http.ListenAndServe(":" + port, nil)
