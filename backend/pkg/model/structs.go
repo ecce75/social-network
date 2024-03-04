@@ -144,6 +144,7 @@ type Group struct {
 	CreatorId   int       `json:"creator_id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
+	Image       string    `json:"image"`
 	Deleted     bool      `json:"deleted,omitempty"`
 	CreatedAt   time.Time `json:"created_at,omitempty"`
 	UpdatedAt   time.Time `json:"updated_at,omitempty"`

@@ -43,9 +43,6 @@ func (r *PostRepository) CreatePost(post model.CreatePostRequest, userID int) (i
 	if err != nil {
 		return 0, err
 	}
-	if err != nil {
-		fmt.Println("Error getting last inserted post id")
-	}
 	return postID, nil
 }
 

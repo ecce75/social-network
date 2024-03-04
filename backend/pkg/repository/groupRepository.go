@@ -5,6 +5,7 @@ package repository
 import (
 	"backend/pkg/model"
 	"database/sql"
+	"fmt"
 	"time"
 )
 
@@ -52,11 +53,20 @@ func (r *GroupRepository) CreateGroup(group model.Group) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	lastInsertID, err := result.LastInsertId()
+	groupID, err := result.LastInsertId()
+	if err != nil {
+		fmt.Println("Error getting last inserted post id")
+	}
+	var ImageURL = "http://localhost:8080/images/posts/" + fmt.Sprint(groupID) + ".jpg"
+	query = `UPDATE groups SET image_url = ? WHERE id = ?`
+	_, err = r.db.Exec(query, ImageURL, groupID)
 	if err != nil {
 		return 0, err
 	}
-	return lastInsertID, nil
+	if err != nil {
+		return 0, err
+	}
+	return groupID, nil
 }
 
 // GetGroupByID retrieves a group by ID from the database.

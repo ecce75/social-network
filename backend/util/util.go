@@ -3,7 +3,6 @@ package util
 import (
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -24,7 +23,6 @@ func GenerateSessionToken() string {
 }
 
 func ImageSave(w http.ResponseWriter, r *http.Request, key string, action string) {
-	fmt.Println("Saving image")
 	file, _, err := r.FormFile("image")
 	if err != nil {
 		return
@@ -41,8 +39,10 @@ func ImageSave(w http.ResponseWriter, r *http.Request, key string, action string
 		// v is now of type *model.PostData
 	case "comment":
 		imagePath = filepath.Join(".", "pkg", "db", "images", "comments", key+".jpg")
-		// Handle CommentData
-		// v is now of type *model.CommentData
+	// Handle CommentData
+	// v is now of type *model.CommentData
+	case "group":
+		imagePath = filepath.Join(".", "pkg", "db", "images", "groups", key+".jpg")
 	default:
 		// Handle other types
 	}

@@ -5,15 +5,15 @@ import (
 	"backend/pkg/repository"
 	"backend/util"
 	"encoding/json"
+	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
-	"github.com/gorilla/mux"
 )
 
 type GroupHandler struct {
-	groupRepo        *repository.GroupRepository
-	groupMemberRepo  *repository.GroupMemberRepository
-	sessionRepo      *repository.SessionRepository
+	groupRepo           *repository.GroupRepository
+	groupMemberRepo     *repository.GroupMemberRepository
+	sessionRepo         *repository.SessionRepository
 	notificationHandler *NotificationHandler
 }
 
@@ -35,26 +35,37 @@ func (h *GroupHandler) GetAllGroupsHandler(w http.ResponseWriter, r *http.Reques
 
 func (h *GroupHandler) CreateGroupHandler(w http.ResponseWriter, r *http.Request) {
 	// logic for creating a group
-	var newGroup model.Group
-	err := json.NewDecoder(r.Body).Decode(&newGroup)
-	if err != nil {
-		http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
+	err1 := r.ParseMultipartForm(10 << 20) // Maximum memory 10MB, change this based on your requirements
+	if err1 != nil {
+		http.Error(w, "Error parsing form data: "+err1.Error(), http.StatusBadRequest)
 		return
 	}
+
 	// TODO: check if group with title already exists IN FRONTEND
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "Error confirming authentication: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	var newGroup model.Group
+	newGroup.Title = r.FormValue("title")
+	newGroup.Description = r.FormValue("description")
 	newGroup.CreatorId = userID
+
 	// creating the group in db
-	_, err = h.groupRepo.CreateGroup(newGroup)
+	groupID, err := h.groupRepo.CreateGroup(newGroup)
 	if err != nil {
 		http.Error(w, "Failed to create group: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+	util.ImageSave(w, r, strconv.Itoa(int(groupID)), "group")
+	response := map[string]interface{}{
+		"message": "Group created successfully",
+		"id":      groupID,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 
 }
 
@@ -164,4 +175,3 @@ func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
 }
-

@@ -5,6 +5,7 @@ import (
 	"backend/pkg/repository"
 	"backend/util"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
 
@@ -151,6 +152,7 @@ func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request)
 
 	// Append the votes to the posts
 	postsResponse, err := h.voteHandler.AppendVotesToPostsResponse(posts)
+	fmt.Println(postsResponse)
 	if err != nil {
 		http.Error(w, "Failed to append votes to posts: "+err.Error(), http.StatusInternalServerError)
 		return

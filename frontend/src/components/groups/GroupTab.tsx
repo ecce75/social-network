@@ -13,7 +13,7 @@ const GroupTab: React.FC<GroupTabProps> = ({ title, text, pictureUrl }) => {
     const router = useRouter(); // Initialize useRouter
 
     const handleClick = () => {
-        router.push('/dashboard/groups/placeholdergroup'); // Redirect to groups page
+        router.push('/dashboard/groups'); // Redirect to groups page
     };
 
     return (

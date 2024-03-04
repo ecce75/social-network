@@ -5,7 +5,7 @@ import GroupFeed from "@/components/feeds/GroupFeed"
 
 
 
-export default function PlaceholderGroup() {
+export default function Group() {
     return (       
     
     <div>
