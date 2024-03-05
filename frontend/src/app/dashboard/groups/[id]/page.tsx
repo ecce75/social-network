@@ -4,7 +4,7 @@ import GroupPageInfo from "@/components/groups/GroupPageInfo";
 import CreatePostButtonGroup from "@/components/buttons/CreatePostButtonGroup";
 import GroupEventFeed from "@/components/groups/GroupEventFeed";
 import React, { useEffect } from "react";
-import { PostProps } from "@/components/postcreation/Post";
+import Post, { PostProps } from "@/components/postcreation/Post";
 
 interface GroupProps {
     id: string
@@ -101,7 +101,27 @@ export default function Group({
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
                             {/*<Post/>*/}
-                            {/*<Post/>*/}
+                            {
+                                posts.length > 0 ?
+                                    posts.map(post =>
+                                        <Post
+                                            key={post.id}
+                                            id={post.id}
+                                            userId={post.userId}
+                                            title={post.title}
+                                            content={post.content}
+                                            imageUrl={post.imageUrl}
+                                            privacySetting={post.privacySetting}
+                                            createdAt={post.createdAt}
+                                            likes={post.likes}
+                                            dislikes={post.dislikes}
+                                        />
+                                    )
+                                    :
+                                    <div>
+                                        <p>No posts found</p>
+                                    </div>
+                            }
                         </div>
                     </section>
 
