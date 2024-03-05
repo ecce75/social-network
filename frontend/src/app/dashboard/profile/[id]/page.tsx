@@ -1,12 +1,12 @@
 "use client"
 
-import {FriendProps, ProfileFeed, ProfileProps} from "@/components/profile/ProfilePage";
-import {useEffect, useState} from "react";
+import { FriendProps, ProfileFeed, ProfileProps } from "@/components/profile/ProfilePage";
+import { useEffect, useState } from "react";
 
 
 export default function Profile({
-                                    params,
-                                }: {
+    params,
+}: {
     params: {
         id: string
     }
@@ -55,7 +55,7 @@ export default function Profile({
     return (
 
         <div>
-            <ProfileFeed profile={profileData} friends={friends}/>
+            <ProfileFeed profile={profileData} friends={friends} />
 
         </div>
     );

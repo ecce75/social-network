@@ -53,7 +53,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	// mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
 	mux.HandleFunc("/post/{id}", postHandler.EditPostHandler).Methods("PUT")      // Edit a post
 	mux.HandleFunc("/post/{id}", postHandler.DeletePostHandler).Methods("DELETE") // Delete a post
-	mux.HandleFunc("/groups/posts/{id}", postHandler.GetPostsByGroupIDHandler).Methods("GET")
+	mux.HandleFunc("/groups/{id}/posts", postHandler.GetPostsByGroupIDHandler).Methods("GET")
 
 	// Profile
 	mux.HandleFunc("/profile/users/{id}", userHandler.GetUserProfileByIDHandler).Methods("GET")

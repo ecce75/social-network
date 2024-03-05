@@ -19,6 +19,7 @@ const GroupInformation: React.FC<GroupInformationProps> = ({ title, text, pictur
             )}
             <div>
                 {title && <h2 style={{ fontWeight: 'bold', fontSize: '1.2em', color: textColor }}>{title}</h2>} {/* Render the title if provided */}
+
                 {text && <p style={{ marginBottom: '20px', color: textColor }}>{text}</p>}
             </div>
         </div>

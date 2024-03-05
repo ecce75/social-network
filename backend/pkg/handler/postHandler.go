@@ -4,6 +4,7 @@ import (
 	"backend/pkg/model"
 	"backend/pkg/repository"
 	"backend/util"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -261,9 +262,15 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	posts, err := h.postRepo.GetPostsByGroupID(intGroupID)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
 		return
+	} else if err == sql.ErrNoRows {
+		response := map[string]string{
+			"message": "No posts found for the group",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
 	}
 
 	// Append the votes to the posts

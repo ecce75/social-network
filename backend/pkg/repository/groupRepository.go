@@ -57,6 +57,14 @@ func (r *GroupRepository) CreateGroup(group model.Group) (int64, error) {
 	if err != nil {
 		fmt.Println("Error getting last inserted post id")
 	}
+	// add group owner as a member
+	query = `INSERT INTO group_members (group_id, user_id) VALUES (?, ?)`
+	_, err = r.db.Exec(query, groupID, group.CreatorId)
+	if err != nil {
+		return 0, err
+	}
+
+	// set group image URL
 	var ImageURL = "http://localhost:8080/images/groups/" + fmt.Sprint(groupID) + ".jpg"
 	query = `UPDATE groups SET image_url = ? WHERE id = ?`
 	_, err = r.db.Exec(query, ImageURL, groupID)

@@ -143,10 +143,23 @@ func (r *GroupMemberRepository) IsUserGroupMember(userId, groupId int) (bool, er
 
 	var memberId int
 	err := row.Scan(&memberId)
-	if err != nil {
+	if err == sql.ErrNoRows {
+		// Check if the user is the creator of the group
+		query = `SELECT creator_id FROM groups WHERE id = ? AND creator_id = ?`
+		row = r.db.QueryRow(query, groupId, userId)
+
+		var creatorId int
+		err = row.Scan(&creatorId)
+		if err == sql.ErrNoRows {
+			return false, nil
+		} else if err != nil {
+			return false, err
+		}
+	} else if err != nil {
 		return false, err
 	}
-	return memberId == userId, nil
+
+	return true, nil
 }
 
 // GetGroupMembers retrieves the list of members for a given group ID.
