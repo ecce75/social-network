@@ -34,7 +34,7 @@ func (r *GroupRepository) GetAllGroups() ([]model.Group, error) {
 	for rows.Next() {
 		var group model.Group
 		err := rows.Scan(&group.Id, &group.CreatorId, &group.Title, &group.Description, &group.Image, &group.CreatedAt, &group.UpdatedAt)
-		if err != nil && err != sql.ErrNoRows{
+		if err != nil && err != sql.ErrNoRows {
 			return nil, err
 		}
 		groups = append(groups, group)
@@ -47,7 +47,6 @@ func (r *GroupRepository) GetAllGroups() ([]model.Group, error) {
 
 // CreateGroup creates a new group in the database.
 // It returns the ID of the newly created group and an error if any.
-// TODO: review this function - it may also return the new group instead of just the id
 func (r *GroupRepository) CreateGroup(group model.Group) (int64, error) {
 	query := `INSERT INTO groups (creator_id, title, description) VALUES (?, ?, ?)`
 	result, err := r.db.Exec(query, group.CreatorId, group.Title, group.Description)
@@ -58,15 +57,13 @@ func (r *GroupRepository) CreateGroup(group model.Group) (int64, error) {
 	if err != nil {
 		fmt.Println("Error getting last inserted post id")
 	}
-	var ImageURL = "http://localhost:8080/images/posts/" + fmt.Sprint(groupID) + ".jpg"
+	var ImageURL = "http://localhost:8080/images/groups/" + fmt.Sprint(groupID) + ".jpg"
 	query = `UPDATE groups SET image_url = ? WHERE id = ?`
 	_, err = r.db.Exec(query, ImageURL, groupID)
 	if err != nil {
 		return 0, err
 	}
-	if err != nil {
-		return 0, err
-	}
+
 	return groupID, nil
 }
 
@@ -76,7 +73,7 @@ func (r *GroupRepository) GetGroupByID(id int) (model.Group, error) {
 	query := `SELECT * FROM groups WHERE id = ?`
 	row := r.db.QueryRow(query, id)
 	var group model.Group
-	err := row.Scan(&group.Id, &group.CreatorId, &group.Title, &group.Description, &group.CreatedAt, &group.UpdatedAt)
+	err := row.Scan(&group.Id, &group.CreatorId, &group.Title, &group.Description, &group.Image, &group.CreatedAt, &group.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return model.Group{}, nil

@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import {useRouter} from "next/router";
+import {useRouter} from "next/navigation";
 
 function CreateGroup() {
-    // const router = useRouter();
+     const router = useRouter();
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
 
@@ -28,7 +28,7 @@ function CreateGroup() {
         event.preventDefault();
 
         const formData = new FormData();
-        formData.append('name', groupName);
+        formData.append('title', groupName);
         formData.append('description', groupDescription);
         if (selectedFile) {
             formData.append('image', selectedFile);
@@ -48,7 +48,7 @@ function CreateGroup() {
             const data = await response.json();
             console.log('Group created:', data.id);
 
-            // await router.push(`/dashboard/groups/${data.id}`);
+            await router.push(`/dashboard/groups/${data.id}`);
 
         } catch (error) {
             console.log('Error creating group:', error);
