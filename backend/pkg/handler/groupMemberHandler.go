@@ -100,6 +100,7 @@ func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter
 	}
 	request.JoinUserId = userID
 	request.GroupId = intGroupID
+
 	// Create the membership request in the database
 	err = h.groupMemberRepo.CreateGroupRequest(request)
 	if err != nil {
@@ -123,17 +124,29 @@ func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter
 func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the request URL to get the invitation ID
 	vars := mux.Vars(r)
-	id := vars["id"]
+	groupID := vars["groupId"]
+
+	intGroupID, err := strconv.Atoi(groupID)
+	if err != nil {
+		http.Error(w, "Failed to convert groupid string to int: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	// Retrieve the user ID from the session token
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// userID := r.Context().Value("AuthUserID").(int)
 	// Update the status of the membership request to "approved"
-	err := h.groupMemberRepo.AcceptGroupInvitationAndRequest(id)
+	err = h.groupMemberRepo.AcceptGroupInvitationAndRequest(userID, intGroupID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// get groupId from the request invitation that was accepted
-	groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(id)
+	groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(userID, intGroupID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -161,24 +174,30 @@ func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter
 func (h *GroupMemberHandler) DeclineGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the request URL to get the invitation ID
 	vars := mux.Vars(r)
-	id := vars["id"]
+	groupID := vars["groupId"]
+
+	intGroupID, err := strconv.Atoi(groupID)
+	if err != nil {
+		http.Error(w, "Failed to convert groupid string to int: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	// Retrieve the user ID from the session token
-	// userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
-	// if err != nil {
-	// 	http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
-	// 	return
-	// }
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Update the status of the membership request to "declined"
-	err := h.invitationRepo.DeclineGroupInvitation(id)
+	err = h.invitationRepo.DeclineGroupInvitation(userID, intGroupID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// get groupId from the request invitation that was accepted
-	groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(id)
+	groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(userID, intGroupID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -237,14 +256,25 @@ func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *
 // AcceptGroupInvitationHandler allows a user to accept an invitation to join a group.
 func (h *GroupMemberHandler) AcceptGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id := vars["id"]
-	err := h.groupMemberRepo.AcceptGroupInvitationAndRequest(id)
+	groupID := vars["groupId"]
+	intGroupID, err := strconv.Atoi(groupID)
+	if err != nil {
+		http.Error(w, "Failed to convert groupid string to int: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = h.groupMemberRepo.AcceptGroupInvitationAndRequest(userID, intGroupID)
 	if err != nil {
 		http.Error(w, "Failed to accept invitation: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// get groupId from the request invitation that was accepted
-	groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(id)
+	groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(userID, intGroupID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
@@ -272,15 +302,26 @@ func (h *GroupMemberHandler) AcceptGroupInvitationHandler(w http.ResponseWriter,
 // DeclineGroupInvitationHandler allows a user to decline an invitation to join a group.
 func (h *GroupMemberHandler) DeclineGroupInvitationHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id := vars["id"]
-	err := h.invitationRepo.DeclineGroupInvitation(id)
+	groupID := vars["groupId"]
+	intGroupID, err := strconv.Atoi(groupID)
+	if err != nil {
+		http.Error(w, "Failed to convert groupid string to int: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	err = h.invitationRepo.DeclineGroupInvitation(userID, intGroupID)
 	if err != nil {
 		http.Error(w, "Failed to decline invitation: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// You can call a notification function here to notify the sender about the decline.
-	err = h.notificationHandler.NotifyInvitationDecline(id)
+	err = h.notificationHandler.NotifyInvitationDecline(userID, intGroupID)
 	if err != nil {
 		// Handle the error if notifying the sender fails.
 		http.Error(w, "Failed to notify invitation sender about decline: "+err.Error(), http.StatusInternalServerError)
@@ -300,12 +341,16 @@ func (h *GroupMemberHandler) GetGroupInvitationByIDHandler(w http.ResponseWriter
 		http.Error(w, "Error extracting user ID from session token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	vars := mux.Vars(r)
-	id := vars["id"]
+	groupID := vars["groupId"]
+	intGroupID, err := strconv.Atoi(groupID)
+	if err != nil {
+		http.Error(w, "Failed to convert groupid string to int: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 
 	// Check if the user has the permission to view the invitation.
-	invitation, err := h.invitationRepo.GetGroupInvitationByID(id)
+	invitation, err := h.invitationRepo.GetGroupInvitationByID(userID, intGroupID)
 	if err != nil {
 		http.Error(w, "Failed to get invitation: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -315,7 +360,6 @@ func (h *GroupMemberHandler) GetGroupInvitationByIDHandler(w http.ResponseWriter
 		http.Error(w, "User does not have permission to view this invitation", http.StatusUnauthorized)
 		return
 	}
-
 	// Encode the invitation in the response.
 	json.NewEncoder(w).Encode(invitation)
 }
@@ -366,6 +410,10 @@ func (h *GroupMemberHandler) GetAllGroupRequestsHandler(w http.ResponseWriter, r
 	if isAuthorized {
 		// Get all pending group requests for the user.
 		requests, err := h.invitationRepo.GetPendingGroupRequestsForOwner(groupID)
+		for i, request := range requests {
+			requests[i].Username, requests[i].ImageURL, _ = h.userRepo.GetUsernameAndAvatarByID(request.JoinUserId)
+
+		}
 		if err != nil {
 			http.Error(w, "Failed to get group requests: "+err.Error(), http.StatusInternalServerError)
 			return

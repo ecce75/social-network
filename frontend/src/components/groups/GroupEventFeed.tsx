@@ -1,6 +1,6 @@
 import React from 'react';
 import GroupInformation from './GroupInformation';
-import JoinRequestsButton from '../buttons/JoinRequestsButton';
+import JoinRequestsButton from '../buttons/GroupRequestsButton';
 import InviteGroupButton from '../buttons/InviteGroupButton';
 import CreateEventButton from '../buttons/CreateEventBtn';
 import Post from '../postcreation/Post';

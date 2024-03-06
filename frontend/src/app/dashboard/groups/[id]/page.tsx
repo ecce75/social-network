@@ -34,6 +34,9 @@ export default function Group({
     const [group, setGroup] = React.useState<GroupProps | null>(null);
     const [posts, setPosts] = React.useState<PostProps[]>([]);
     const [isMember, setMember] = React.useState<boolean>(true);
+    const [isCreator, setCreator] = React.useState<boolean>(false);
+    const [invitationSent, setInvitationSent] = React.useState<boolean>(false);
+
 
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
@@ -45,6 +48,9 @@ export default function Group({
             })
                 .then(response => response.json())
                 .then(data => {
+                    if (data.is_user_creator) {
+                        setCreator(true);
+                    }
                     setGroup(data);
                 })
         } catch (error) {
@@ -71,6 +77,20 @@ export default function Group({
         }
     }, [])
 
+    useEffect (() => {
+        if (!isMember) {
+            fetch(`${FE_URL}:${BE_PORT}/invitations/${params.id}`, {
+                method: 'GET',
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    data.status == "pending" && setInvitationSent(true);
+                })
+        }
+
+    }, [isMember]);
+
     return (
 
         <div>
@@ -92,7 +112,9 @@ export default function Group({
                             text={group?.description}
                             pictureUrl={group?.image}
                             isMember={isMember}
-                            id={params.id}
+                            groupId={params.id}
+                            invitationSent={invitationSent}
+                            isCreator={isCreator}
                         />
                     </div>
 

@@ -91,6 +91,9 @@ func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	if group.CreatorId == userID {
+		group.IsUserCreator = true
+	}
 	groupMembers, err := h.groupMemberRepo.GetGroupMembers(id)
 	if err != nil {
 		http.Error(w, "Failed to get group members: "+err.Error(), http.StatusInternalServerError)

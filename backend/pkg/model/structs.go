@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 // Data structures and domain model
 
@@ -140,14 +142,15 @@ type UpdateCommentRequest struct {
 }
 
 type Group struct {
-	Id          int           `json:"id"`
-	CreatorId   int           `json:"creator_id"`
-	Title       string        `json:"title"`
-	Description string        `json:"description"`
-	Image       string        `json:"image"`
-	CreatedAt   time.Time     `json:"created_at,omitempty"`
-	UpdatedAt   time.Time     `json:"updated_at,omitempty"`
-	Members     []GroupMember `json:"members,omitempty"`
+	Id            int           `json:"id"`
+	CreatorId     int           `json:"creator_id"`
+	Title         string        `json:"title"`
+	Description   string        `json:"description"`
+	Image         string        `json:"image"`
+	CreatedAt     time.Time     `json:"created_at,omitempty"`
+	UpdatedAt     time.Time     `json:"updated_at,omitempty"`
+	Members       []GroupMember `json:"members,omitempty"`
+	IsUserCreator bool          `json:"is_user_creator,omitempty"`
 }
 
 type GroupMember struct {
@@ -202,6 +205,8 @@ type GroupInvitation struct {
 	Id           int       `json:"id"`
 	GroupId      int       `json:"group_id"`
 	JoinUserId   int       `json:"join_user_id"`
+	Username     string    `json:"username"`
+	ImageURL     string    `json:"image"`
 	InviteUserId int       `json:"invite_user_id,omitempty"`
 	Status       string    `json:"status"`
 	CreatedAt    time.Time `json:"created_at"`

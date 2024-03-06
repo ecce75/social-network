@@ -57,17 +57,17 @@ func (r *InvitationRepository) DeleteGroupInvitation(id int) error {
 
 // AcceptGroupInvitation updates the status of an invitation to "accepted" in the database.
 // It returns an error if any.
-func (r *GroupMemberRepository) AcceptGroupInvitationAndRequest(id string) error {
-	query := `UPDATE group_invitations SET status = 'accepted' WHERE id = ?`
-	_, err := r.db.Exec(query, id)
+func (r *GroupMemberRepository) AcceptGroupInvitationAndRequest(userID, groupID int) error {
+	query := `UPDATE group_invitations SET status = 'accepted' WHERE join_user_id = ? AND group_id = ?`
+	_, err := r.db.Exec(query, userID, groupID)
 	return err
 }
 
 // DeclineGroupInvitation updates the status of an invitation to "declined" in the database.
 // It returns an error if any.
-func (r *InvitationRepository) DeclineGroupInvitation(id string) error {
-	query := `UPDATE group_invitations SET status = 'declined' WHERE id = ?`
-	_, err := r.db.Exec(query, id)
+func (r *InvitationRepository) DeclineGroupInvitation(userID, groupID int) error {
+	query := `UPDATE group_invitations SET status = 'declined' WHERE join_user_id = ? AND group_id = ?`
+	_, err := r.db.Exec(query, userID, groupID)
 	return err
 }
 
@@ -102,12 +102,11 @@ func (r *InvitationRepository) GetAllGroupInvitations() ([]model.GroupInvitation
 
 // GetGroupInvitationByID retrieves an invitation by ID from the database.
 // It returns the GroupInvitation object and an error if any.
-func (r *InvitationRepository) GetGroupInvitationByID(id string) (model.GroupInvitation, error) {
-	query := `SELECT * FROM group_invitations WHERE id = ?`
-	row := r.db.QueryRow(query, id)
-
+func (r *InvitationRepository) GetGroupInvitationByID(userID, groupID int) (model.GroupInvitation, error) {
+	query := `SELECT * FROM group_invitations WHERE join_user_id = ? AND group_id = ?`
+	row := r.db.QueryRow(query, userID, groupID)
 	var invitation model.GroupInvitation
-	if err := row.Scan(&invitation.Id, &invitation.GroupId, &invitation.JoinUserId, &invitation.InviteUserId, &invitation.Status); err != nil {
+	if err := row.Scan(&invitation.Id, &invitation.GroupId, &invitation.JoinUserId, &invitation.InviteUserId, &invitation.Status, &invitation.CreatedAt); err != nil {
 		return model.GroupInvitation{}, err
 	}
 	return invitation, nil

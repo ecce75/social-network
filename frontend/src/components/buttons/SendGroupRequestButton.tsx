@@ -13,14 +13,17 @@ const SendGroupRequestButton: React.FC<SendGroupRequestProps> = ({id}) => {
             method: 'POST',
             credentials: 'include'
         })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data)
+            // .then(response => response.json())
+            .then(response => {
+                if (response.status === 201) {
+
+
                 return (
                     <>
                         <p>Group invitation sent</p>
                     </>
                 )
+                }
             })
 
     }

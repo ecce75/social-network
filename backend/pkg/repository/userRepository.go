@@ -29,6 +29,20 @@ func (r *UserRepository) GetUsernameByID(id int) (string, error) {
 	return username, nil
 }
 
+func (r *UserRepository) GetUsernameAndAvatarByID(id int) (string, string, error) {
+	query := "SELECT username, avatar_url FROM users WHERE id = ?"
+	var username string
+	var avatarURL string
+	err := r.db.QueryRow(query, id).Scan(&username, &avatarURL)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			fmt.Println("User not found in database")
+		}
+		return "", "", err
+	}
+	return username, avatarURL, nil
+}
+
 func (r *UserRepository) GetUserByEmailOrNickname(emailOrNickname string) (model.User, error) {
 	query := "SELECT * FROM users WHERE email = ? OR username = ? LIMIT 1"
 	var user model.User

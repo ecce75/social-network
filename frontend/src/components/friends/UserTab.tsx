@@ -91,12 +91,14 @@ const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus
                             >View Profile
                             </button>
                         </li>
+                        { friendStatus !== 'declined' &&
                         <li>
                             <button onClick={(e) => handleChat(e)}
                                     style={{fontSize: '0.875rem', padding: '4px 8px'}} // Smaller font size and padding
                             >Send Message
                             </button>
                         </li>
+                        }
                     </ul>
                 </div>
             )}

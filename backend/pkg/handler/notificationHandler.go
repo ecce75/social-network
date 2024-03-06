@@ -253,9 +253,9 @@ func (h *NotificationHandler) NotifyGroupOfNewMember(groupID, joinUserID int) er
 }
 
 // NotifyInvitationDecline notifies the group owner about the declined invitation.
-func (h *NotificationHandler) NotifyInvitationDecline(id string) error {
+func (h *NotificationHandler) NotifyInvitationDecline(userID, groupID int) error {
 	// Get the invitation details from the repository based on the ID.
-	invitation, err := h.invitationRepo.GetGroupInvitationByID(id)
+	invitation, err := h.invitationRepo.GetGroupInvitationByID(userID, groupID)
 	if err != nil {
 		return err
 	}

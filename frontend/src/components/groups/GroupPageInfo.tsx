@@ -1,6 +1,6 @@
 import React from 'react';
 import GroupInformation from './GroupInformation';
-import JoinRequestsButton from '../buttons/JoinRequestsButton';
+import GroupRequestsButton from '../buttons/GroupRequestsButton';
 import InviteGroupButton from '../buttons/InviteGroupButton';
 import SendGroupRequestButton from "@/components/buttons/SendGroupRequestButton";
 
@@ -9,10 +9,20 @@ interface GroupPageInfoProps {
     text?: string;
     pictureUrl?: string;
     isMember?: boolean;
-    id?: string;
+    groupId?: string;
+    invitationSent?: boolean;
+    isCreator?: boolean;
 }
 
-const GroupPageInfo: React.FC<GroupPageInfoProps> = ({title, text, pictureUrl, isMember, id}) => {
+const GroupPageInfo: React.FC<GroupPageInfoProps> = ({
+                                                         title,
+                                                         text,
+                                                         pictureUrl,
+                                                         isMember,
+                                                         groupId,
+                                                         invitationSent,
+                                                         isCreator
+                                                     }) => {
     return (
         <div>
             <div style={{
@@ -30,19 +40,25 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({title, text, pictureUrl, i
                 />
             </div>
             <div
-                className={`flex flex-col lg:flex-row ${isMember? "justify-between" : "justify-center"} border-2 border-gray-300 bg-primary rounded-lg p-5 mb-5`}>
+                className={`flex flex-col lg:flex-row ${isMember ? "justify-between" : "justify-center"} border-2 border-gray-300 bg-primary rounded-lg p-5 mb-5`}>
                 {/* Invite People */}
                 {isMember ? (
-                        <>
-                <InviteGroupButton className="mb-5 md:mb-0 md:mr-5"/>
+                    <>
+                        <InviteGroupButton className="mb-5 md:mb-0 md:mr-5"/>
 
-                {/* Requests */}
-                <JoinRequestsButton/>
-                    </>): (
-                    < >
-                        <SendGroupRequestButton id={id}/>
+                        {/* Requests */}
+                        {isCreator && (
+                            <GroupRequestsButton
+                                groupId={groupId}/>)}
+                    </>) : (invitationSent ? (
+                    < ><p>Join Request sent</p>
+
                     </>
-                    )}
+                ) : (
+                    < >
+                        <SendGroupRequestButton id={groupId}/>
+                    </>
+                ))}
             </div>
 
             <div style={{border: '2px solid #ccc', backgroundColor: '#4F7942', borderRadius: '8px', padding: '10px'}}>
