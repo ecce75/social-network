@@ -6,7 +6,6 @@ import (
 	"backend/util"
 	"database/sql"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -153,7 +152,6 @@ func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request)
 
 	// Append the votes to the posts
 	postsResponse, err := h.voteHandler.AppendVotesToPostsResponse(posts)
-	fmt.Println(postsResponse)
 	if err != nil {
 		http.Error(w, "Failed to append votes to posts: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -257,7 +255,11 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 	if !isMember {
-		http.Error(w, "User is not a member of the group", http.StatusUnauthorized)
+		response := map[string]string{
+			"message": "User not member of group",
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
 		return
 	}
 

@@ -162,7 +162,7 @@ func (h *NotificationHandler) NotifyGroupDeletion(groupID int) error {
 	// Create notifications for each group member.
 	for _, member := range members {
 		// Create a new notification.
-		err = h.CreateNotification(member.UserId, 0, "group", message)
+		err = h.CreateNotification(member.UserID, 0, "group", message)
 		if err != nil {
 			return err
 		}
@@ -242,8 +242,8 @@ func (h *NotificationHandler) NotifyGroupOfNewMember(groupID, joinUserID int) er
 	}
 
 	for _, member := range members {
-		if member.UserId != joinUserID {
-			err := h.CreateGroupNotification(member.UserId, groupID, message)
+		if member.UserID != joinUserID {
+			err := h.CreateGroupNotification(member.UserID, groupID, message)
 			if err != nil {
 				return err
 			}
@@ -292,7 +292,7 @@ func (h *NotificationHandler) NotifyGroupOfEvent(groupID, eventID int) error {
 	}
 
 	for _, member := range members {
-		err := h.CreateGroupNotification(member.UserId, groupID, message)
+		err := h.CreateGroupNotification(member.UserID, groupID, message)
 		if err != nil {
 			return err
 		}

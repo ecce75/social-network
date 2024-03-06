@@ -140,18 +140,22 @@ type UpdateCommentRequest struct {
 }
 
 type Group struct {
-	Id          int       `json:"id"`
-	CreatorId   int       `json:"creator_id"`
-	Title       string    `json:"title"`
-	Description string    `json:"description"`
-	Image       string    `json:"image"`
-	CreatedAt   time.Time `json:"created_at,omitempty"`
-	UpdatedAt   time.Time `json:"updated_at,omitempty"`
+	Id          int           `json:"id"`
+	CreatorId   int           `json:"creator_id"`
+	Title       string        `json:"title"`
+	Description string        `json:"description"`
+	Image       string        `json:"image"`
+	CreatedAt   time.Time     `json:"created_at,omitempty"`
+	UpdatedAt   time.Time     `json:"updated_at,omitempty"`
+	Members     []GroupMember `json:"members,omitempty"`
 }
 
 type GroupMember struct {
-	GroupId  int       `json:"group_id"`
-	UserId   int       `json:"user_id"`
+	GroupID  int       `json:"group_id"`
+	UserID   int       `json:"user_id"`
+	Username string    `json:"username"`
+	ImageURL string    `json:"image"`
+	Status   string    `json:"status"`
 	JoinedAt time.Time `json:"joined_at"`
 }
 

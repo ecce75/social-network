@@ -8,7 +8,6 @@ import (
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
-
 )
 
 type GroupHandler struct {
@@ -16,10 +15,12 @@ type GroupHandler struct {
 	groupMemberRepo     *repository.GroupMemberRepository
 	sessionRepo         *repository.SessionRepository
 	notificationHandler *NotificationHandler
+	userRepo            *repository.UserRepository
+	friendsRepo         *repository.FriendsRepository
 }
 
-func NewGroupHandler(groupRepo *repository.GroupRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, notificationHandler *NotificationHandler) *GroupHandler {
-	return &GroupHandler{groupRepo: groupRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, notificationHandler: notificationHandler}
+func NewGroupHandler(groupRepo *repository.GroupRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, notificationHandler *NotificationHandler, userRepo *repository.UserRepository, friendsRepo *repository.FriendsRepository) *GroupHandler {
+	return &GroupHandler{groupRepo: groupRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, notificationHandler: notificationHandler, userRepo: userRepo, friendsRepo: friendsRepo}
 }
 
 // Group Handlers
@@ -29,7 +30,7 @@ func (h *GroupHandler) GetAllGroupsHandler(w http.ResponseWriter, r *http.Reques
 	if err != nil {
 		http.Error(w, "Failed to get groups: "+err.Error(), http.StatusInternalServerError)
 		return
-	} 
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(groups)
 }
@@ -72,6 +73,12 @@ func (h *GroupHandler) CreateGroupHandler(w http.ResponseWriter, r *http.Request
 
 func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Request) {
 	// logic for getting a group by ID
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error confirming authentication: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
@@ -80,6 +87,38 @@ func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Reques
 	}
 
 	group, err := h.groupRepo.GetGroupByID(id)
+	if err != nil {
+		http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	groupMembers, err := h.groupMemberRepo.GetGroupMembers(id)
+	if err != nil {
+		http.Error(w, "Failed to get group members: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Iterate over groupMembers and get user profile and friend status for each member
+	for i, member := range groupMembers {
+		userProfile, err := h.userRepo.GetUserProfileByID(member.UserID)
+		if err != nil {
+			http.Error(w, "Failed to get user profile: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		friendStatus, err := h.friendsRepo.GetFriendStatus(userID, member.UserID)
+		if err != nil {
+			friendStatus = ""
+		}
+		// Append userProfile and friendStatus to the member
+		member.Username = userProfile.Username
+		member.ImageURL = userProfile.AvatarURL
+		member.Status = friendStatus
+
+		// Update the member in the groupMembers slice
+		groupMembers[i] = member
+	}
+	group.Members = groupMembers
+
 	if err != nil {
 		http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
 		return

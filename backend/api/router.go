@@ -71,7 +71,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/vote", voteHandler.VotePostOrCommentHandler).Methods("POST")
 
 	// Groups
-	groupHandler := handler.NewGroupHandler(groupRepository, sessionRepository, groupMemberRepository, notificationHandler)
+	groupHandler := handler.NewGroupHandler(groupRepository, sessionRepository, groupMemberRepository, notificationHandler, userRepository, friendsRepository)
 	mux.HandleFunc("/groups", groupHandler.GetAllGroupsHandler).Methods("GET")
 	mux.HandleFunc("/groups", groupHandler.CreateGroupHandler).Methods("POST")
 	mux.HandleFunc("/groups/{id}", groupHandler.GetGroupByIDHandler).Methods("GET")
@@ -80,14 +80,15 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	// Group invitations & requests
 	groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepository, invitationRepository, sessionRepository, notificationHandler, groupRepository, userRepository)
-	//for user
+	// for all
+	mux.HandleFunc("/invitations", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
+	// for user
 	mux.HandleFunc("/invitations", groupMemberHandler.GetAllGroupInvitationsHandler).Methods("GET")
 	mux.HandleFunc("/invitations/{id}", groupMemberHandler.GetGroupInvitationByIDHandler).Methods("GET")
 	mux.HandleFunc("/invitations/{id}", groupMemberHandler.DeclineGroupInvitationHandler).Methods("PUT")
 	mux.HandleFunc("/invitations/{id}", groupMemberHandler.AcceptGroupInvitationHandler).Methods("PUT")
-	mux.HandleFunc("/invitations/request/{id}", groupMemberHandler.RequestGroupMembershipHandler).Methods("POST")
+	mux.HandleFunc("/invitations/request/{groupId}", groupMemberHandler.RequestGroupMembershipHandler).Methods("POST")
 	// for group owner
-	mux.HandleFunc("/invitations", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
 	mux.HandleFunc("/groups/{groupId}/members/{userId}", groupMemberHandler.RemoveMemberHandler).Methods("DELETE")
 	mux.HandleFunc("/invitations/approve/{id}", groupMemberHandler.ApproveGroupMembershipHandler).Methods("PUT")
 	mux.HandleFunc("/invitations/decline/{id}", groupMemberHandler.DeclineGroupMembershipHandler).Methods("PUT")
@@ -139,7 +140,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	// CORS
 	corsOptions := cors.New(cors.Options{
-		AllowedOrigins:   []string{address + ":" + port},                   // Replace with your frontend's origin
+		AllowedOrigins:   []string{address + ":" + port},                      // Replace with your frontend's origin
 		AllowCredentials: true,                                                // Important for cookies, authorization headers with HTTPS
 		AllowedHeaders:   []string{"Authorization", "Content-Type"},           // You can adjust this based on your needs
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // Adjust the methods based on your requirements

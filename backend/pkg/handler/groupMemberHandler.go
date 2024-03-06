@@ -81,17 +81,25 @@ func (h *GroupMemberHandler) RemoveMemberHandler(w http.ResponseWriter, r *http.
 func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
 	// Parse the request body to get the group ID and user ID
 	var request model.GroupInvitation
-	err := json.NewDecoder(r.Body).Decode(&request)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	vars := mux.Vars(r)
+	groupID, ok := vars["groupId"]
+	if !ok {
+		http.Error(w, "Missing group ID", http.StatusBadRequest)
 		return
 	}
+	intGroupID, err := strconv.Atoi(groupID)
+	if err != nil {
+		http.Error(w, "Failed to convert groupid string to int: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	request.JoinUserId = userID
+	request.GroupId = intGroupID
 	// Create the membership request in the database
 	err = h.groupMemberRepo.CreateGroupRequest(request)
 	if err != nil {
@@ -117,7 +125,7 @@ func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter
 	vars := mux.Vars(r)
 	id := vars["id"]
 
-	//userID := r.Context().Value("AuthUserID").(int)
+	// userID := r.Context().Value("AuthUserID").(int)
 	// Update the status of the membership request to "approved"
 	err := h.groupMemberRepo.AcceptGroupInvitationAndRequest(id)
 	if err != nil {

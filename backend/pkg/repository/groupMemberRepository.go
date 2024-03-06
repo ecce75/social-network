@@ -174,7 +174,7 @@ func (r *GroupMemberRepository) GetGroupMembers(groupID int) ([]model.GroupMembe
 	var members []model.GroupMember
 	for rows.Next() {
 		var member model.GroupMember
-		err := rows.Scan(&member.GroupId, &member.UserId, &member.JoinedAt)
+		err := rows.Scan(&member.GroupID, &member.UserID, &member.JoinedAt)
 		if err != nil {
 			return nil, err
 		}
