@@ -108,8 +108,15 @@ func (h *VoteHandler) AppendVotesToCommentsResponse(comments []model.Comment) ([
 		if err != nil {
 			return nil, err
 		}
-		commentsResponse[i].Likes = likes
-		commentsResponse[i].Dislikes = dislikes
+		commentsResponse[i] = model.CommentsResponse{
+			Id:        comment.Id,
+			PostID:    comment.PostID,
+			UserID:    comment.UserID,
+			Content:   comment.Content,
+			CreatedAt: comment.CreatedAt,
+			Likes:     likes,
+			Dislikes:  dislikes,
+		}
 	}
 	return commentsResponse, nil
 }

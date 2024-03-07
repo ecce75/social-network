@@ -122,10 +122,6 @@ func (h *GroupHandler) GetGroupByIDHandler(w http.ResponseWriter, r *http.Reques
 	}
 	group.Members = groupMembers
 
-	if err != nil {
-		http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(group)
 }

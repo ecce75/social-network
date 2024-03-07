@@ -30,15 +30,25 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 		http.Error(w, "Error parsing form data: "+err1.Error(), http.StatusBadRequest)
 		return
 	}
-	// TODO: id may not come from request and will cause error
-	var newComment model.Comment
-	newComment.Content = r.FormValue("content")
-	newComment.PostID, _ = strconv.Atoi(r.FormValue("post_id"))
+	vars := mux.Vars(r)
+	postId, ok := vars["id"]
+	intPostId, err := strconv.Atoi(postId)
+	if !ok {
+		http.Error(w, "Post ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
+	if err != nil {
+		http.Error(w, "Error decoding id for comment request: "+err.Error(), http.StatusBadRequest)
+		return
+	}
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
+	var newComment model.Comment
+	newComment.Content = r.FormValue("content")
+	newComment.PostID = intPostId
 	newComment.UserID = userID
 
 	// Insert the comment into the database
@@ -83,21 +93,21 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	json.NewEncoder(w).Encode(response)
 }
 
-func (h *CommentHandler) GetCommentsByUserIDorPostID(w http.ResponseWriter, r *http.Request) {
-	var id string
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&id)
+func (h *CommentHandler) GetCommentsByPostID(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	postId, ok := vars["id"]
+	intPostId, err := strconv.Atoi(postId)
+	
+	if !ok {
+		http.Error(w, "Post ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
 	if err != nil {
 		http.Error(w, "Error decoding id for comment request: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	intid, err := strconv.Atoi(id)
-	if err != nil {
-		http.Error(w, "Error converting id to int: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	comments, err := h.commentRepo.GetCommentsByID(intid)
+
+	comments, err := h.commentRepo.GetAllPostComments(intPostId)
 	if err != nil {
 		http.Error(w, "Error retrieving comments: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -109,6 +119,16 @@ func (h *CommentHandler) GetCommentsByUserIDorPostID(w http.ResponseWriter, r *h
 		return
 	}
 
+	// we need user information per comment aswell - username, profile picture
+	for i, comment := range commentsWithVotes {
+		user, err := h.userRepo.GetUserProfileByID(comment.UserID)
+		if err != nil {
+			http.Error(w, "Error getting user profile: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		commentsWithVotes[i].Username = user.Username
+		commentsWithVotes[i].ImageURL = user.AvatarURL
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(commentsWithVotes)
 }

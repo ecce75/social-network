@@ -1,9 +1,9 @@
 
 import React, { useState } from 'react';
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 
 function CreateGroup() {
-     const router = useRouter();
+    const router = useRouter();
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
 
@@ -58,10 +58,10 @@ function CreateGroup() {
     return (
         <div>
             <div className="flex justify-between">
-                    <div>
+                <div>
                     {/* Title message box */}
-                    <input type="text" placeholder="Name your group" className="input mt-2 w-full max-w-sm" onChange={handleGroupNameChange}/>
-                    </div>
+                    <input type="text" placeholder="Name your group" className="input mt-2 w-full max-w-sm" onChange={handleGroupNameChange} />
+                </div>
 
             </div>
             {/* Main message box */}
@@ -80,20 +80,18 @@ function CreateGroup() {
 
             {/* Image upload and preview */}
             <div className="mb-4 flex justify-start items-end">
-                
+
                 <div>
-                                                   <div className="avatar-preview">
-                    {selectedFile && (
-                        <img
-                            src={URL.createObjectURL(selectedFile)}
-                            alt="Preview"
-                            className="avatar"
-                            style={{ width: 150, height: 150 }}
-                        />
-                    )}
-                </div> 
-                    
-                    
+                    <div className="avatar-preview">
+                        {selectedFile && (
+                            <img
+                                src={URL.createObjectURL(selectedFile)}
+                                alt="Preview"
+                                className="avatar"
+                                style={{ width: 150, height: 150 }}
+                            />
+                        )}
+                    </div>
                     <input
                         type="file"
                         id="image-upload"
@@ -104,12 +102,7 @@ function CreateGroup() {
                     <label htmlFor="image-upload" className="btn cursor-pointer mt-12">
                         Group Picture
                     </label>
-
-                
-                
                 </div>
-                
-
 
                 {/* Post button*/}
                 <div className="flex-grow" />

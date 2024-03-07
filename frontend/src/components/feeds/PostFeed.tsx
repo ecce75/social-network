@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import Post from '../postcreation/Post';
-import CreatePost from '../postcreation/CreatePost';
 import CreatePostButton from '../buttons/CreatePostButton';
 import { PostProps } from '../postcreation/Post';
+import { CommentProps } from '../comments/Comment';
 
 const PostFeed: React.FC = () => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
     const [posts, setPosts] = useState<PostProps[]>([]);
+    const [comments, setComments] = useState<{ [postId: number]:CommentProps[]}>([]);
 
     useEffect(() => {
         // Fetch posts
@@ -23,7 +24,23 @@ const PostFeed: React.FC = () => {
                 setPosts(data);
             })
             .catch(error => console.error('Error fetching posts:', error));
-    }, [BE_PORT, FE_URL]);
+    }, []);
+
+    useEffect(() => {
+        posts.forEach(post => {
+            fetch(`${FE_URL}:${BE_PORT}/post/${post.id}/comments`, {
+                method: 'GET',
+                credentials: 'include' // Send cookies with the request
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data !== null) {
+                        setComments(prevComments => ({ ...prevComments, [post.id]: data }));
+                    }
+                })
+                .catch(error => console.error('Error fetching comments: ', error));
+            })}, [posts]);
+    
     return (
         /* Change % for post feed width*/
         <section style={{ width: '45%', margin: 'auto', backgroundColor: '#e5e7eb', padding: '20px', height: '100vh', overflowY: 'auto' }}>
@@ -40,15 +57,8 @@ const PostFeed: React.FC = () => {
                             posts.map(post =>
                                 <Post
                                     key={post.id}
-                                    id={post.id}
-                                    userId={post.userId}
-                                    title={post.title}
-                                    content={post.content}
-                                    imageUrl={post.imageUrl}
-                                    privacySetting={post.privacySetting}
-                                    createdAt={post.createdAt}
-                                    likes={post.likes}
-                                    dislikes={post.dislikes}
+                                    {...post}
+                                    comments={comments[post.id]}
                                 />
                             )
                             :

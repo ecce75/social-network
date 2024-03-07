@@ -14,9 +14,9 @@ func NewCommentRepository(db *sql.DB) *CommentRepository {
 	return &CommentRepository{db: db}
 }
 
-func (r *CommentRepository) GetCommentsByID(id int) ([]model.Comment, error) {
-	query := `SELECT * FROM comments WHERE post_id = ? OR user_id = ?`
-	rows, err := r.db.Query(query, id, id)
+func (r *CommentRepository) GetCommentsByUserID(id int) ([]model.Comment, error) {
+	query := `SELECT * FROM comments WHERE user_id = ?`
+	rows, err := r.db.Query(query, id)
 	if err != nil {
 		return nil, err
 	}
@@ -25,7 +25,7 @@ func (r *CommentRepository) GetCommentsByID(id int) ([]model.Comment, error) {
 	var comments []model.Comment
 	for rows.Next() {
 		var comment model.Comment
-		if err := rows.Scan(&comment.Content, &comment.CreatedAt, &comment.PostID, &comment.UserID); err != nil {
+		if err := rows.Scan(&comment.Id, &comment.PostID, &comment.UserID, &comment.Content, &comment.Image, &comment.CreatedAt, &comment.UpdatedAt); err != nil {
 			return nil, err
 		}
 		comments = append(comments, comment)
@@ -46,7 +46,7 @@ func (r *CommentRepository) CreateComment(comment model.Comment) (int64, error) 
 		return 0, err
 	}
 	lastInsertID, err := result.LastInsertId()
-	comment.Image = "localhost:8080/images/comments/" + string(lastInsertID) + ".jpg"
+	comment.Image = "localhost:8080/images/comments/" + fmt.Sprint(lastInsertID) + ".jpg"
 	r.AddImageUrlToComment(int(lastInsertID), comment.Image)
 	if err != nil {
 		fmt.Println("Error getting last inserted comment id")
@@ -92,7 +92,7 @@ func (r *CommentRepository) GetAllPostComments(id int) ([]model.Comment, error) 
 	var comments []model.Comment
 	for rows.Next() {
 		var comment model.Comment
-		if err := rows.Scan(&comment.Id, &comment.Content, &comment.CreatedAt, &comment.PostID, &comment.UserID); err != nil {
+		if err := rows.Scan(&comment.Id, &comment.PostID, &comment.UserID, &comment.Content, &comment.Image, &comment.CreatedAt, &comment.UpdatedAt); err != nil {
 			return nil, err
 		}
 		comments = append(comments, comment)

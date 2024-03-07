@@ -17,7 +17,7 @@ func NewPostRepository(db *sql.DB) *PostRepository {
 func (r *PostRepository) GetPostByID(postID int) (model.Post, error) {
 	query := `SELECT * FROM posts WHERE id = ?`
 	var post model.Post
-	err := r.db.QueryRow(query, postID).Scan(&post.Id, &post.UserID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt)
+	err := r.db.QueryRow(query, postID).Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.PrivacySetting, &post.CreatedAt, &post.UpdatedAt)
 	if err != nil {
 		return model.Post{}, err
 	}

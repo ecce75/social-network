@@ -105,6 +105,14 @@ type CommentsResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	Likes     int       `json:"likes"`
 	Dislikes  int       `json:"dislikes"`
+	Username  string    `json:"username"`
+	ImageURL  string    `json:"image"`
+}
+
+type CreateCommentRequest struct {
+	PostID  int    `json:"post_id"`
+	Content string `json:"content"`	
+	ImageURL string `json:"image"`
 }
 
 type CreatePostRequest struct {
@@ -125,12 +133,13 @@ type UpdatePostRequest struct {
 }
 
 type Comment struct {
-	Id        int       `json:"id"`
+	Id        int       `json:"id,omitempty"`
 	PostID    int       `json:"post_id"`
 	UserID    int       `json:"user_id,omitempty"`
 	Content   string    `json:"content"`
 	Image     string    `json:"image"`
-	CreatedAt time.Time `json:"created_at"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
 type UpdateCommentRequest struct {

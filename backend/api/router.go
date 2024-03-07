@@ -63,7 +63,8 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	// Comments
 	commentHandler := handler.NewCommentHandler(commentRepository, sessionRepository, notificationHandler, postRepository, userRepository, voteHandler)
-	mux.HandleFunc("/post/{id}/comments", commentHandler.GetCommentsByUserIDorPostID).Methods("GET")
+	mux.HandleFunc("/post/{id}/comments", commentHandler.GetCommentsByPostID).Methods("GET")
+	mux.HandleFunc("/post/{id}/comment", commentHandler.CreateCommentHandler).Methods("POST")
 	mux.HandleFunc("/post/comment", commentHandler.CreateCommentHandler).Methods("POST")
 	mux.HandleFunc("/post/comment/{id}", commentHandler.DeleteCommentHandler).Methods("DELETE")
 
