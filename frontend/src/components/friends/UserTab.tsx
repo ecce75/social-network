@@ -14,14 +14,14 @@ interface UserTabProps {
     onAddFriend?: () => void; // Optional prop for the add friend functionality
     onAcceptRequest?: () => void; // Optional prop for the Accept request functionality
     onDeclineRequest?: () => void; // Optional prop for the Decline request functionality
+    groupStatus?: 'approved' | 'declined' | 'pending';
 }
 
-const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus, onAddFriend, onAcceptRequest, onDeclineRequest}) => {
+const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus, onAddFriend, onAcceptRequest, onDeclineRequest, groupStatus}) => {
     const router = useRouter();
     const [showDialog, setShowDialog] = useState(false);
     const [dialogPosition, setDialogPosition] = useState({x: 0, y: 0});
     const dialogRef = useRef<HTMLDivElement>(null);
-    const [friendAction, setFriendAction] = useState(0);
 
     const handleOpenDialog = (e: React.MouseEvent<HTMLDivElement>) => {
         e.stopPropagation();
@@ -91,7 +91,7 @@ const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus
                             >View Profile
                             </button>
                         </li>
-                        { friendStatus !== 'declined' &&
+                        { friendStatus !== 'accepted' &&
                         <li>
                             <button onClick={(e) => handleChat(e)}
                                     style={{fontSize: '0.875rem', padding: '4px 8px'}} // Smaller font size and padding
@@ -107,7 +107,6 @@ const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus
                     <button onClick={(e) => {
                         e.stopPropagation(); // Prevents the parent div click event
                         onAddFriend();
-                        setFriendAction(currentValue => currentValue + 1);
 
                     }} className="btn btn-primary">
                         Add Friend
@@ -119,24 +118,33 @@ const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus
                         Friend request sent
                     </p>
                 )}
-                {friendStatus === 'pending_confirmation' && onAcceptRequest && onDeclineRequest && (
+                {(friendStatus === 'pending_confirmation' || groupStatus === "pending") && onAcceptRequest && onDeclineRequest && (
                     <div>
                         <button onClick={(e) => {
                             e.stopPropagation(); // Prevents the parent div click event
                             onAcceptRequest();
-                            setFriendAction(currentValue => currentValue + 1);
                         }} className="btn btn-primary">
                             Accept Request
                         </button>
                         <button onClick={(e) => {
                             e.stopPropagation(); // Prevents the parent div click event
                             onDeclineRequest();
-                            setFriendAction(currentValue => currentValue + 1);
                         }} className="btn btn-primary">
                             Decline Request
                         </button>
                     </div>
                 )}
+                {groupStatus === 'approved' && (
+                    <p className="text-xs text-white bg-secondary py-1 px-3 rounded">
+                        Group Request Approved
+                    </p>
+                )}
+                {groupStatus === 'declined' && (
+                    <p className="text-xs text-white bg-secondary py-1 px-3 rounded">
+                        Group Request Declined
+                    </p>
+                )}
+
             </div>
         </div>
     )

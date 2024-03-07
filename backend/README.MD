@@ -52,8 +52,8 @@ The backend is structured into several packages, each with a specific purpose:
 │       └── # Data access layer
 ├── README.md
 ├── server.go # Application entrypoint
-└── util
-    └── util.go # Utility functions that don't naturally fit elsewhere
+└── hooks
+    └── hooks.go # Utility functions that don't naturally fit elsewhere
 ```
 
 ## API Endpoints

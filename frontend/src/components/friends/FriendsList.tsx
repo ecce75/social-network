@@ -1,6 +1,5 @@
 "use client"
 import { useState, useEffect } from "react";
-import { useAuth } from "../../util/utils";
 import UserTab from "./UserTab";
 
 interface FriendProps {

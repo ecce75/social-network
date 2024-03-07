@@ -1,9 +1,9 @@
 "use client"
 
-import { useEffect, useState } from 'react';
+import { useEffect} from 'react';
 import { useRouter } from 'next/navigation';
 // Your authentication hook or context
-import {useAuth}  from '../util/utils';
+import {useAuth}  from '@/hooks/utils';
 
 
 export default function Home() {

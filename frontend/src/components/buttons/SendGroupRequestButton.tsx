@@ -1,10 +1,11 @@
-import React, {useEffect} from 'react';
+import React from 'react';
 
 interface SendGroupRequestProps {
     id?: string;
 }
 
 const SendGroupRequestButton: React.FC<SendGroupRequestProps> = ({id}) => {
+    const [invitationSent, setInvitationSent] = React.useState<boolean>(false);
 
     const sendRequest = () => {
         const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
@@ -16,20 +17,28 @@ const SendGroupRequestButton: React.FC<SendGroupRequestProps> = ({id}) => {
             // .then(response => response.json())
             .then(response => {
                 if (response.status === 201) {
-
-
-                return (
-                    <>
-                        <p>Group invitation sent</p>
-                    </>
-                )
+                    setInvitationSent(true);
                 }
             })
 
     }
     return (
         <div>
-            <button className="btn btn-xs sm:btn-sm md:btn-md lg:btn-md btn-secondary text-white" onClick={sendRequest}>Request to join</button>
+            {!invitationSent ? (
+                <button
+                    className="btn btn-xs sm:btn-sm md:btn-md lg:btn-md btn-secondary text-white"
+                    onClick={sendRequest}
+                >
+                    Request to join
+                </button>
+            ): (
+                <button
+                    className="btn btn-xs sm:btn-sm md:btn-md lg:btn-md btn-secondary text-white"
+                    disabled
+                >
+                    Join Request sent
+                </button>
+            )}
         </div>
     )
 }

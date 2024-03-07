@@ -5,6 +5,7 @@ import CreatePostButtonGroup from "@/components/buttons/CreatePostButtonGroup";
 import GroupEventFeed from "@/components/groups/GroupEventFeed";
 import React, {useEffect} from "react";
 import Post, {PostProps} from "@/components/postcreation/Post";
+import useAuthCheck from "@/hooks/authCheck";
 
 interface GroupProps {
     id: string
@@ -31,6 +32,8 @@ export default function Group({
         id: string
     }
 }) {
+    useAuthCheck();
+
     const [group, setGroup] = React.useState<GroupProps | null>(null);
     const [posts, setPosts] = React.useState<PostProps[]>([]);
     const [isMember, setMember] = React.useState<boolean>(true);
@@ -85,7 +88,10 @@ export default function Group({
             })
                 .then(response => response.json())
                 .then(data => {
-                    data.status == "pending" && setInvitationSent(true);
+                    if (data.message != 'No group invitation found'){
+                        data.status == "pending" && setInvitationSent(true);
+                    }
+
                 })
         }
 

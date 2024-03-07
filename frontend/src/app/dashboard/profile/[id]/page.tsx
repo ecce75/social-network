@@ -2,6 +2,7 @@
 
 import { FriendProps, ProfileFeed, ProfileProps } from "@/components/profile/ProfilePage";
 import { useEffect, useState } from "react";
+import useAuthCheck from "@/hooks/authCheck";
 
 
 export default function Profile({
@@ -11,7 +12,7 @@ export default function Profile({
         id: string
     }
 }) {
-
+    useAuthCheck();
 
     const [friends, setFriends] = useState<FriendProps[]>([]);
     const [profileData, setProfileData] = useState<ProfileProps | null>(null);

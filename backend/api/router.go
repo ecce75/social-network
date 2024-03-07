@@ -90,8 +90,8 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/invitations/request/{groupId}", groupMemberHandler.RequestGroupMembershipHandler).Methods("POST")
 	// for group owner
 	mux.HandleFunc("/groups/{groupId}/members/{userId}", groupMemberHandler.RemoveMemberHandler).Methods("DELETE")
-	mux.HandleFunc("/invitations/approve/{id}", groupMemberHandler.ApproveGroupMembershipHandler).Methods("PUT")
-	mux.HandleFunc("/invitations/decline/{id}", groupMemberHandler.DeclineGroupMembershipHandler).Methods("PUT")
+	mux.HandleFunc("/invitations/approve/{groupId}/{userId}", groupMemberHandler.ApproveGroupMembershipHandler).Methods("PUT")
+	mux.HandleFunc("/invitations/decline/{groupId}/{userId}", groupMemberHandler.DeclineGroupMembershipHandler).Methods("PUT")
 	mux.HandleFunc("/groups/{groupId}/requests", groupMemberHandler.GetAllGroupRequestsHandler).Methods("GET")
 
 	// Events

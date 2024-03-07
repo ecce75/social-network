@@ -3,12 +3,13 @@
 import GroupSearchCreateButton from "@/components/buttons/GroupSearchCreateButton";
 import GroupTab, { GroupTabProps } from "@/components/groups/GroupTab";
 import React, { useEffect, useState } from "react";
+import useAuthCheck from "@/hooks/authCheck";
 
 
 
 
 export default function Groups()  {
-
+    useAuthCheck();
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
     const [groups, setGroups] = useState<GroupTabProps[]>([]); // Initialize groups state as an empty array
