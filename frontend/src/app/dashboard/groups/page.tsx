@@ -29,7 +29,7 @@ export default function Groups()  {
 
             })
             .catch(error => console.error('Error fetching groups:', error));
-    }, [BE_PORT, FE_URL]);
+    }, []);
 
     return (       
     

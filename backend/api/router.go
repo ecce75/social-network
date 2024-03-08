@@ -81,15 +81,18 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	// Group invitations & requests
 	groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepository, invitationRepository, sessionRepository, notificationHandler, groupRepository, userRepository)
-	// for all
-	mux.HandleFunc("/invitations", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
-	// for user
+	// for all members
+	mux.HandleFunc("/invitations/{groupId/{userId}", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
+	// for group member
 	mux.HandleFunc("/invitations", groupMemberHandler.GetAllGroupInvitationsHandler).Methods("GET")
 	mux.HandleFunc("/invitations/{groupId}", groupMemberHandler.GetGroupInvitationByIDHandler).Methods("GET")
 	mux.HandleFunc("/invitations/{groupId}", groupMemberHandler.DeclineGroupInvitationHandler).Methods("PUT")
 	mux.HandleFunc("/invitations/{groupId}", groupMemberHandler.AcceptGroupInvitationHandler).Methods("PUT")
 	mux.HandleFunc("/invitations/request/{groupId}", groupMemberHandler.RequestGroupMembershipHandler).Methods("POST")
 	// for group owner
+	mux.HandleFunc("/groups/{groupId}/non-members", groupMemberHandler.GetAllNonMembersHandler).Methods("GET")
+	mux.HandleFunc("/groups/{groupId}/members", groupMemberHandler.GetAllMembersHandler).Methods("GET")
+
 	mux.HandleFunc("/groups/{groupId}/members/{userId}", groupMemberHandler.RemoveMemberHandler).Methods("DELETE")
 	mux.HandleFunc("/invitations/approve/{groupId}/{userId}", groupMemberHandler.ApproveGroupMembershipHandler).Methods("PUT")
 	mux.HandleFunc("/invitations/decline/{groupId}/{userId}", groupMemberHandler.DeclineGroupMembershipHandler).Methods("PUT")

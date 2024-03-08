@@ -14,10 +14,11 @@ interface UserTabProps {
     onAddFriend?: () => void; // Optional prop for the add friend functionality
     onAcceptRequest?: () => void; // Optional prop for the Accept request functionality
     onDeclineRequest?: () => void; // Optional prop for the Decline request functionality
+    onInviteToGroup?: () => void; // Optional prop for the Invite to group functionality
     groupStatus?: 'approved' | 'declined' | 'pending';
 }
 
-const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus, onAddFriend, onAcceptRequest, onDeclineRequest, groupStatus}) => {
+const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus, onAddFriend, onAcceptRequest, onDeclineRequest, groupStatus, onInviteToGroup}) => {
     const router = useRouter();
     const [showDialog, setShowDialog] = useState(false);
     const [dialogPosition, setDialogPosition] = useState({x: 0, y: 0});
@@ -91,7 +92,7 @@ const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus
                             >View Profile
                             </button>
                         </li>
-                        { friendStatus !== 'accepted' &&
+                        { friendStatus === 'accepted' &&
                         <li>
                             <button onClick={(e) => handleChat(e)}
                                     style={{fontSize: '0.875rem', padding: '4px 8px'}} // Smaller font size and padding
@@ -144,6 +145,15 @@ const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus
                         Group Request Declined
                     </p>
                 )}
+                {onInviteToGroup && (
+                    <button onClick={(e) => {
+                        onInviteToGroup();
+                        e.stopPropagation();}}
+                            className="btn btn-primary">
+                        Invite to Group
+                    </button>
+                )
+                    }
 
             </div>
         </div>

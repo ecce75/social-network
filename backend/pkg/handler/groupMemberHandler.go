@@ -5,7 +5,6 @@ import (
 	"backend/pkg/repository"
 	"backend/util"
 	"encoding/json"
-	"fmt"
 	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
@@ -168,7 +167,6 @@ func (h *GroupMemberHandler) DeclineGroupMembershipHandler(w http.ResponseWriter
 
 	// Retrieve the user ID from URL
 	userID, _ := strconv.Atoi(vars["userId"])
-	fmt.Println("DeclineGroupMembershipHandler: userID: ", userID, " groupID: ", groupID)
 	// Update the status of the membership request to "declined"
 	err := h.invitationRepo.DeclineGroupInvitation(userID, groupID)
 	if err != nil {
@@ -198,31 +196,26 @@ func (h *GroupMemberHandler) DeclineGroupMembershipHandler(w http.ResponseWriter
 // InviteMemberHandler sends an invitation to a user to join a group.
 // It creates an invitation in the database that can be accepted or declined by the user.
 func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *http.Request) {
-	var invitationRequest model.GroupInvitationRequest
-	err := json.NewDecoder(r.Body).Decode(&invitationRequest)
-	if err != nil {
-		http.Error(w, "Failed to decode request body: "+err.Error(), http.StatusBadRequest)
-		return
-	}
-	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
-	if err != nil {
-		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+	vars := mux.Vars(r)
+	groupID, _ := strconv.Atoi(vars["groupId"])
+
+	// Retrieve the user ID from URL
+	userID, _ := strconv.Atoi(vars["userId"])
+
 	//
 	newInvitation := model.GroupInvitation{
-		GroupId:      invitationRequest.GroupId,
-		JoinUserId:   invitationRequest.JoinUserId,
+		GroupId:      groupID,
+		JoinUserId:   userID,
 		InviteUserId: userID,
 	}
-	err = h.invitationRepo.CreateGroupInvitation(newInvitation)
+	err := h.invitationRepo.CreateGroupInvitation(newInvitation)
 	if err != nil {
 		http.Error(w, "Failed to create invitation: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Notify the user that they have been invited to join a group
-	err = h.notificationHandler.NotifyUserInvitation(invitationRequest.JoinUserId, invitationRequest.GroupId)
+	err = h.notificationHandler.NotifyUserInvitation(userID, groupID)
 	if err != nil {
 		http.Error(w, "Failed to notify user about the invitation: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -389,6 +382,50 @@ func (h *GroupMemberHandler) GetAllGroupRequestsHandler(w http.ResponseWriter, r
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"message": "No pending group requests found"})
 	}
+}
+
+func (h *GroupMemberHandler) GetAllNonMembersHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	groupID, err := strconv.Atoi(vars["groupId"])
+	if err != nil {
+		http.Error(w, "Invalid group ID: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	// Extract the user ID from the cookie.
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error extracting user ID from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	nonMembers, err := h.groupMemberRepo.GetNonMembers(groupID, userID)
+	if err != nil {
+		http.Error(w, "Failed to get non members: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(nonMembers)
+}
+
+func (h *GroupMemberHandler) GetAllMembersHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	groupID, err := strconv.Atoi(vars["groupId"])
+	if err != nil {
+		http.Error(w, "Invalid group ID: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	// Extract the user ID from the cookie.
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error extracting user ID from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	members, err := h.groupMemberRepo.GetMembers(groupID, userID)
+	if err != nil {
+		http.Error(w, "Failed to get members: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(members)
 }
 
 // ----------------------------------------------------------------------------------------------

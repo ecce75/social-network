@@ -237,3 +237,84 @@ func (r *GroupMemberRepository) RemoveGroupMembers(groupID int) error {
 	_, err := r.db.Exec(query, groupID)
 	return err
 }
+
+func (r *GroupMemberRepository) GetNonMembers(groupID, userID int) ([]model.UserList, error) {
+	// Define the SQL query to select all users who are not members of the specified group
+	// The query excludes the current user as well
+	query := `
+        SELECT id, username, avatar_url
+        FROM users
+        WHERE id != ?
+        AND id NOT IN (
+            SELECT user_id
+            FROM group_members
+            WHERE group_id = ?
+        )
+        AND id NOT IN (
+        	SELECT join_user_id
+        	FROM group_invitations
+        WHERE group_id = ? AND status = 'pending' | 'declined')
+    `
+
+	// Execute the query
+	rows, err := r.db.Query(query, userID, groupID, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	// Slice to hold the users who are not members of the group
+	var nonMembers []model.UserList
+
+	// Iterate over the query results and populate the nonMembers slice
+	for rows.Next() {
+		var user model.UserList
+		err := rows.Scan(&user.Id, &user.Username, &user.AvatarURL)
+		if err != nil {
+			return nil, err
+		}
+		nonMembers = append(nonMembers, user)
+	}
+
+	// Check for errors encountered during iteration
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return nonMembers, nil
+}
+
+func (r *GroupMemberRepository) GetMembers(groupID, userID int) ([]model.UserList, error) {
+	query := `
+		SELECT id, username, email, first_name, last_name, created_at
+		FROM users
+		WHERE id != ?
+		AND id IN (
+			SELECT user_id
+			FROM group_members
+			WHERE group_id = ?
+		)
+	`
+
+	rows, err := r.db.Query(query, userID, groupID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var members []model.UserList
+	for rows.Next() {
+		var member model.UserList
+		err := rows.Scan(&member.Id, &member.Username, &member.AvatarURL)
+		if err != nil {
+			return nil, err
+		}
+		members = append(members, member)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return members, nil
+}

@@ -1,6 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/navigation'; // Import useRouter from next/router
-import GroupContent from './GroupInformation';
 import GroupInformation from './GroupInformation';
 
 export interface GroupTabProps {

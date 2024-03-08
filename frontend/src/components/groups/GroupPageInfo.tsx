@@ -44,7 +44,7 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({
                 {/* Invite People */}
                 {isMember ? (
                     <>
-                        <InviteGroupButton className="mb-5 md:mb-0 md:mr-5"/>
+                        <InviteGroupButton groupID={groupId}/>
 
                         {/* Requests */}
                         {isCreator && (

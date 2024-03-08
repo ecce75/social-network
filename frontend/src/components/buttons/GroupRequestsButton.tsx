@@ -34,7 +34,7 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
                             console.log('New user:', newUser)
                             setGroupStatuses(prevStatuses => ({
                                 ...prevStatuses,
-                                [request.join_user_id]: "pending"
+                                [request.join_user_id]: request.status
                             }));
                             if (!users.some(user => user.id === newUser.id)){
                                 setUsers([...users, newUser]);
