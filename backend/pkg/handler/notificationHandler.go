@@ -4,6 +4,7 @@ import (
 	"backend/pkg/model"
 	"backend/pkg/repository"
 	"backend/util"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -33,10 +34,9 @@ func NewNotificationHandler(notificationRepo *repository.NotificationRepository,
 func (h *NotificationHandler) CreateNotification(userID, senderID int, messageType, message string) error {
 	notification := model.Notification{
 		UserId:   userID,
-		SenderId: senderID,
+		SenderId: sql.NullInt64{Int64: int64(senderID), Valid: true},
 		Type:     messageType,
 		Message:  message,
-		IsRead:   false,
 	}
 	_, err := h.notificationRepo.CreateNotification(notification)
 	return err
@@ -45,10 +45,9 @@ func (h *NotificationHandler) CreateNotification(userID, senderID int, messageTy
 func (h *NotificationHandler) CreateGroupNotification(userID, groupID int, message string) error {
 	notification := model.Notification{
 		UserId:  userID,
-		GroupId: groupID,
+		GroupId: sql.NullInt64{Int64: int64(groupID), Valid: true},
 		Type:    "group",
 		Message: message,
-		IsRead:  false,
 	}
 	_, err := h.notificationRepo.CreateNotification(notification)
 	return err
@@ -80,6 +79,20 @@ func (h *NotificationHandler) DeleteNotificationHandler(w http.ResponseWriter, r
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *NotificationHandler) GetAllNotificationsForUserHandler(w http.ResponseWriter, r *http.Request) {
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "User not authenticated: "+err.Error(), http.StatusUnauthorized)
+	}
+
+	notifications, err := h.notificationRepo.GetNotificationsByUserId(userID)
+	if err != nil {
+		http.Error(w, "Error fetching notifications: " + err.Error(), http.StatusInternalServerError)
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(notifications)
 }
 
 // GetAllNotificationsHandler retrieves all notifications and responds

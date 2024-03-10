@@ -5,7 +5,6 @@ interface CommentBoxProps {
 }
 
 const CommentBox: React.FC<CommentBoxProps> = ({ comments }: CommentBoxProps) => {
-    // comments?.map(comment => console.log(comment.Id, comment.PostId, comment.UserId, comment.Content, comment.CreatedAt, comment.Likes, comment.Dislikes, comment.Username, comment.ProfilePicture));
     return (
         <div className="collapse bg-primary">
             <input type="checkbox" />
@@ -18,16 +17,16 @@ const CommentBox: React.FC<CommentBoxProps> = ({ comments }: CommentBoxProps) =>
                     comments != undefined && comments.length > 0 ?
                         comments.map(comment =>
                             <Comment
-                                key={(comment.postId * 1000) + comment.id}
+                                key={comment.id}
                                 id={comment.id}
                                 postId={comment.postId}
                                 userId={comment.userId}
                                 content={comment.content}
-                                createdAt={comment.createdAt}
+                                created_at={comment.created_at}
                                 likes={comment.likes}
                                 dislikes={comment.dislikes}
                                 username={comment.username}
-                                profilePicture={comment.profilePicture}
+                                image={comment.image}
                             />
                         )
                         :

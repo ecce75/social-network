@@ -8,3 +8,8 @@ export async function useAuth() {
       return { isAuthenticated: false }; // Return a default value in case of error
   }
 }
+
+export function formatDate(string: string) {
+    var options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'};
+    return new Date(string).toLocaleDateString([], options);
+}

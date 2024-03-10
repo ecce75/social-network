@@ -38,10 +38,32 @@ func (r *NotificationRepository) GetAllNotifications() ([]model.Notification, er
 	return notifications, nil
 }
 
+func (r *NotificationRepository) GetNotificationsByUserId(id int) ([]model.Notification, error) {
+	query := `SELECT * FROM notifications WHERE user_id = ?`
+	rows, err := r.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var notifications []model.Notification
+	for rows.Next() {
+		var notification model.Notification
+		if err := rows.Scan(&notification.Id, &notification.UserId, &notification.GroupId, &notification.SenderId, &notification.Type, &notification.Message, &notification.IsRead, &notification.CreatedAt); err != nil {
+			return nil, err
+		}
+		notifications = append(notifications, notification)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return notifications, nil
+}
+
 // CreateNotification adds a new notification to the database.
 func (r *NotificationRepository) CreateNotification(notification model.Notification) (int64, error) {
-	query := `INSERT INTO notifications (user_id, type, message, is_read) VALUES (?, ?, ?, ?)`
-	result, err := r.db.Exec(query, notification.UserId, notification.Type, notification.Message, notification.IsRead)
+	query := `INSERT INTO notifications (user_id, group_id, sender_id, type, message) VALUES (?, ?, ?, ?, ?)`
+	result, err := r.db.Exec(query, notification.UserId, notification.GroupId, notification.SenderId, notification.Type, notification.Message)
 	if err != nil {
 		return 0, err
 	}

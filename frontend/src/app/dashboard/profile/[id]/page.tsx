@@ -56,7 +56,7 @@ export default function Profile({
     return (
 
         <div>
-            <ProfileFeed profile={profileData} friends={friends} />
+            <ProfileFeed profile={profileData} friends={friends} userID={params.id} />
 
         </div>
     );

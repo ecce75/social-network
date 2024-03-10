@@ -171,20 +171,27 @@ func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request)
 func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userID, ok := vars["id"]
-	intUserID, err := strconv.Atoi(userID)
-	if err != nil {
-		http.Error(w, "Failed to parse user ID: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if !ok {
-		http.Error(w, "User ID is missing in parameters", http.StatusBadRequest)
-		return
-	}
+
 	requestingUserID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
 		http.Error(w, "Error confirming user authentication: "+err.Error(), http.StatusUnauthorized)
 		return
 	}
+	var intUserID int
+	if userID == "me" {
+		intUserID = requestingUserID
+	} else {
+		intUserID, err = strconv.Atoi(userID)
+		if err != nil {
+			http.Error(w, "Failed to parse user ID: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+	if !ok {
+		http.Error(w, "User ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
+	
 	var posts []model.Post
 	if requestingUserID == intUserID {
 		posts, err = h.postRepo.GetAllUserPosts(requestingUserID)

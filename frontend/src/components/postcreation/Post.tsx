@@ -11,22 +11,23 @@ export interface PostProps {
     groupId?: number;
     title: string;
     content?: string;
-    imageUrl?: string;
+    image_url?: string;
     privacySetting: string;
-    createdAt: Date;
+    created_at: Date;
     likes: number;
     dislikes: number;
     comments?: CommentProps[];
 }
 
-const Post: React.FC<PostProps> = ({ id, userId, groupId, title, content, imageUrl, privacySetting, createdAt, likes, dislikes, comments }) => {
+const Post: React.FC<PostProps> = ({ id, userId, groupId, title, content, image_url, privacySetting, created_at, likes, dislikes, comments }) => {
     return (
         <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
             {/* Post Content */}
             <PostInformation
                 title={title}
                 text={content}
-                pictureUrl={imageUrl}
+                pictureUrl={image_url}
+                createdAt={created_at}
             />
             
             {/* Chatbox for commenting and like button */}

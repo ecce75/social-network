@@ -77,7 +77,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	message := username + "commented on your post: " + post.Title
+	message := username + " commented on your post: " + post.Title
 	err = h.notificationHandler.CreateNotification(int(postOwnerId), userID, "post", message)
 	if err != nil {
 		http.Error(w, "Failed to create notification: "+err.Error(), http.StatusInternalServerError)

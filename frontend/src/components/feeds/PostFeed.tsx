@@ -35,20 +35,7 @@ const PostFeed: React.FC = () => {
                 .then(response => response.json())
                 .then(data => {
                     if (data !== null) {
-                        const transformedComments = data.map((comment: any) => ({
-                            id: comment.id,
-                            postId: comment.post_id,
-                            userId: comment.user_id,
-                            content: comment.content,
-                            createdAt: comment.created_at,
-                            likes: comment.likes,
-                            dislikes: comment.dislikes,
-                            username: comment.username,
-                            profilePicture: comment.image, // Map 'image' to 'profilePicture'
-                        }));
-
-                        // Update the state with the transformed comments
-                        setComments(prevComments => ({ ...prevComments, [post.id]: transformedComments }));
+                        setComments(prevComments => ({ ...prevComments, [post.id]: data }));
                     }
                 })
                 .catch(error => console.error('Error fetching comments: ', error));

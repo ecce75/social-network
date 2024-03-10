@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import ProfilePageInfo from './ProfilePageInfo';
-import {useRouter} from "next/router";
+import { useRouter } from "next/router";
 import UserTab from "@/components/friends/UserTab";
-import Post, {PostProps} from "../postcreation/Post";
+import Post, { PostProps } from "../postcreation/Post";
 
 export interface ProfileProps {
     id: number;
@@ -27,9 +27,10 @@ export interface FriendProps {
 export interface ProfileFeedProps {
     profile: ProfileProps | null;
     friends: FriendProps[];
+    userID: any;
 }
 
-export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile , friends}) => {
+export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, userID }) => {
 
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
@@ -37,7 +38,10 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile , friends}) =>
 
     useEffect(() => {
         // Fetch posts
-        fetch(`${FE_URL}:${BE_PORT}/posts`, {
+        if (userID !== "me") {
+            userID = parseInt(userID);
+        }
+        fetch(`${FE_URL}:${BE_PORT}/profile/posts/${userID}`, {
             method: 'GET',
             credentials: 'include' // Send cookies with the request
         })
@@ -47,13 +51,14 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile , friends}) =>
                     return;
                 }
                 setPosts(data);
+                console.log(data);
             })
             .catch(error => console.error('Error fetching posts:', error));
-    }, [BE_PORT, FE_URL]);
+    }, []);
 
     return (
         /* Group page with */
-        <div style={{display: 'flex', justifyContent: 'center'}}> {/* Container for both sections */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}> {/* Container for both sections */}
 
 
             {/* Left section for displaying group information */}
@@ -64,13 +69,13 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile , friends}) =>
                 height: '100vh',
                 overflowY: 'auto'
             }}>
-                <ProfilePageInfo title={profile?.username} pictureUrl={profile?.avatar_url} text={profile?.about}/>
+                <ProfilePageInfo title={profile?.username} pictureUrl={profile?.avatar_url} text={profile?.about} />
 
-            <div style={{border: '2px solid #ccc', backgroundColor: '#4F7942', borderRadius: '8px', padding: '10px'}}>
-                <h3 style={{color: 'white', fontWeight: 'bold', fontSize: '20px'}}>Friends</h3>
-                {
-                    friends.length > 0 ?
-                        friends.map(friend =>
+                <div style={{ border: '2px solid #ccc', backgroundColor: '#4F7942', borderRadius: '8px', padding: '10px' }}>
+                    <h3 style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>Friends</h3>
+                    {
+                        friends.length > 0 ?
+                            friends.map(friend =>
                                 <UserTab
                                     key={friend.id}
                                     userID={friend.id}
@@ -78,25 +83,25 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile , friends}) =>
                                     friendStatus={'accepted'}
                                     avatar={friend.avatar_url}
                                 />
-                            // <FriendsListContent
-                            //     key={friend.id}
-                            //     id={friend.id}
-                            //     firstName={friend.firstName}
-                            //     lastName={friend.lastName}
-                            //     avatar={friend.avatar}
-                            //     username={friend.username}
-                            // />
-                        )
-                        :
-                        //TODO; Add a button to add friends
-                        <div>
-                            <p>No friends found</p>
-                        </div>
-                }
+                                // <FriendsListContent
+                                //     key={friend.id}
+                                //     id={friend.id}
+                                //     firstName={friend.firstName}
+                                //     lastName={friend.lastName}
+                                //     avatar={friend.avatar}
+                                //     username={friend.username}
+                                // />
+                            )
+                            :
+                            //TODO; Add a button to add friends
+                            <div>
+                                <p>No friends found</p>
+                            </div>
+                    }
+                </div>
             </div>
-        </div>
             {/* Divider */}
-            <div style={{flex: '0 0 5px', backgroundColor: '#B2BEB5', height: '100vh'}}></div>
+            <div style={{ flex: '0 0 5px', backgroundColor: '#B2BEB5', height: '100vh' }}></div>
 
 
             {/* Right section for post feed */}
@@ -107,10 +112,10 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile , friends}) =>
                 height: '100vh',
                 overflowY: 'auto'
             }}>
-                <div style={{marginBottom: '20px', color: 'black'}}>
+                <div style={{ marginBottom: '20px', color: 'black' }}>
                     Users past activity
                 </div>
-                <div style={{display: 'flex', flexDirection: 'column', marginBottom: '20px'}}>
+                <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
                     {
                         posts.length > 0 ?
                             posts.map(post =>
@@ -120,9 +125,9 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile , friends}) =>
                                     userId={post.userId}
                                     title={post.title}
                                     content={post.content}
-                                    imageUrl={post.imageUrl}
+                                    image_url={post.image_url}
                                     privacySetting={post.privacySetting}
-                                    createdAt={post.createdAt}
+                                    created_at={post.created_at}
                                     likes={post.likes}
                                     dislikes={post.dislikes}
                                 />

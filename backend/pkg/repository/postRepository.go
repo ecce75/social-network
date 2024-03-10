@@ -87,7 +87,7 @@ func (r *PostRepository) GetAllPostsWithUserIDAccess(userID int) ([]model.Post, 
 }
 
 func (r *PostRepository) GetAllUserPosts(userID int) ([]model.Post, error) {
-	query := `SELECT * FROM posts WHERE user_id = ? AND group_id IS NULL`
+	query := `SELECT * FROM posts WHERE user_id = ? AND group_id IS 0`
 	rows, err := r.db.Query(query, userID)
 	if err != nil {
 		return nil, err

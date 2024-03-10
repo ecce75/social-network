@@ -109,7 +109,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/events/{id}", eventHandler.GetAttendanceByEventIDHandler).Methods("GET")
 
 	// Notifications
-	mux.HandleFunc("/notifications", notificationHandler.GetAllNotificationsHandler).Methods("GET")
+	mux.HandleFunc("/notifications", notificationHandler.GetAllNotificationsForUserHandler).Methods("GET")
 	mux.HandleFunc("/notifications/{id}", notificationHandler.GetNotificationByIDHandler).Methods("GET")
 	mux.HandleFunc("/notifications/{id}", notificationHandler.MarkNotificationAsReadHandler).Methods("PUT")
 	mux.HandleFunc("/notifications/{id}", notificationHandler.DeleteNotificationHandler).Methods("DELETE")
