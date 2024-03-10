@@ -34,7 +34,6 @@ const Post: React.FC<PostProps> = ({ id, userId, groupId, title, content, image_
             {/* Chatbox for commenting and like button */}
             <CreateComment 
                 postId={id}
-                comments={comments}
                 setComments={setComments}
             />
             

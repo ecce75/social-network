@@ -52,6 +52,26 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
         borderRadius: '50%',
     };
 
+    const handleAcceptFriendRequest = (senderId: number) => {
+        // Implement friend request acceptance logic
+        console.log('THIS SHOULD ACCEPT FRIENT REQUEST VIA SENDERID')
+    };
+
+    const handleDeclineFriendRequest = (senderId: number) => {
+        // Implement friend request decline logic
+        console.log('THIS SHOULD DECLINE FRIENT REQUEST VIA SENDERID')
+    };
+
+    const handleAcceptGroupJoinRequest = (senderId: number) => {
+        // Implement group join request acceptance logic
+        console.log('THIS SHOULD ACCEPT GROUP JOIN REQUEST VIA SENDERID')
+    };
+
+    const handleDeclineGroupJoinequest = (senderId: number) => {
+        // Implement group join request decline logic
+        console.log('THIS SHOULD DECLINE GROUP JOIN REQUEST VIA SENDERID')
+    };
+
     const markNotificationAsRead = (id: number) => {
         // This function should make a request to the backend to mark the notification as read
         // The request should include the notification ID
@@ -74,16 +94,84 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
         });
     };
 
+    const parentContainerStyle = {
+        display: 'flex',
+    }
+
+    // Additional styles for buttons
+    const buttonStyle = {
+        padding: '5px 10px',
+        margin: '5px',
+        borderRadius: '15px',
+        border: 'none',
+        cursor: 'pointer',
+        fontWeight: 'bold',
+    };
+
+    const acceptButtonStyle = {
+        ...buttonStyle,
+        backgroundColor: '#4CAF50', // Green color for accept
+        color: 'white',
+    };
+
+    const declineButtonStyle = {
+        ...buttonStyle,
+        backgroundColor: '#f44336', // Red color for decline
+        color: 'white',
+    };
+
+    const viewButtonStyle = {
+        ...buttonStyle,
+        backgroundColor: '#2196F3', // Blue color for view
+        color: 'white',
+    };
+
+    const notificationActions = (notification: NotificationProp) => {
+        switch (notification.type) {
+            case 'friend':
+                return (
+                    <div style={parentContainerStyle}>
+                        <button style={acceptButtonStyle} onClick={() => handleAcceptFriendRequest(notification.sender_id!)}>
+                            Accept
+                        </button>
+                        <button style={declineButtonStyle} onClick={() => handleDeclineFriendRequest(notification.sender_id!)}>
+                            Decline
+                        </button>
+                    </div>
+                );
+            case 'group':
+                return <button style={viewButtonStyle}>View Group</button>;
+            // Add more cases as needed for different notification types
+                return (
+                    <div style={parentContainerStyle}>
+                        <button style={acceptButtonStyle} onClick={() => handleAcceptGroupJoinRequest(notification.sender_id!)}>
+                            Accept
+                        </button>
+                        <button style={declineButtonStyle} onClick={() => handleDeclineGroupJoinequest(notification.sender_id!)}>
+                            Decline
+                        </button>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
+
     return (
         <div>
-            {notifications?.map((notification: NotificationProp) => {
+            {notifications.map((notification) => {
                 return (
                     <div style={containerStyle} key={notification.id}>
-                        <div style={notificationStyle} onClick={() => markNotificationAsRead(notification.id)}>
+                        <div style={notificationStyle} onClick={() => {
+                            if (!notification.is_read) {
+                                markNotificationAsRead(notification.id);
+                            }
+                        }}>
                             <div style={{ position: 'relative' }}>
                                 {!notification.is_read && <span style={dotStyle}></span>}
                                 <h2 style={messageTypeStyle}>{notification.type}</h2>
                                 <p style={messageStyle}>{notification.message}</p>
+                                {notificationActions(notification)}
                             </div>
                         </div>
                     </div>

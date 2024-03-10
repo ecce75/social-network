@@ -103,16 +103,17 @@ type CommentsResponse struct {
 	PostID    int       `json:"post_id"`
 	UserID    int       `json:"user_id,omitempty"`
 	Content   string    `json:"content"`
+	Image     string    `json:"image,omitempty"`
 	CreatedAt time.Time `json:"created_at"`
 	Likes     int       `json:"likes"`
 	Dislikes  int       `json:"dislikes"`
 	Username  string    `json:"username"`
-	ImageURL  string    `json:"image"`
+	ImageURL  string    `json:"profile_image"`
 }
 
 type CreateCommentRequest struct {
-	PostID  int    `json:"post_id"`
-	Content string `json:"content"`	
+	PostID   int    `json:"post_id"`
+	Content  string `json:"content"`
 	ImageURL string `json:"image"`
 }
 
@@ -138,7 +139,7 @@ type Comment struct {
 	PostID    int       `json:"post_id"`
 	UserID    int       `json:"user_id,omitempty"`
 	Content   string    `json:"content"`
-	Image     string    `json:"image"`
+	Image     string    `json:"image,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }

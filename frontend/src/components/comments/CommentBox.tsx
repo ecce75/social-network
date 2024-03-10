@@ -22,11 +22,12 @@ const CommentBox: React.FC<CommentBoxProps> = ({ comments }: CommentBoxProps) =>
                                 postId={comment.postId}
                                 userId={comment.userId}
                                 content={comment.content}
+                                image={comment.image}
                                 created_at={comment.created_at}
                                 likes={comment.likes}
                                 dislikes={comment.dislikes}
                                 username={comment.username}
-                                image={comment.image}
+                                profile_image={comment.profile_image}
                             />
                         )
                         :

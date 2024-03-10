@@ -3,11 +3,10 @@ import { CommentProps } from "./Comment";
 
 interface CreateCommentProps {
     postId: number;
-    comments?: CommentProps[];
     setComments: React.Dispatch<React.SetStateAction<{[postId: number]: CommentProps[]}>>;
 }
 
-const CreateComment: React.FC<CreateCommentProps> = ({ postId, comments, setComments }) => {
+const CreateComment: React.FC<CreateCommentProps> = ({ postId, setComments }) => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
 
@@ -47,6 +46,7 @@ const CreateComment: React.FC<CreateCommentProps> = ({ postId, comments, setComm
 
             const newComment = await response.json();
             setCommentContent('');
+            setSelectedFile(null);
             setComments(prevComments => {
                 // Get the current comments for the post or an empty array if none
                 const currentCommentsForPost = prevComments[postId] || [];
@@ -59,17 +59,20 @@ const CreateComment: React.FC<CreateCommentProps> = ({ postId, comments, setComm
             console.log('Error creating comment:', error);
         }
     }
+
+    const fileInputId = `comment-image-${postId}`;
+
     return (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             {/* Text field for commenting*/}
             <div className="flex items-center mt-3.5 px-3 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 flex-grow">
                 <input type="file"
-                    id="comment-image"
+                    id={fileInputId}
                     className="hidden"
                     accept="image/*"
                     onChange={handleFileChange}
                 />
-                <label htmlFor="comment-image" className="inline-flex justify-center p-2 text-gray-500 rounded-lg cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
+                <label htmlFor={fileInputId} className="inline-flex justify-center p-2 text-gray-500 rounded-lg cursor-pointer hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-600">
                     <svg className="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 18">
                         <path fill="currentColor" d="M13 5.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0ZM7.565 7.423 4.5 14h11.518l-2.516-3.71L11 13 7.565 7.423Z" />
                         <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18 1H2a1 1 0 0 0-1 1v14a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1Z" />
@@ -97,19 +100,20 @@ const CreateComment: React.FC<CreateCommentProps> = ({ postId, comments, setComm
                 {/* Image preview */}
                 <div className="uploaded-image-preview relative">
                     {selectedFile && (
-                        <><img
-                            src={URL.createObjectURL(selectedFile)}
-                            alt="Preview"
-                            className="avatar"
-                            style={{ width: 150, height: 150 }}
-                        />
+                        <>
+                            <img
+                                src={URL.createObjectURL(selectedFile)}
+                                alt="Preview"
+                                className="avatar"
+                                style={{ width: 150, height: 150 }}
+                            />
                             <button
                                 onClick={() => setSelectedFile(null)}
                                 className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 text-xs"
                                 style={{ width: '20px', height: '20px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                             >
-                            x
-                        </button>
+                                x
+                            </button>
                         </>
                     )}
                 </div>

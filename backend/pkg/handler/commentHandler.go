@@ -52,8 +52,15 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	newComment.PostID = intPostId
 	newComment.UserID = userID
 
+	_, _, err = r.FormFile("image")
+	if err != nil {
+		newComment.Image = ""
+	} else {
+		newComment.Image = "localhost:8080/images/comments/brt"
+	}
+
 	// Insert the comment into the database
-	commentID, err := h.commentRepo.CreateComment(newComment)
+	commentID, err := h.commentRepo.CreateComment(&newComment)
 	if err != nil {
 		http.Error(w, "Failed to create comment: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -98,6 +105,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 		PostID:   newComment.PostID,
 		UserID:   newComment.UserID,
 		Content:  newComment.Content,
+		Image: h.commentRepo.GetCommentImageURL(int(commentID)),
 		CreatedAt: time.Now(),
 		Likes: 0,
 		Dislikes: 0,
