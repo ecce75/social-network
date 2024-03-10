@@ -60,7 +60,6 @@ const AddFriendsButton: React.FC = () => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                console.log('Friend request sent:', response);
                 // Update the friend status for this user
                 setFriendStatuses(prevStatuses => ({
                     ...prevStatuses,
@@ -81,7 +80,6 @@ const AddFriendsButton: React.FC = () => {
                  if (!response.ok) {
                      throw new Error('Network response was not ok');
                  }
-                 console.log('Friend request sent:', response);
                  // Update the friend status for this user
                  setFriendStatuses(prevStatuses => ({
                      ...prevStatuses,

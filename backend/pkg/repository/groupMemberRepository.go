@@ -42,7 +42,7 @@ func (r *GroupMemberRepository) RemoveMemberFromGroup(groupId, userId int) error
 // CreateGroupInvitation creates a new invitation in the database.
 // It returns an error if any.
 func (r *InvitationRepository) CreateGroupInvitation(invitation model.GroupInvitation) error {
-	query := `INSERT INTO group_invitations (group_id, join_user_id, invite_user_id, status) VALUES (?, ?, ?)`
+	query := `INSERT INTO group_invitations (group_id, join_user_id, invite_user_id, status) VALUES (?, ?, ?, ?)`
 	_, err := r.db.Exec(query, invitation.GroupId, invitation.JoinUserId, invitation.InviteUserId, "pending")
 	return err
 }
@@ -210,9 +210,9 @@ func (r *InvitationRepository) GetPendingGroupInvitationsForUser(userID int) ([]
 }
 
 // GetPendingGroupInvitationsForOwner retrieves all pending group invitations for the owner.
-func (r *InvitationRepository) GetPendingGroupRequestsForOwner(groupID int) ([]model.GroupInvitation, error) {
-	query := `SELECT * FROM group_invitations WHERE group_id = ? AND (status = 'pending' OR status = 'declined')`
-	rows, err := r.db.Query(query, groupID)
+func (r *InvitationRepository) GetPendingGroupRequestsForOwner(groupID, userID int) ([]model.GroupInvitation, error) {
+	query := `SELECT * FROM group_invitations WHERE group_id = ? AND (status = 'pending' OR status = 'declined') AND invite_user_id != ?`
+	rows, err := r.db.Query(query, groupID, userID)
 	if err != nil {
 		return nil, err
 	}
@@ -253,7 +253,7 @@ func (r *GroupMemberRepository) GetNonMembers(groupID, userID int) ([]model.User
         AND id NOT IN (
         	SELECT join_user_id
         	FROM group_invitations
-        WHERE group_id = ? AND status = 'pending' | 'declined')
+        WHERE group_id = ? AND status = 'pending' OR status = 'declined')
     `
 
 	// Execute the query
@@ -284,19 +284,18 @@ func (r *GroupMemberRepository) GetNonMembers(groupID, userID int) ([]model.User
 	return nonMembers, nil
 }
 
-func (r *GroupMemberRepository) GetMembers(groupID, userID int) ([]model.UserList, error) {
+func (r *GroupMemberRepository) GetMembers(groupID int) ([]model.UserList, error) {
 	query := `
-		SELECT id, username, email, first_name, last_name, created_at
+		SELECT id, username, avatar_url
 		FROM users
-		WHERE id != ?
-		AND id IN (
+		WHERE id IN (
 			SELECT user_id
 			FROM group_members
 			WHERE group_id = ?
 		)
 	`
 
-	rows, err := r.db.Query(query, userID, groupID)
+	rows, err := r.db.Query(query, groupID)
 	if err != nil {
 		return nil, err
 	}

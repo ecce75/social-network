@@ -31,7 +31,6 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
                                 username: request.username,
                                 image: request.image
                             }
-                            console.log('New user:', newUser)
                             setGroupStatuses(prevStatuses => ({
                                 ...prevStatuses,
                                 [request.join_user_id]: request.status
@@ -40,17 +39,13 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
                                 setUsers([...users, newUser]);
                             }
                         })
-                        console.log('Group join requests:', data);
                     }
                 })
         } catch (error) {
             console.error('Error fetching groups join requests:', error);
         }
     },[]);
-    useEffect(() => {console.log(users)}, [users]);
 
-    useEffect (() => {console.log(groupStatuses)}, [groupStatuses]);
-    useEffect(() => {console.log(users)}, [users])
 
 
     const onAcceptRequest = (userId: number) => {
@@ -61,7 +56,6 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
             })
                 .then(response => {
                     if (response.status === 200) {
-                        console.log('Request accepted');
                         setGroupStatuses(prevStatuses => ({
                             ...prevStatuses,
                             [userId]: "approved"}));
@@ -73,7 +67,6 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
         } }
 
     const onDeclineRequest = (userId: number) => {
-        console.log('Declining request',"userID", userId, "groupID", groupId)
         try {
             fetch(`${FE_URL}:${BE_PORT}/invitations/decline/${groupId}/${userId}`, {
                 method: 'PUT',
@@ -81,7 +74,6 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
             })
                 .then(response => {
                     if (response.status === 200) {
-                        console.log('Request accepted');
                         setGroupStatuses(prevStatuses => ({
                             ...prevStatuses,
                             [userId]: "declined"}));
@@ -107,7 +99,7 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
             <dialog id="Modal_Join_Request" className="modal">
                 <div className="modal-box" style={{maxWidth:'none', width: '50%', height: '50%'}}>
                     <h3 className="font-bold text-black text-lg">Incoming join requests</h3>
-                    {users.length > 0 && users.map((user: User) => {
+                    {users.length > 0 ? users.map((user: User) => {
                         return (
                             <UserTab
                                 key={user.id}
@@ -117,8 +109,10 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
                             onAcceptRequest={() => {onAcceptRequest(user.id)}}
                             onDeclineRequest={() => {onDeclineRequest(user.id)}}
                             />
+                        )}): (
+                            <h2 className="text-xl mt-3 font-semibold text-green-800">No requests yet.</h2>
                         )
-                    }) }
+                     }
 
                 </div>
                 <form method="dialog" className="modal-backdrop">

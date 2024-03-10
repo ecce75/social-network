@@ -1,9 +1,17 @@
 
-import CreatePostGroup from "../postcreation/CreatePostGroup";
+import CreateGroupPost from "../postcreation/CreateGroupPost";
+import {PostProps} from "@/components/postcreation/Post";
+import React from "react";
+import {CommentProps} from "@/components/comments/Comment";
 
+interface CreatePostButtonGroupProps {
+    groupId: string;
+    onNewPost?: (newPost: PostProps) => void;
+    setComments: React.Dispatch<React.SetStateAction<{[postId: number]: CommentProps[]}>>;
 
+}
 
-function CreatePostButtonGroup() {
+const CreateGroupPostButton:React.FC<CreatePostButtonGroupProps> = ({groupId, onNewPost, setComments}) => {
     const openModal = () => {
         const modal = document.getElementById('Modal_Post_Group') as HTMLDialogElement | null;
         if (modal) {
@@ -18,7 +26,11 @@ function CreatePostButtonGroup() {
             <dialog id="Modal_Post_Group" className="modal">
                 <div className="modal-box" style={{maxWidth:'none', width: '50%', height: '50%'}}>
                     <h3 className="font-bold text-black text-lg">Group Post Creation</h3>
-                    <CreatePostGroup/>
+                    <CreateGroupPost
+                    groupId={groupId}
+                    onNewPost={onNewPost}
+                    setComments={setComments}
+                    />
                     
                 </div>
                 <form method="dialog" className="modal-backdrop">
@@ -29,4 +41,4 @@ function CreatePostButtonGroup() {
     )
 }
 
-export default CreatePostButtonGroup;
+export default CreateGroupPostButton;

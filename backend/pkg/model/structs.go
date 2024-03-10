@@ -121,9 +121,11 @@ type CreatePostRequest struct {
 	PostID         int    `json:"id"`
 	Title          string `json:"title"`
 	Content        string `json:"content,omitempty"`
+	Username       string `json:"username"`
 	GroupID        int    `json:"group_id,omitempty"`
 	ImageURL       string `json:"image_url,omitempty"`
 	PrivacySetting string `json:"privacy_setting"`
+	CreatedAt      string `json:"created_at"`
 }
 
 type UpdatePostRequest struct {

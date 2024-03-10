@@ -53,7 +53,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	// mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
 	mux.HandleFunc("/post/{id}", postHandler.EditPostHandler).Methods("PUT")      // Edit a post
 	mux.HandleFunc("/post/{id}", postHandler.DeletePostHandler).Methods("DELETE") // Delete a post
-	mux.HandleFunc("/groups/{id}/posts", postHandler.GetPostsByGroupIDHandler).Methods("GET")
+	mux.HandleFunc("/groups/{groupId}/posts", postHandler.GetPostsByGroupIDHandler).Methods("GET")
 
 	// Profile
 	mux.HandleFunc("/profile/users/{id}", userHandler.GetUserProfileByIDHandler).Methods("GET")
@@ -82,12 +82,12 @@ func Router(mux *mux.Router, db *sql.DB) {
 	// Group invitations & requests
 	groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepository, invitationRepository, sessionRepository, notificationHandler, groupRepository, userRepository)
 	// for all members
-	mux.HandleFunc("/invitations/{groupId}/{userId}", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
+	mux.HandleFunc("/invitations/invite/{groupId}/{userId}", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
 	// for group member
 	mux.HandleFunc("/invitations", groupMemberHandler.GetAllGroupInvitationsHandler).Methods("GET")
 	mux.HandleFunc("/invitations/{groupId}", groupMemberHandler.GetGroupInvitationByIDHandler).Methods("GET")
-	mux.HandleFunc("/invitations/{groupId}", groupMemberHandler.DeclineGroupInvitationHandler).Methods("PUT")
-	mux.HandleFunc("/invitations/{groupId}", groupMemberHandler.AcceptGroupInvitationHandler).Methods("PUT")
+	mux.HandleFunc("/invitations/decline/{groupId}", groupMemberHandler.DeclineGroupInvitationHandler).Methods("PUT")
+	mux.HandleFunc("/invitations/accept/{groupId}", groupMemberHandler.AcceptGroupInvitationHandler).Methods("PUT")
 	mux.HandleFunc("/invitations/request/{groupId}", groupMemberHandler.RequestGroupMembershipHandler).Methods("POST")
 	// for group owner
 	mux.HandleFunc("/groups/{groupId}/non-members", groupMemberHandler.GetAllNonMembersHandler).Methods("GET")
