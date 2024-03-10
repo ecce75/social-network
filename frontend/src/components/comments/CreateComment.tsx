@@ -1,11 +1,13 @@
 import { useState } from "react";
-
+import { CommentProps } from "./Comment";
 
 interface CreateCommentProps {
     postId: number;
+    comments?: CommentProps[];
+    setComments: React.Dispatch<React.SetStateAction<{[postId: number]: CommentProps[]}>>;
 }
 
-const CreateComment: React.FC<CreateCommentProps> = ({ postId }) => {
+const CreateComment: React.FC<CreateCommentProps> = ({ postId, comments, setComments }) => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
 
@@ -43,9 +45,16 @@ const CreateComment: React.FC<CreateCommentProps> = ({ postId }) => {
                 return;
             }
 
-            const data = await response.json();
-            //console.log('Comment created:', data);
+            const newComment = await response.json();
             setCommentContent('');
+            setComments(prevComments => {
+                // Get the current comments for the post or an empty array if none
+                const currentCommentsForPost = prevComments[postId] || [];
+                // Append the new comment to the array
+                const updatedCommentsForPost = [...currentCommentsForPost, newComment];
+                // Return the updated comments state with the new comment included for the specific post
+                return { ...prevComments, [postId]: updatedCommentsForPost };
+            });
         } catch (error) {
             console.log('Error creating comment:', error);
         }

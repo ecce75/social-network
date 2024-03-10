@@ -17,9 +17,10 @@ export interface PostProps {
     likes: number;
     dislikes: number;
     comments?: CommentProps[];
+    setComments: React.Dispatch<React.SetStateAction<{[postId: number]: CommentProps[]}>>;
 }
 
-const Post: React.FC<PostProps> = ({ id, userId, groupId, title, content, image_url, privacySetting, created_at, likes, dislikes, comments }) => {
+const Post: React.FC<PostProps> = ({ id, userId, groupId, title, content, image_url, privacySetting, created_at, likes, dislikes, comments, setComments }) => {
     return (
         <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
             {/* Post Content */}
@@ -33,6 +34,8 @@ const Post: React.FC<PostProps> = ({ id, userId, groupId, title, content, image_
             {/* Chatbox for commenting and like button */}
             <CreateComment 
                 postId={id}
+                comments={comments}
+                setComments={setComments}
             />
             
             {/* Comments */}

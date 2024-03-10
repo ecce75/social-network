@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -70,34 +71,50 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 		http.Error(w, "Failed to get post: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+
 	// authenticated user username
 	username, err := h.userRepo.GetUsernameByID(userID)
 	if err != nil {
 		http.Error(w, "Failed to get username: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	message := username + " commented on your post: " + post.Title
-	err = h.notificationHandler.CreateNotification(int(postOwnerId), userID, "post", message)
+
+	if newComment.UserID != int(postOwnerId) {
+		err = h.notificationHandler.CreateNotification(int(postOwnerId), userID, "post", message)
+		if err != nil {
+			http.Error(w, "Failed to create notification: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+	}
+
+	user, err := h.userRepo.GetUserProfileByID(newComment.UserID)
 	if err != nil {
-		http.Error(w, "Failed to create notification: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error getting user profile: "+err.Error(), http.StatusInternalServerError)
 		return
+	}
+	commentsResponse := model.CommentsResponse{
+		Id:       int(commentID),
+		PostID:   newComment.PostID,
+		UserID:   newComment.UserID,
+		Content:  newComment.Content,
+		CreatedAt: time.Now(),
+		Likes: 0,
+		Dislikes: 0,
+		Username: username,
+		ImageURL: user.AvatarURL, // Set the avatar URL here
 	}
 
 	// Successful response
-	response := map[string]interface{}{
-		"message": "Comment created successfully",
-		"data":    commentID,
-	}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(response)
+	json.NewEncoder(w).Encode(commentsResponse)
 }
 
 func (h *CommentHandler) GetCommentsByPostID(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	postId, ok := vars["id"]
 	intPostId, err := strconv.Atoi(postId)
-	
+
 	if !ok {
 		http.Error(w, "Post ID is missing in parameters", http.StatusBadRequest)
 		return

@@ -59,6 +59,7 @@ const PostFeed: React.FC = () => {
                                     key={post.id}
                                     {...post}
                                     comments={comments[post.id]}
+                                    setComments={setComments}
                                 />
                             )
                             :

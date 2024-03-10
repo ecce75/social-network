@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { Dispatch, useEffect, useState, SetStateAction } from 'react';
 import ProfilePageInfo from './ProfilePageInfo';
 import { useRouter } from "next/router";
 import UserTab from "@/components/friends/UserTab";
 import Post, { PostProps } from "../postcreation/Post";
+import { CommentProps } from '../comments/Comment';
 
 export interface ProfileProps {
     id: number;
@@ -35,6 +36,8 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, user
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
     const [posts, setPosts] = useState<PostProps[]>([]);
+    const [comments, setComments] = useState<{ [postId: number]: CommentProps[] }>([]);
+    
 
     useEffect(() => {
         // Fetch posts
@@ -55,6 +58,22 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, user
             })
             .catch(error => console.error('Error fetching posts:', error));
     }, []);
+
+    useEffect(() => {
+        posts.forEach(post => {
+            fetch(`${FE_URL}:${BE_PORT}/post/${post.id}/comments`, {
+                method: 'GET',
+                credentials: 'include' // Send cookies with the request
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data !== null) {
+                        setComments(prevComments => ({ ...prevComments, [post.id]: data }));
+                    }
+                })
+                .catch(error => console.error('Error fetching comments: ', error));
+        })
+    }, [posts]);
 
     return (
         /* Group page with */
@@ -130,6 +149,8 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, user
                                     created_at={post.created_at}
                                     likes={post.likes}
                                     dislikes={post.dislikes}
+                                    comments={comments[post.id]}
+                                    setComments={setComments}
                                 />
                             )
                             :
