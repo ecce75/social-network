@@ -7,16 +7,19 @@ interface User {
     avatar_url: string;
 }
 
-interface FriendStatus {
+export interface FriendStatus {
     [key: string]: 'pending' | 'pending_confirmation' | 'accepted' | 'declined' | 'none'; // Possible friend statuses
 }
 
 const AddFriendsButton: React.FC = () => {
+    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+
     const [users, setUsers] = useState<User[]>([]);
     const [friendStatuses, setFriendStatuses] = useState<FriendStatus>({});
 
     useEffect(() => {
-        fetch('http://localhost:8080/api/users/list', {
+        fetch(`${FE_URL}:${BE_PORT}/api/users/list`, {
             method: 'GET',
             credentials: 'include', // Send cookies with the request
         })
@@ -34,7 +37,7 @@ const AddFriendsButton: React.FC = () => {
     }, []);
 
     const checkFriendStatus = (userId: string) => {
-        fetch(`http://localhost:8080/friends/check/${userId}`, {
+        fetch(`${FE_URL}:${BE_PORT}/friends/check/${userId}`, {
             method: 'GET',
             credentials: 'include',
         })
@@ -49,7 +52,7 @@ const AddFriendsButton: React.FC = () => {
     };
 
     const handleAddFriend = (userId: string) => {
-        fetch(`http://localhost:8080/friends/request/${userId}`, {
+        fetch(`${FE_URL}:${BE_PORT}/friends/request/${userId}`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -70,7 +73,7 @@ const AddFriendsButton: React.FC = () => {
             .catch(error => console.error('Error:', error));
     };
     const handleAcceptRequest = (userId: string) => {
-         fetch(`http://localhost:8080/friends/accept/${userId}`, {
+        fetch(`${FE_URL}:${BE_PORT}/friends/accept/${userId}`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -92,7 +95,7 @@ const AddFriendsButton: React.FC = () => {
     };
 
     const handleDeclineRequest = (userId: string) => {
-        fetch(`http://localhost:8080/friends/decline/${userId}`, {
+        fetch(`${FE_URL}:${BE_PORT}/friends/decline/${userId}`, {
             method: 'POST',
             credentials: 'include',
             headers: {

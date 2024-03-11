@@ -46,11 +46,11 @@ func (r *CommentRepository) CreateComment(comment *model.Comment) (int64, error)
 		return 0, err
 	}
 	lastInsertID, err := result.LastInsertId()
-	if comment.Image == "" {
+	if comment.Image.Valid && comment.Image.String == "" {
 		return lastInsertID, nil
 	}
-	comment.Image = "http://localhost:8080/images/comments/" + fmt.Sprint(lastInsertID) + ".jpg"
-	r.AddImageUrlToComment(int(lastInsertID), comment.Image)
+	comment.Image.String = "http://localhost:8080/images/comments/" + fmt.Sprint(lastInsertID) + ".jpg"
+	r.AddImageUrlToComment(int(lastInsertID), comment.Image.String)
 	if err != nil {
 		fmt.Println("Error getting last inserted comment id")
 	}
@@ -66,14 +66,17 @@ func (r *CommentRepository) AddImageUrlToComment(postID int, imageURL string) er
 	return nil
 }
 
-func(r *CommentRepository) GetCommentImageURL(id int) string {
+func (r *CommentRepository) GetCommentImageURL(id int) (string, error) {
 	query := `SELECT image_url FROM comments WHERE id = ?`
-	var imageURL string
+	var imageURL sql.NullString
 	err := r.db.QueryRow(query, id).Scan(&imageURL)
 	if err != nil {
-		fmt.Println("Error getting comment image url")
+		return "", err
 	}
-	return imageURL
+	if imageURL.Valid {
+		return imageURL.String, nil
+	}
+	return "", nil
 }
 
 func (r *CommentRepository) DeleteComment(id int, userid int) error {

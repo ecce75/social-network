@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/utils';
 const useAuthCheck = () => {
     const router = useRouter();
     const checkAuth = async () => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const auth = await useAuth();
         if (!auth.is_authenticated) {
             router.push('/auth');

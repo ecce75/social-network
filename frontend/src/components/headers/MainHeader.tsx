@@ -2,19 +2,24 @@ import NotificationButton from "../buttons/NotificationButton";
 import ProfileIconDM from "../buttons/ProfileIconDropdown";
 import LeftNavBar from "../leftnavbar/LeftNavBar";
 import IrieSphereButton from "../buttons/IriesphereButton";
+import { ToggleWaveEffectButton } from "@/components/buttons/ToggleColorModeButton";
 
 function MainHeader() {
     return (
-
         <div className="navbar bg-primary h-">
             <div className="flex-1">
                 <LeftNavBar />
                 <IrieSphereButton />
             </div>
             <div className="navbar-end">
-                <NotificationButton />
+                {/* <ToggleWaveEffectButton /> */}
+                <div>
+                    <NotificationButton />
+                </div>
+                <div>
+                    <ProfileIconDM />
+                </div>
 
-                <ProfileIconDM />
             </div>
         </div>
 

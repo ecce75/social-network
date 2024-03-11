@@ -54,9 +54,9 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 
 	_, _, err = r.FormFile("image")
 	if err != nil {
-		newComment.Image = ""
+		newComment.Image.String = ""
 	} else {
-		newComment.Image = "localhost:8080/images/comments/brt"
+		newComment.Image.String = "localhost:8080/images/comments/brt"
 	}
 
 	// Insert the comment into the database
@@ -100,17 +100,23 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 		http.Error(w, "Error getting user profile: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	commentImageUrl, err := h.commentRepo.GetCommentImageURL(int(commentID))
+	if err != nil {
+		http.Error(w, "Error getting comment image url: "+err.Error(), http.StatusInternalServerError)
+		return
+
+	}
 	commentsResponse := model.CommentsResponse{
-		Id:       int(commentID),
-		PostID:   newComment.PostID,
-		UserID:   newComment.UserID,
-		Content:  newComment.Content,
-		Image: h.commentRepo.GetCommentImageURL(int(commentID)),
+		Id:        int(commentID),
+		PostID:    newComment.PostID,
+		UserID:    newComment.UserID,
+		Content:   newComment.Content,
+		Image:     commentImageUrl,
 		CreatedAt: time.Now(),
-		Likes: 0,
-		Dislikes: 0,
-		Username: username,
-		ImageURL: user.AvatarURL, // Set the avatar URL here
+		Likes:     0,
+		Dislikes:  0,
+		Username:  username,
+		ImageURL:  user.AvatarURL, // Set the avatar URL here
 	}
 
 	// Successful response

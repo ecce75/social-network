@@ -2,6 +2,7 @@
 import MainHeader from '@/components/headers/MainHeader';
 import background from '../../../public/assets/background.png';
 import Footer from '@/components/headers/Footer';
+import { TextColorModeProvider } from '@/hooks/TextColorModeContext';
 
 import {ChatProvider, ChatManager} from '@/components/chat/ChatContext';
 
@@ -15,6 +16,7 @@ export default function DashboardLayout({
     children: React.ReactNode
   }) {
     return (
+      <TextColorModeProvider>
         <ChatProvider>
         <div style={{
           backgroundImage: `url("${background.src}")`,
@@ -29,6 +31,8 @@ export default function DashboardLayout({
         <Footer/>
         </div>
       </ChatProvider>
+      </TextColorModeProvider>
+        
     )
   }
 

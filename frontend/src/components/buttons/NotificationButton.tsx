@@ -21,12 +21,24 @@ function NotificationButton() {
             if (response.ok) {
                 const data = await response.json();
                 setNotifications(data);
+                if (data === null) {
+                    setNotifications([]);
+                }
+                console.log(data);
             } else {
                 console.error('Failed to fetch notifications');
             }
         };
         fetchNotifications();
     }, []);
+
+    const updateNotificationStatus = (notificationId: number, newStatus: any) => {
+        setNotifications(prevNotifications =>
+            prevNotifications.map(notification =>
+                notification.id === notificationId ? { ...notification, status: newStatus } : notification
+            )
+        );
+    };
 
     const titleStyle = {
         color: '#4a4a4a', // Adjust color to match the design of the page
@@ -47,7 +59,11 @@ function NotificationButton() {
             {showDropdown && (
                 <div className="absolute right-0 w-64 mt-2 py-2 border rounded-2xl shadow-xl" style={{ maxHeight: 'calc(3 * 150px)', overflowY: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.6)' }}>
                     <h1 style={(titleStyle)}>Notifications</h1>
-                    <NotificationComponent notifications={notifications} setNotifications={setNotifications} />
+                    <NotificationComponent 
+                        notifications={notifications}
+                        setNotifications={setNotifications}
+                        updateNotificationStatus={updateNotificationStatus}
+                        />
                 </div>
             )}
         </div>

@@ -47,7 +47,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/api/users/list", userHandler.ListUsersHandler).Methods("GET")
 
 	// Posts
-	postHandler := handler.NewPostHandler(postRepository, sessionRepository, friendsRepository, groupMemberRepository, voteHandler)
+	postHandler := handler.NewPostHandler(postRepository, sessionRepository, friendsRepository, groupMemberRepository, userRepository, voteHandler)
 	mux.HandleFunc("/posts", postHandler.GetAllPostsHandler).Methods("GET") // Main feed, all public posts + user groups posts
 	mux.HandleFunc("/post", postHandler.CreatePostHandler).Methods("POST")
 	// mux.HandleFunc("/post/{id}", handler.GetPostByIDHandler).Methods("GET")
@@ -82,7 +82,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	// Group invitations & requests
 	groupMemberHandler := handler.NewGroupMemberHandler(groupMemberRepository, invitationRepository, sessionRepository, notificationHandler, groupRepository, userRepository)
 	// for all members
-	mux.HandleFunc("/invitations/{groupId}/{userId}", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
+	//mux.HandleFunc("/invitations/{groupId}/{userId}", groupMemberHandler.InviteGroupMemberHandler).Methods("POST")
 	// for group member
 	mux.HandleFunc("/invitations", groupMemberHandler.GetAllGroupInvitationsHandler).Methods("GET")
 	mux.HandleFunc("/invitations/{groupId}", groupMemberHandler.GetGroupInvitationByIDHandler).Methods("GET")

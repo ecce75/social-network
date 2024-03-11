@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS events (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     creator_id INTEGER NOT NULL,
-    group_id INTEGER
+    group_id INTEGER,
     title TEXT NOT NULL,
     description TEXT,
     location TEXT,

@@ -113,7 +113,7 @@ func (h *VoteHandler) AppendVotesToCommentsResponse(comments []model.Comment) ([
 			PostID:    comment.PostID,
 			UserID:    comment.UserID,
 			Content:   comment.Content,
-			Image:     comment.Image,
+			Image:     comment.Image.String,
 			CreatedAt: comment.CreatedAt,
 			Likes:     likes,
 			Dislikes:  dislikes,

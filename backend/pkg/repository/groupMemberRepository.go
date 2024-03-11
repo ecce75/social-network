@@ -42,7 +42,7 @@ func (r *GroupMemberRepository) RemoveMemberFromGroup(groupId, userId int) error
 // CreateGroupInvitation creates a new invitation in the database.
 // It returns an error if any.
 func (r *InvitationRepository) CreateGroupInvitation(invitation model.GroupInvitation) error {
-	query := `INSERT INTO group_invitations (group_id, join_user_id, invite_user_id, status) VALUES (?, ?, ?)`
+	query := `INSERT INTO group_invitations (group_id, join_user_id, invite_user_id, status) VALUES (?, ?, ?, ?)`
 	_, err := r.db.Exec(query, invitation.GroupId, invitation.JoinUserId, invitation.InviteUserId, "pending")
 	return err
 }

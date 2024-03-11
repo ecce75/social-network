@@ -32,3 +32,25 @@
     height: 400px;
     /* No fixed width; the chatbox can grow based on its content */
 }
+
+@keyframes wave-animation {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    50% {
+        background-position: 100% 50%;
+    }
+
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.createdAtWave {
+    background: linear-gradient(to right, red, gold, green);
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: wave-animation 3s linear infinite;
+    background-size: 200% 200%;
+}

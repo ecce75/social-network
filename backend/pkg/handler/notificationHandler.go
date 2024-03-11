@@ -195,7 +195,7 @@ func (h *NotificationHandler) NotifyGroupAdmin(groupID, userID int) error {
 	if err != nil {
 		return err
 	}
-	message := username + "has requested to join your group:" + groupTitle
+	message := username + " has requested to join your group: " + groupTitle
 	// Get the group admin.
 	adminID, err := h.groupMemberRepo.GetGroupAdminByID(groupID)
 	if err != nil {

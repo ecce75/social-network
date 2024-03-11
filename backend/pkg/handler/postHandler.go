@@ -17,11 +17,12 @@ type PostHandler struct {
 	sessionRepo     *repository.SessionRepository
 	friendsRepo     *repository.FriendsRepository
 	groupMemberRepo *repository.GroupMemberRepository
+	userRepo 	  	*repository.UserRepository
 	voteHandler     *VoteHandler
 }
 
-func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository, friendsRepo *repository.FriendsRepository, groupMemberRepo *repository.GroupMemberRepository, voteHandler *VoteHandler) *PostHandler {
-	return &PostHandler{postRepo: postRepo, sessionRepo: sessionRepo, friendsRepo: friendsRepo, groupMemberRepo: groupMemberRepo, voteHandler: voteHandler}
+func NewPostHandler(postRepo *repository.PostRepository, sessionRepo *repository.SessionRepository, friendsRepo *repository.FriendsRepository, groupMemberRepo *repository.GroupMemberRepository, userRepo *repository.UserRepository, voteHandler *VoteHandler) *PostHandler {
+	return &PostHandler{postRepo: postRepo, sessionRepo: sessionRepo, friendsRepo: friendsRepo, groupMemberRepo: groupMemberRepo, userRepo: userRepo, voteHandler: voteHandler}
 }
 
 func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) {
@@ -156,7 +157,19 @@ func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request)
 		http.Error(w, "Failed to append votes to posts: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	for i, post := range postsResponse {
+		creatorId, err := h.postRepo.GetPostOwnerIDByPostID(post.Id); if err != nil {
+			http.Error(w, "Failed to retrieve post owner: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		creatorProfile, err := h.userRepo.GetUserProfileByID(int(creatorId))
+		if err != nil {
+			http.Error(w, "Failed to retrieve post owner profile: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		postsResponse[i].Creator = creatorProfile.Username
+		postsResponse[i].CreatorAvatar = creatorProfile.AvatarURL
+	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(postsResponse)
 }
@@ -229,6 +242,20 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
+	for i, post := range postsResponse {
+		creatorId, err := h.postRepo.GetPostOwnerIDByPostID(post.Id); if err != nil {
+			http.Error(w, "Failed to retrieve post owner: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		creatorProfile, err := h.userRepo.GetUserProfileByID(int(creatorId))
+		if err != nil {
+			http.Error(w, "Failed to retrieve post owner profile: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		postsResponse[i].Creator = creatorProfile.Username
+		postsResponse[i].CreatorAvatar = creatorProfile.AvatarURL
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(postsResponse)
 }
@@ -289,6 +316,21 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
+	for i, post := range postsResponse {
+		creatorId, err := h.postRepo.GetPostOwnerIDByPostID(post.Id); if err != nil {
+			http.Error(w, "Failed to retrieve post owner: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		creatorProfile, err := h.userRepo.GetUserProfileByID(int(creatorId))
+		if err != nil {
+			http.Error(w, "Failed to retrieve post owner profile: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		postsResponse[i].Creator = creatorProfile.Username
+		postsResponse[i].CreatorAvatar = creatorProfile.AvatarURL
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(postsResponse)
 }
+

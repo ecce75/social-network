@@ -2,6 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
+:root.wave-effect,
+:root.wave-effect div p {
+  --tw-text-opacity: 1;
+  /* Make sure to override text opacity to make the gradient visible */
+}
+
+:root.wave-effect *,
+:root.wave-effect div p * {
+  text-decoration: linear-gradient(to right, red, gold, green);
+  /* Apply Tailwind utilities for transparent text and background clipping */
+  animation: waveAnimation 3s ease-in-out infinite;
+}
+
 @font-face {
   font-family: 'Rasa';
   font-style: normal;

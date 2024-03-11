@@ -45,4 +45,6 @@ const MessageList = React.forwardRef<HTMLDivElement, MessageListProps>((props, r
     );
 });
 
+MessageList.displayName = 'MessageList';
+
 export default MessageList;

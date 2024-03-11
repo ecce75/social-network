@@ -5,9 +5,10 @@ import (
 	"backend/pkg/repository"
 	"backend/util"
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"net/http"
 	"strconv"
+
+	"github.com/gorilla/mux"
 )
 
 type GroupMemberHandler struct {
@@ -207,6 +208,7 @@ func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *
 		GroupId:      groupID,
 		JoinUserId:   userID,
 		InviteUserId: userID,
+		Status:       "pending",
 	}
 	err := h.invitationRepo.CreateGroupInvitation(newInvitation)
 	if err != nil {

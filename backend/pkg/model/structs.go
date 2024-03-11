@@ -96,19 +96,21 @@ type PostsResponse struct {
 	CreatedAt      time.Time `json:"created_at"`
 	Likes          int       `json:"likes"`
 	Dislikes       int       `json:"dislikes"`
+	Creator        string    `json:"creator"`
+	CreatorAvatar  string    `json:"creator_avatar"`
 }
 
 type CommentsResponse struct {
-	Id        int       `json:"id"`
-	PostID    int       `json:"post_id"`
-	UserID    int       `json:"user_id,omitempty"`
-	Content   string    `json:"content"`
-	Image     string    `json:"image,omitempty"`
-	CreatedAt time.Time `json:"created_at"`
-	Likes     int       `json:"likes"`
-	Dislikes  int       `json:"dislikes"`
-	Username  string    `json:"username"`
-	ImageURL  string    `json:"profile_image"`
+	Id        int            `json:"id"`
+	PostID    int            `json:"post_id"`
+	UserID    int            `json:"user_id,omitempty"`
+	Content   string         `json:"content"`
+	Image     string         `json:"image,omitempty"`
+	CreatedAt time.Time      `json:"created_at"`
+	Likes     int            `json:"likes"`
+	Dislikes  int            `json:"dislikes"`
+	Username  string         `json:"username"`
+	ImageURL  string `json:"profile_image"`
 }
 
 type CreateCommentRequest struct {
@@ -135,13 +137,13 @@ type UpdatePostRequest struct {
 }
 
 type Comment struct {
-	Id        int       `json:"id,omitempty"`
-	PostID    int       `json:"post_id"`
-	UserID    int       `json:"user_id,omitempty"`
-	Content   string    `json:"content"`
-	Image     string    `json:"image,omitempty"`
-	CreatedAt time.Time `json:"created_at,omitempty"`
-	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	Id        int            `json:"id,omitempty"`
+	PostID    int            `json:"post_id"`
+	UserID    int            `json:"user_id,omitempty"`
+	Content   string         `json:"content"`
+	Image     sql.NullString `json:"image,omitempty"`
+	CreatedAt time.Time      `json:"created_at,omitempty"`
+	UpdatedAt time.Time      `json:"updated_at,omitempty"`
 }
 
 type UpdateCommentRequest struct {
