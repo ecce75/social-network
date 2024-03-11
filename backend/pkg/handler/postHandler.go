@@ -44,21 +44,20 @@ func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Creates the post in database
-	postID, err := h.postRepo.CreatePost(request, userID)
+	post, err := h.postRepo.CreatePost(&request, userID)
 	if err != nil {
 		http.Error(w, "Failed to create the post: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	// TODO: notify group members of new post
 	// if request.GroupID != 0 {
 
 	// }
-	util.ImageSave(w, r, strconv.Itoa(int(postID)), "post")
+	util.ImageSave(w, r, strconv.Itoa(post.PostID), "post")
 	// Successful response
 	response := map[string]interface{}{
 		"message": "Post created successfully",
-		"data":    postID,
+		"data":    post,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
@@ -139,17 +138,17 @@ func (h *PostHandler) GetAllPostsHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userGroupsPosts, err := h.postRepo.GetPostsByUserGroups(userID)
-	if err != nil {
-		http.Error(w, "Failed to retrieve posts by user groups: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
+	// userGroupsPosts, err := h.postRepo.GetPostsByUserGroups(userID)
+	// if err != nil {
+	// 	http.Error(w, "Failed to retrieve posts by user groups: "+err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
 	posts, err := h.postRepo.GetAllPostsWithUserIDAccess(userID)
 	if err != nil {
 		http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	posts = append(posts, userGroupsPosts...)
+	// posts = append(posts, userGroupsPosts...)
 
 	// Append the votes to the posts
 	postsResponse, err := h.voteHandler.AppendVotesToPostsResponse(posts)
@@ -204,7 +203,7 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 		http.Error(w, "User ID is missing in parameters", http.StatusBadRequest)
 		return
 	}
-	
+
 	var posts []model.Post
 	if requestingUserID == intUserID {
 		posts, err = h.postRepo.GetAllUserPosts(requestingUserID)
@@ -267,13 +266,8 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 // TODO: check if user requesting is in group
 func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	groupID, ok := vars["id"]
-	intGroupID, err := strconv.Atoi(groupID)
+	groupID, err := strconv.Atoi(vars["groupId"])
 	if err != nil {
-		http.Error(w, "Failed to parse group ID: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	if !ok {
 		http.Error(w, "Group ID is missing in parameters", http.StatusBadRequest)
 		return
 	}
@@ -283,7 +277,7 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 	// check if user is in group
-	isMember, err := h.groupMemberRepo.IsUserGroupMember(userID, intGroupID)
+	isMember, err := h.groupMemberRepo.IsUserGroupMember(userID, groupID)
 	if err != nil {
 		http.Error(w, "Failed to check if user is in group: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -297,7 +291,7 @@ func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	posts, err := h.postRepo.GetPostsByGroupID(intGroupID)
+	posts, err := h.postRepo.GetPostsByGroupID(groupID)
 	if err != nil && err != sql.ErrNoRows {
 		http.Error(w, "Failed to retrieve posts: "+err.Error(), http.StatusInternalServerError)
 		return

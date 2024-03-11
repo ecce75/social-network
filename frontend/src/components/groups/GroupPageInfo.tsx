@@ -1,8 +1,10 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import GroupInformation from './GroupInformation';
 import GroupRequestsButton from '../buttons/GroupRequestsButton';
 import InviteGroupButton from '../buttons/InviteGroupButton';
 import SendGroupRequestButton from "@/components/buttons/SendGroupRequestButton";
+import UserTab from "@/components/friends/UserTab";
+import AcceptInvitationButton from "@/components/buttons/AcceptinvitationButton";
 
 interface GroupPageInfoProps {
     title?: string; // New prop for post title
@@ -12,17 +14,37 @@ interface GroupPageInfoProps {
     groupId?: string;
     invitationSent?: boolean;
     isCreator?: boolean;
+    confirmInvite?: boolean;
 }
 
-const GroupPageInfo: React.FC<GroupPageInfoProps> = ({
-                                                         title,
-                                                         text,
-                                                         pictureUrl,
-                                                         isMember,
-                                                         groupId,
-                                                         invitationSent,
-                                                         isCreator
-                                                     }) => {
+const GroupPageInfo: React.FC<GroupPageInfoProps> = ({title, text, pictureUrl, isMember, groupId, invitationSent, isCreator, confirmInvite}) => {
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+
+    const [members, setMembers] = React.useState<{ id: number, username: string, image: string, status: string }[]>([]);
+    useEffect(() => {
+        try {
+            fetch(`${FE_URL}:${BE_PORT}/groups/${groupId}/members`, {
+                method: 'GET',
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    data.map((user: any) => {
+                            const newUser = {
+                                id: user.id,
+                                username: user.username,
+                                image: user.avatar_url,
+                                status: user.status
+                            }
+                            setMembers(prevMembers => [...prevMembers, newUser])
+                        }
+                    )
+                })
+        } catch (error) {
+            console.log('Error fetching group members:', error)
+        }
+    }, []);
     return (
         <div>
             <div style={{
@@ -50,15 +72,20 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({
                         {isCreator && (
                             <GroupRequestsButton
                                 groupId={groupId}/>)}
-                    </>) : (invitationSent ? (
+                    </>) : invitationSent && !confirmInvite ? (
                     < ><p>Join Request sent</p>
 
                     </>
-                ) : (
+                ) : confirmInvite ? (
+                    <>
+                    <AcceptInvitationButton id={groupId}/>
+                    </>
+                ) :(
                     < >
                         <SendGroupRequestButton id={groupId}/>
                     </>
-                ))}
+                )}
+
             </div>
 
             <div style={{border: '2px solid #ccc', backgroundColor: '#4F7942', borderRadius: '8px', padding: '10px'}}>
@@ -77,14 +104,22 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({
             }}>
                 {/* List */}
                 <ul style={{display: 'flex', flexDirection: 'column', marginBottom: '20px'}}>
-                    {/* Map through the list of people and render each item */}
-                    {/* <UserTab/>
-                    <UserTab/> */}
+                    {members.length > 0 && members.map((user: any) => {
+                        return (
+                            <UserTab
+                                key={user.id}
+                                userID={user.id}
+                                userName={user.username}
+                                avatar={user.image}
+                            />
+                        )
+                    })
+                    }
 
-                </ul>
-            </div>
-        </div>
-    );
-};
+                        </ul>
+                        </div>
+                        </div>
+                        );
+                    };
 
 export default GroupPageInfo;

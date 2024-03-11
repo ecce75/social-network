@@ -80,17 +80,11 @@ func (h *GroupMemberHandler) RemoveMemberHandler(w http.ResponseWriter, r *http.
 // RequestGroupMembershipHandler allows a user to request membership in a group.
 // It creates a membership request in the database that can be approved or denied by the group's admin.
 func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
-	// Parse the request body to get the group ID and user ID
 	var request model.GroupInvitation
 	vars := mux.Vars(r)
-	groupID, ok := vars["groupId"]
-	if !ok {
-		http.Error(w, "Missing group ID", http.StatusBadRequest)
-		return
-	}
-	intGroupID, err := strconv.Atoi(groupID)
+	groupID, err := strconv.Atoi(vars["groupId"])
 	if err != nil {
-		http.Error(w, "Failed to convert groupid string to int: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Missing group ID", http.StatusBadRequest)
 		return
 	}
 
@@ -100,7 +94,7 @@ func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter
 		return
 	}
 	request.JoinUserId = userID
-	request.GroupId = intGroupID
+	request.GroupId = groupID
 
 	// Create the membership request in the database
 	err = h.groupMemberRepo.CreateGroupRequest(request)
@@ -203,19 +197,24 @@ func (h *GroupMemberHandler) InviteGroupMemberHandler(w http.ResponseWriter, r *
 	// Retrieve the user ID from URL
 	userID, _ := strconv.Atoi(vars["userId"])
 
+	inviteUserID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	//
 	newInvitation := model.GroupInvitation{
 		GroupId:      groupID,
 		JoinUserId:   userID,
-		InviteUserId: userID,
+		InviteUserId: inviteUserID,
 		Status:       "pending",
 	}
-	err := h.invitationRepo.CreateGroupInvitation(newInvitation)
+	err = h.invitationRepo.CreateGroupInvitation(newInvitation)
 	if err != nil {
 		http.Error(w, "Failed to create invitation: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
 	// Notify the user that they have been invited to join a group
 	err = h.notificationHandler.NotifyUserInvitation(userID, groupID)
 	if err != nil {
@@ -369,7 +368,7 @@ func (h *GroupMemberHandler) GetAllGroupRequestsHandler(w http.ResponseWriter, r
 
 	if isAuthorized {
 		// Get all pending group requests for the user.
-		requests, err := h.invitationRepo.GetPendingGroupRequestsForOwner(groupID)
+		requests, err := h.invitationRepo.GetPendingGroupRequestsForOwner(groupID, userID)
 		for i, request := range requests {
 			requests[i].Username, requests[i].ImageURL, _ = h.userRepo.GetUsernameAndAvatarByID(request.JoinUserId)
 
@@ -415,13 +414,8 @@ func (h *GroupMemberHandler) GetAllMembersHandler(w http.ResponseWriter, r *http
 		http.Error(w, "Invalid group ID: "+err.Error(), http.StatusBadRequest)
 		return
 	}
-	// Extract the user ID from the cookie.
-	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
-	if err != nil {
-		http.Error(w, "Error extracting user ID from session token: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-	members, err := h.groupMemberRepo.GetMembers(groupID, userID)
+
+	members, err := h.groupMemberRepo.GetMembers(groupID)
 	if err != nil {
 		http.Error(w, "Failed to get members: "+err.Error(), http.StatusInternalServerError)
 		return

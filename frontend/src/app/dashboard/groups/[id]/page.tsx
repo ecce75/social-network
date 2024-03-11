@@ -1,11 +1,12 @@
 "use client"
 
 import GroupPageInfo from "@/components/groups/GroupPageInfo";
-import CreatePostButtonGroup from "@/components/buttons/CreatePostButtonGroup";
+import CreateGroupPostButton from "@/components/buttons/CreateGroupPostButton";
 import GroupEventFeed from "@/components/groups/GroupEventFeed";
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import Post, {PostProps} from "@/components/postcreation/Post";
 import useAuthCheck from "@/hooks/authCheck";
+import {CommentProps} from "@/components/comments/Comment";
 
 interface GroupProps {
     id: string
@@ -39,6 +40,8 @@ export default function Group({
     const [isMember, setMember] = React.useState<boolean>(true);
     const [isCreator, setCreator] = React.useState<boolean>(false);
     const [invitationSent, setInvitationSent] = React.useState<boolean>(false);
+    const [comments, setComments] = useState<{ [postId: number]:CommentProps[]}>([]);
+    const [confirmInvite, setConfirmInvite] = React.useState<boolean>(false);
 
 
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
@@ -72,6 +75,7 @@ export default function Group({
                     if (data.message === 'User not member of group') {
                         setMember(false);
                     } else {
+                        console.log(data)
                         setPosts(data);
                     }
                 })
@@ -88,14 +92,23 @@ export default function Group({
             })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.message != 'No group invitation found'){
-                        data.status == "pending" && setInvitationSent(true);
+                    if (data.message != 'No group invitation found' && data.status == "pending") {
+                        if (data.invite_user_id == data.join_user_id) {
+                            setInvitationSent(true);
+                        }else if (data.invite_user_id != data.join_user_id) {
+                            setConfirmInvite(true);
+                        }
+
                     }
 
                 })
         }
 
     }, [isMember]);
+
+    const handleNewPost = (newPost : PostProps) => {
+        setPosts((prevPosts) => [...prevPosts, newPost]);
+    };
 
     return (
 
@@ -121,6 +134,7 @@ export default function Group({
                             groupId={params.id}
                             invitationSent={invitationSent}
                             isCreator={isCreator}
+                            confirmInvite={confirmInvite}
                         />
                     </div>
 
@@ -138,7 +152,11 @@ export default function Group({
                         overflowY: 'auto'
                     }}>
                         {isMember && <div style={{marginBottom: '20px'}}>
-                            <CreatePostButtonGroup/>
+                            <CreateGroupPostButton
+                            groupId= {params.id}
+                            onNewPost={handleNewPost}
+                            setComments={setComments}
+                            />
                         </div>}
                         <div style={{display: 'flex', flexDirection: 'column', marginBottom: '20px'}}>
                             {
@@ -147,15 +165,9 @@ export default function Group({
                                         posts.map(post =>
                                             <Post
                                                 key={post.id}
-                                                id={post.id}
-                                                userId={post.userId}
-                                                title={post.title}
-                                                content={post.content}
-                                                imageUrl={post.imageUrl}
-                                                privacySetting={post.privacySetting}
-                                                createdAt={post.createdAt}
-                                                likes={post.likes}
-                                                dislikes={post.dislikes}
+                                                {...post}
+                                                comments={comments[post.id]}
+                                                setComments={setComments}
                                             />
                                         )
                                         :

@@ -16,9 +16,10 @@ interface UserTabProps {
     onDeclineRequest?: () => void; // Optional prop for the Decline request functionality
     onInviteToGroup?: () => void; // Optional prop for the Invite to group functionality
     groupStatus?: 'approved' | 'declined' | 'pending';
+    invitedToGroup?: boolean;
 }
 
-const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus, onAddFriend, onAcceptRequest, onDeclineRequest, groupStatus, onInviteToGroup}) => {
+const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus, onAddFriend, onAcceptRequest, onDeclineRequest, groupStatus, onInviteToGroup, invitedToGroup}) => {
     const router = useRouter();
     const [showDialog, setShowDialog] = useState(false);
     const [dialogPosition, setDialogPosition] = useState({x: 0, y: 0});
@@ -145,15 +146,20 @@ const UserTab: React.FC<UserTabProps> = ({userID, userName, avatar, friendStatus
                         Group Request Declined
                     </p>
                 )}
-                {onInviteToGroup && (
+                {onInviteToGroup && invitedToGroup == false && (
                     <button onClick={(e) => {
                         onInviteToGroup();
                         e.stopPropagation();}}
                             className="btn btn-primary">
                         Invite to Group
                     </button>
-                )
-                    }
+                )}
+                {onInviteToGroup && invitedToGroup == true && (
+                    <p className="text-xs text-white bg-secondary py-1 px-3 rounded">
+                        Invited to Group
+                    </p>
+                )}
+
 
             </div>
         </div>

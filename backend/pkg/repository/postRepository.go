@@ -24,26 +24,33 @@ func (r *PostRepository) GetPostByID(postID int) (model.Post, error) {
 	return post, nil
 }
 
-func (r *PostRepository) CreatePost(post model.CreatePostRequest, userID int) (int64, error) {
+func (r *PostRepository) CreatePost(post *model.CreatePostRequest, userID int) (*model.CreatePostRequest, error) {
 	query := `INSERT INTO posts (user_id, title, group_id, content, privacy_setting) 
 	VALUES (?, ?, ?, ?, ?)`
 	result, err := r.db.Exec(query, userID, post.Title, post.GroupID, post.Content, post.PrivacySetting)
 	if err != nil {
 		fmt.Println("Error inserting post into database: ", err)
-		return 0, err
+		return nil, err
 	}
 	postID, err := result.LastInsertId()
+	post.PostID = int(postID)
 	if err != nil {
 		fmt.Println("Error getting last inserted post id")
 	}
 
-	post.ImageURL = "http://localhost:8080/images/posts/" + fmt.Sprint(postID) + ".jpg"
+	post.ImageURL = "http://localhost:8080/images/posts/" + fmt.Sprint(post.PostID) + ".jpg"
 	query = `UPDATE posts SET image_url = ? WHERE id = ?`
-	_, err = r.db.Exec(query, post.ImageURL, postID)
+	_, err = r.db.Exec(query, post.ImageURL, post.PostID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
-	return postID, nil
+
+	query = `SELECT created_at FROM posts WHERE id = ?`
+	err = r.db.QueryRow(query, post.PostID).Scan(&post.CreatedAt)
+	if err != nil {
+		return nil, err
+	}
+	return post, nil
 }
 
 // GetAllPostsWithUserIDAccess retrieves all posts with the given user ID access.
@@ -168,7 +175,7 @@ func (r *PostRepository) UpdatePost(postID int, userID int, request model.Update
 }
 
 func (r *PostRepository) GetPostsByGroupID(groupID int) ([]model.Post, error) {
-	query := `SELECT * FROM posts WHERE group_id = ?`
+	query := `SELECT id, user_id, title, content, image_url, created_at FROM posts WHERE group_id = ?`
 	rows, err := r.db.Query(query, groupID)
 	if err != nil {
 		return nil, err
@@ -206,7 +213,7 @@ func (r *PostRepository) GetPostsByUserGroups(userID int) ([]model.Post, error) 
 	var posts []model.Post
 	for rows.Next() {
 		var post model.Post
-		if err := rows.Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.CreatedAt, &post.UpdatedAt); err != nil {
+		if err := rows.Scan(&post.Id, &post.UserID, &post.GroupID, &post.Title, &post.Content, &post.ImageURL, &post.PrivacySetting, &post.CreatedAt, &post.UpdatedAt); err != nil {
 			return nil, err
 		}
 		posts = append(posts, post)

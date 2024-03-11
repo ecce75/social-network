@@ -9,7 +9,7 @@ const InviteGroupButton: React.FC<InviteGroupButtonProps> = ({ groupID }) => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
     const [nonMembers, setNonMembers] = React.useState<{id: number, username: string, image: string}[]>([]);
-    const [invited, setInvited] = React.useState<{[key : string]: 'invited' | 'not invited' }>({});
+    const [invited, setInvited] = React.useState<{[key : string]: boolean }>({});
 
     useEffect(() => {
         try {
@@ -46,12 +46,12 @@ const InviteGroupButton: React.FC<InviteGroupButtonProps> = ({ groupID }) => {
 
     function handleInviteToGroup(id : number) {
         try {
-            fetch(`${FE_URL}:${BE_PORT}/invitations/${groupID}/${id}`, {
+            fetch(`${FE_URL}:${BE_PORT}/invitations/invite/${groupID}/${id}`, {
                 method: 'POST',
                 credentials: 'include'
             })
                 .then(response => {if (response.ok) {
-                    setInvited(prevInvited => ({...prevInvited, [id]: 'invited'}));
+                    setInvited(prevInvited => ({...prevInvited, [id]: true}));
                 }})
 
         }
@@ -60,6 +60,7 @@ const InviteGroupButton: React.FC<InviteGroupButtonProps> = ({ groupID }) => {
         }
         
     }
+
 
     return (
         <div>
@@ -71,8 +72,7 @@ const InviteGroupButton: React.FC<InviteGroupButtonProps> = ({ groupID }) => {
                     <div>
                         {nonMembers.length > 0 && nonMembers.map((user: any) => {
                             return (
-
-                                    <UserTab key={user.id} userID={user.id} userName={user.username} avatar={user.image} onInviteToGroup={() => {handleInviteToGroup(user.id)}}/>
+                                    <UserTab key={user.id} userID={user.id} userName={user.username} avatar={user.image} onInviteToGroup={() => {handleInviteToGroup(user.id)}} invitedToGroup={invited[user.id] ? invited[user.id] : false}/>
 
                             )
                         })}
