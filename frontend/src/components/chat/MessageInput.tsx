@@ -12,6 +12,7 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
   const [text, setText] = useState('');
   const [showEmoji, setShowEmoji] = useState(false);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
+  const emojiPickerRef = useRef<HTMLDivElement>(null);
 
   // add emoji
   const addEmoji = (e: { unified: string }) => {
@@ -36,7 +37,8 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
     if (
       emojiButtonRef.current &&
       !emojiButtonRef.current.contains(e.target as Node) &&
-      !document.querySelector('.emoji-picker')?.contains(e.target as Node)
+      emojiPickerRef.current &&
+      !emojiPickerRef.current.contains(e.target as Node)
     ) {
       setShowEmoji(false);
     }
@@ -63,15 +65,20 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
         <button
           type="submit"
           className="send-button"
-          style={{ backgroundColor: 'darkgreen', borderRadius: 10, padding: 0, marginBlockStart: 4, width: 200 }}
+          style={{
+            backgroundColor: 'darkgreen',
+            borderRadius: 10,
+            padding: 0,
+            marginBlockStart: 4,
+            width: 200,
+          }}
         >
           <strong>Send</strong>
         </button>
         <button
           type="button"
           onClick={() => setShowEmoji(!showEmoji)}
-          className='emoji'
-          ref={emojiButtonRef}
+          className="emoji"
           style={{
             color: 'darkgreen',
             backgroundColor: 'lightgreen',
@@ -83,18 +90,25 @@ const MessageInput: React.FC<MessageInputProps> = ({ onSend }) => {
             paddingInlineStart: 10,
             fontSize: 25,
           }}
+          ref={emojiButtonRef}
         >
           <FaJoint />
         </button>
 
-        {showEmoji && <div className='absolute bottom-[4%] right-80'>
-          <Picker data={data}
-            emojiSize={20}
-            emojiButtonSize={30}
-            onEmojiSelect={addEmoji}
-            maxFrequentRows={0}
-          />
-        </div>}
+        {showEmoji && (
+          <div
+            className="absolute bottom-[4%] right-80"
+            ref={emojiPickerRef}
+          >
+            <Picker
+              data={data}
+              emojiSize={20}
+              emojiButtonSize={30}
+              onEmojiSelect={addEmoji}
+              maxFrequentRows={0}
+            />
+          </div>
+        )}
       </div>
     </form>
   );
