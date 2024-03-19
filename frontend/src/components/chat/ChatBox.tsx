@@ -21,7 +21,6 @@ const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose, soc
         sender: string,
         timestamp: string
     }>>([]); // Example message state
-    // const [socket, setSocket] = useState<WebSocket | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const [allFetched, setAllFetched] = useState(false);
     const messageListRef = useRef<HTMLDivElement>(null); // Ref for the message list container
@@ -30,10 +29,6 @@ const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose, soc
 
     // Initialize WebSocket connection
     useEffect(() => {
-        // if (!socket || socket.readyState === WebSocket.CLOSED) {
-        //     const newSocket = new WebSocket("ws://localhost:8080/ws");
-        //     setSocket(newSocket);
-
         fetchMessages(userID, currentPage);
 
         socket.onmessage = (event) => {
@@ -58,7 +53,7 @@ const ChatBox: React.FC<ChatBoxProps> = ({userID, userName, avatar, onClose, soc
                         ...fetchedMessages.map((msg: any) => ({
                             id: msg.id,
                             text: msg.text,
-                            sender: msg.sender === userID ? "me" : "them",
+                            sender: msg.sender === userID ? "them" : "me",
                             timestamp: msg.timestamp,
                         })),
                     ]);

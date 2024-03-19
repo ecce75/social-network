@@ -1,36 +1,89 @@
-import React from 'react';
-import GroupInformation from './GroupInformation';
-import JoinRequestsButton from '../buttons/GroupRequestsButton';
-import InviteGroupButton from '../buttons/InviteGroupButton';
+import React, {useEffect} from 'react';
 import CreateEventButton from '../buttons/CreateEventBtn';
-import Post from '../postcreation/Post';
+import EventTab from "@/components/events/EventTab";
 
-
-interface GroupEventFeedProps {
-    title?: string; // New prop for post title
-    text?: string;
-    pictureUrl?: string;
+export interface EventProps {
+    id: string;
+    creator_id: string;
+    group_id: string;
+    title: string;
+    description: string;
+    location: string;
+    start_time: string;
+    end_time: string;
+    created_at: string;
 }
 
-const GroupEventFeed: React.FC<GroupEventFeedProps> = ({ title, text, pictureUrl }) => {
+interface GroupEventFeedProps {
+
+    groupId: string;
+}
+
+
+const GroupEventFeed: React.FC<GroupEventFeedProps> = ({groupId}) => {
+    const [events, setEvents] = React.useState<EventProps[]>([]);
+
+    useEffect(() => {
+        try {
+            fetch(`http://localhost:8080/events/group/${groupId}`, {
+                method: 'GET',
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data != null) {
+                        setEvents(data);
+                    }
+                })
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }, [])
     return (
         <div>
-                
-                <CreateEventButton/>
-            
-                <div style={{ border: '2px solid #ccc', backgroundColor: '#4F7942', borderRadius: '8px', padding: '10px', marginTop:'10px' }}>
-                <h3 style={{ color: 'white', fontWeight:'bold', fontSize: '20px'}}>Events</h3>
-                </div>
-            
-                {/* Events list */}
-                <div style={{ border: '2px solid #ccc', backgroundColor: '#4F7942', borderRadius: '8px', height: '50vh', padding: '20px', marginBottom: '20px', overflowY: 'auto' }}>
-                    {/* List */}
-                    <ul style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
-                        {/* Map through the list of events and render each item */}
+
+            <CreateEventButton
+                groupId={groupId}
+                setEvents={setEvents}
+            />
+
+            <div style={{
+                border: '2px solid #ccc',
+                backgroundColor: '#4F7942',
+                borderRadius: '8px',
+                padding: '10px',
+                marginTop: '10px'
+            }}>
+                <h3 style={{color: 'white', fontWeight: 'bold', fontSize: '20px'}}>Events</h3>
+            </div>
+
+            {/* Events list */}
+            <div style={{
+                border: '2px solid #ccc',
+                backgroundColor: '#4F7942',
+                borderRadius: '8px',
+                height: '50vh',
+                padding: '20px',
+                marginBottom: '20px',
+                overflowY: 'auto'
+            }}>
+                {/* List */}
+                <ul style={{display: 'flex', flexDirection: 'column', marginBottom: '20px'}}>
+                    {/* Map through the list of events and render each item */}
+                    {events.length > 0 ? events.map((event) => {
+                        return (
+                            <EventTab
+                                key={event.id}
+                                {...event}
+                            />
+                        )
+                    }) : (
+                        <p>Groups has no events</p>
+                    )}
 
 
-                    </ul>
-                </div>
+                </ul>
+            </div>
         </div>
     );
 };

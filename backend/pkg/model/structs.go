@@ -7,8 +7,6 @@ import (
 
 // Data structures and domain model
 
-var UserID int
-
 type User struct {
 	Id        int
 	Username  string
@@ -101,16 +99,16 @@ type PostsResponse struct {
 }
 
 type CommentsResponse struct {
-	Id        int            `json:"id"`
-	PostID    int            `json:"post_id"`
-	UserID    int            `json:"user_id,omitempty"`
-	Content   string         `json:"content"`
-	Image     string         `json:"image,omitempty"`
-	CreatedAt time.Time      `json:"created_at"`
-	Likes     int            `json:"likes"`
-	Dislikes  int            `json:"dislikes"`
-	Username  string         `json:"username"`
-	ImageURL  string `json:"profile_image"`
+	Id        int       `json:"id"`
+	PostID    int       `json:"post_id"`
+	UserID    int       `json:"user_id,omitempty"`
+	Content   string    `json:"content"`
+	Image     string    `json:"image,omitempty"`
+	CreatedAt time.Time `json:"created_at"`
+	Likes     int       `json:"likes"`
+	Dislikes  int       `json:"dislikes"`
+	Username  string    `json:"username"`
+	ImageURL  string    `json:"profile_image"`
 }
 
 type CreateCommentRequest struct {
@@ -235,7 +233,7 @@ type GroupInvitationRequest struct {
 type Event struct {
 	Id          int       `json:"id"`
 	CreatorId   int       `json:"creator_id"`
-	GroupId     int       `json:"group_id,omitempty"`
+	GroupId     int       `json:"group_id"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Location    string    `json:"location"`

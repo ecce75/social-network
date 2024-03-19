@@ -25,6 +25,13 @@ const handleRegister = (
 	formikHelpers: FormikHelpers<RegisterValues>,
 	router: any
   ) => {
+	// Check if all fields are filled
+	for (let key in values) {
+		if (values[key] === '' || values[key] === null) {
+			alert(`Please fill in the ${key} field.`);
+			return;
+		}
+	}
 	const formData = new FormData();
 
 	// Append all form fields to formData
@@ -45,12 +52,13 @@ const handleRegister = (
 				throw new Error(text);
 			  });
 		  }
-		return response.json()
+		formikHelpers.setSubmitting(false);
+		router.push('/');
 	})
-	.then(data => {
-	  formikHelpers.setSubmitting(false);
-	  router.push('/');
-	})
+	// .then(data => {
+	//   formikHelpers.setSubmitting(false);
+	//   router.push('/');
+	// })
 	.catch(error => {
 		formikHelpers.setSubmitting(false);
 		console.error('Catch Error:', error);

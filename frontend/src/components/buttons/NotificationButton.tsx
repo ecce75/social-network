@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import NotificationComponent, { NotificationProp } from '../notification/Notification';
+import Notification, { NotificationProp } from '../notification/Notification';
 
 function NotificationButton() {
     
@@ -59,11 +59,14 @@ function NotificationButton() {
             {showDropdown && (
                 <div className="absolute right-0 w-64 mt-2 py-2 border rounded-2xl shadow-xl" style={{ maxHeight: 'calc(3 * 150px)', overflowY: 'auto', backgroundColor: 'rgba(255, 255, 255, 0.6)' }}>
                     <h1 style={(titleStyle)}>Notifications</h1>
-                    <NotificationComponent 
-                        notifications={notifications}
-                        setNotifications={setNotifications}
-                        updateNotificationStatus={updateNotificationStatus}
+                    {notifications.slice().reverse().map(notification => (
+                        <Notification
+                            key={notification.id}
+                            notification={notification}
+                            setNotifications={setNotifications}
+                            updateNotificationStatus={updateNotificationStatus}
                         />
+                    ))}
                 </div>
             )}
         </div>

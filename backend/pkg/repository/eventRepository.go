@@ -20,9 +20,9 @@ func NewEventRepository(db *sql.DB) *EventRepository {
 
 // GetAllEvents retrieves all events from the database.
 // It returns a slice of Event objects and an error if any.
-func (r *EventRepository) GetAllEvents() ([]model.Event, error) {
-	query := `SELECT * FROM events`
-	rows, err := r.db.Query(query)
+func (r *EventRepository) GetAllGroupEvents(groupID int) ([]model.Event, error) {
+	query := `SELECT * FROM events WHERE group_id = ?`
+	rows, err := r.db.Query(query, groupID)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +31,7 @@ func (r *EventRepository) GetAllEvents() ([]model.Event, error) {
 	var events []model.Event
 	for rows.Next() {
 		var event model.Event
-		if err := rows.Scan(&event.Id, &event.Title, &event.Description, &event.Location, &event.StartTime, &event.EndTime, &event.CreatedAt); err != nil {
+		if err := rows.Scan(&event.Id, &event.CreatorId, &event.GroupId, &event.Title, &event.Description, &event.Location, &event.StartTime, &event.EndTime, &event.CreatedAt); err != nil {
 			return nil, err
 		}
 		events = append(events, event)
@@ -45,8 +45,8 @@ func (r *EventRepository) GetAllEvents() ([]model.Event, error) {
 // CreateEvent creates a new event in the database.
 // It returns the ID of the newly created event and an error if any.
 func (r *EventRepository) CreateEvent(event model.Event) (int64, error) {
-	query := `INSERT INTO events (creator_id, title, description, location, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?)`
-	result, err := r.db.Exec(query, event.CreatorId, event.Title, event.Description, event.Location)
+	query := `INSERT INTO events (creator_id, group_id, title, description, location, start_time, end_time) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	result, err := r.db.Exec(query, event.CreatorId, event.GroupId, event.Title, event.Description, event.Location, event.StartTime, event.EndTime)
 	if err != nil {
 		return 0, err
 	}
@@ -63,7 +63,7 @@ func (r *EventRepository) GetEventByID(id int) (model.Event, error) {
 	query := `SELECT * FROM events WHERE id = ?`
 	row := r.db.QueryRow(query, id)
 	var event model.Event
-	err := row.Scan(&event.Id, &event.CreatorId, &event.Title, &event.Description, &event.CreatedAt)
+	err := row.Scan(&event.Id, &event.CreatorId, &event.GroupId, &event.Title, &event.Description, &event.Location, &event.StartTime, &event.EndTime, &event.CreatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return model.Event{}, nil

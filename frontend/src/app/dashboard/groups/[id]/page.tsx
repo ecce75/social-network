@@ -75,7 +75,6 @@ export default function Group({
                     if (data.message === 'User not member of group') {
                         setMember(false);
                     } else {
-                        console.log(data)
                         setPosts(data);
                     }
                 })
@@ -190,13 +189,13 @@ export default function Group({
 
                     {/* Left section for displaying group information */}
                     {isMember && <div style={{
-                        flex: '0 0 14%',
+                        flex: '0 0 18%',
                         backgroundColor: '#e5e7eb',
                         padding: '20px',
                         height: '100vh',
-                        overflowY: 'auto'
+                        overflowY: 'auto',
                     }}>
-                        <GroupEventFeed/>
+                        <GroupEventFeed groupId={params.id}/>
                     </div>}
                 </div>
             </main>

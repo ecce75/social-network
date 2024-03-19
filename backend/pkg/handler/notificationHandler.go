@@ -41,7 +41,9 @@ func (h *NotificationHandler) CreateNotification(userID, senderID int, messageTy
 	_, err := h.notificationRepo.CreateNotification(notification)
 	return err
 }
-
+func (h *NotificationHandler) EditFriendRequestNotification(userID, senderID int, message string) error {
+	return h.notificationRepo.EditFriendNotificationMessage(userID, senderID, message)
+}
 func (h *NotificationHandler) CreateGroupNotification(userID, groupID int, message string) error {
 	notification := model.Notification{
 		UserId:  userID,
@@ -89,7 +91,7 @@ func (h *NotificationHandler) GetAllNotificationsForUserHandler(w http.ResponseW
 
 	notifications, err := h.notificationRepo.GetNotificationsByUserId(userID)
 	if err != nil {
-		http.Error(w, "Error fetching notifications: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error fetching notifications: "+err.Error(), http.StatusInternalServerError)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(notifications)
@@ -287,7 +289,7 @@ func (h *NotificationHandler) NotifyInvitationDecline(userID, groupID int) error
 }
 
 func (h *NotificationHandler) NotifyGroupOfEvent(groupID, eventID int) error {
-	event, err := h.eventRepo.GetEventByID(groupID)
+	event, err := h.eventRepo.GetEventByID(eventID)
 	if err != nil {
 		return err
 	}

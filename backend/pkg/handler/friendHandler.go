@@ -138,19 +138,25 @@ func (h *FriendHandler) AcceptFriendRequestHandler(w http.ResponseWriter, r *htt
 		return
 	}
 
-	addedFriend, err := h.friendRepository.GetFriendByRequestID(friendRequestID)
+	addedFriend, err := h.userRepository.GetUsernameByID(friendRequestID)
 	if err != nil {
 		http.Error(w, "Error getting friend data: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 	// Notification
-	message := "You are now friends with " + addedFriend.FirstName + " " + addedFriend.LastName
-	err = h.notificationHandler.CreateNotification(addedFriend.UserID, userID, "friend", message)
+	message := "You are now friends with " + addedFriend
+	err = h.notificationHandler.EditFriendRequestNotification(userID, friendRequestID, message)
 	if err != nil {
 		http.Error(w, "Error sending notification "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	username, err := h.userRepository.GetUsernameByID(userID)
+	message = username + " accepted your friend request"
+	err = h.notificationHandler.CreateNotification(friendRequestID, userID, "friend", message)
+	if err != nil {
+		http.Error(w, "Error changing notification message"+err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -175,6 +181,14 @@ func (h *FriendHandler) DeclineFriendRequestHandler(w http.ResponseWriter, r *ht
 	err = h.friendRepository.UpdateFriendStatus(userID, friendRequestID, "declined")
 	if err != nil {
 		http.Error(w, "Error declining friend request: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	username, err := h.userRepository.GetUsernameByID(userID)
+	message := username + " declined your friend request"
+	err = h.notificationHandler.EditFriendRequestNotification(userID, friendRequestID, message)
+	if err != nil {
+		http.Error(w, "Error changing notification message"+err.Error(), http.StatusInternalServerError)
 		return
 	}
 

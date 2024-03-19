@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { FriendStatus } from "../buttons/AddFriendsButton";
 
 export interface NotificationProp {
@@ -11,51 +11,20 @@ export interface NotificationProp {
     is_read: boolean;
     created_at: string;
     status?: 'pending' | 'accepted' | 'declined';
-};
+}
 
-export interface NotificationComponentProps {
-    notifications?: NotificationProp[];
+export interface NotificationProps {
+    notification: NotificationProp;
     setNotifications: React.Dispatch<React.SetStateAction<NotificationProp[]>>;
     updateNotificationStatus: (notificationId: number, newStatus: any) => void;
 }
 
-const NotificationComponent: React.FC<NotificationComponentProps> = ({ notifications = [], setNotifications, updateNotificationStatus }) => {
+const Notification: React.FC<NotificationProps> = ({ notification, setNotifications, updateNotificationStatus }) => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
     const [friendStatuses, setFriendStatuses] = useState<FriendStatus>({});
     // Styles
-    const containerStyle = {
-        backgroundColor: '#f8f9fa', // This should match the light background color of the page
-        padding: '20px',
-        borderRadius: '8px', // If the design uses rounded corners
-        boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)', // Optional: if there is a shadow in the design
-        margin: '10px',
-    };
 
-    const notificationStyle = {
-        padding: '10px',
-        borderBottom: '1px solid #eaeaea', // Use a color that fits with the design
-        marginBottom: '10px',
-    };
-
-    const messageTypeStyle = {
-        fontWeight: 'bold',
-        color: '#2a2a2a', // Color for the message type
-    };
-
-    const messageStyle = {
-        color: '#333', // Regular text color
-    };
-
-    const dotStyle: React.CSSProperties = {
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
-        height: '10px',
-        width: '10px',
-        backgroundColor: 'red',
-        borderRadius: '50%',
-    };
 
 
     const handleButtonClick = (
@@ -79,7 +48,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
         } else if (action === 'accept-group') {
             handleAcceptGroupJoinRequest(userId);
         } else if (action === 'decline-group') {
-            handleDeclineGroupJoinequest(userId);
+            handleDeclineGroupJoinRequest(userId);
         }
     };
 
@@ -105,7 +74,6 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
                 }));
             })
             .catch(error => console.error('Error:', error));
-        console.log('THIS SHOULD ACCEPT FRIENT REQUEST VIA SENDERID')
     };
 
     const handleDeclineFriendRequest = (userId: number) => {
@@ -134,7 +102,7 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
         console.log('THIS SHOULD ACCEPT GROUP JOIN REQUEST VIA SENDERID')
     };
 
-    const handleDeclineGroupJoinequest = (senderId: number) => {
+    const handleDeclineGroupJoinRequest = (senderId: number) => {
         // Implement group join request decline logic
         console.log('THIS SHOULD DECLINE GROUP JOIN REQUEST VIA SENDERID')
     };
@@ -148,49 +116,16 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
         }).then(response => {
             if (response.ok) {
                 // If the request is successful, update the state of the notifications to mark the notification as read
-                setNotifications(notifications?.map(notification => {
-                    if (notification.id === id) {
-                        return { ...notification, is_read: true };
-                    }
-                    return notification;
-                }));
+                setNotifications(prevNotifications => prevNotifications.map(notification =>
+                    notification.id === id ? { ...notification, is_read: true } : notification
+                ));
             } else {
                 console.error('Failed to mark notification as read');
             }
         });
     };
 
-    const parentContainerStyle = {
-        display: 'flex',
-    }
 
-    // Additional styles for buttons
-    const buttonStyle = {
-        padding: '5px 10px',
-        margin: '5px',
-        borderRadius: '15px',
-        border: 'none',
-        cursor: 'pointer',
-        fontWeight: 'bold',
-    };
-
-    const acceptButtonStyle = {
-        ...buttonStyle,
-        backgroundColor: '#4CAF50', // Green color for accept
-        color: 'white',
-    };
-
-    const declineButtonStyle = {
-        ...buttonStyle,
-        backgroundColor: '#f44336', // Red color for decline
-        color: 'white',
-    };
-
-    const viewButtonStyle = {
-        ...buttonStyle,
-        backgroundColor: '#2196F3', // Blue color for view
-        color: 'white',
-    };
 
     const notificationActions = (notification: NotificationProp) => {
         // Ensure sender_id is defined before rendering buttons
@@ -199,23 +134,23 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
                 case 'friend':
                     if (notification.status === 'accepted') {
                         return (
-                            <div style={parentContainerStyle}>
+                            <div className="flex">
                                 <p className="createdAtWave">You have accepted the friend request!</p>
                             </div>
                         );
                     } else if (notification.status === 'declined') {
                         return (
-                            <div style={parentContainerStyle}>
+                            <div className="flex">
                                 <p className="createdAtWave">You have declined the friend request!</p>
                             </div>
                         );
                     }
                     return (
-                        <div style={parentContainerStyle}>
-                            <button style={acceptButtonStyle} onClick={() => handleButtonClick(notification.sender_id, 'accept', notification.id)}>
+                        <div className="flex">
+                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-green-500 text-white" onClick={() => handleButtonClick(notification.sender_id, 'accept', notification.id)}>
                                 Accept
                             </button>
-                            <button style={declineButtonStyle} onClick={() => handleButtonClick(notification.sender_id, 'decline', notification.id)}>
+                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-red-500 text-white" onClick={() => handleButtonClick(notification.sender_id, 'decline', notification.id)}>
                                 Decline
                             </button>
                         </div>
@@ -224,23 +159,23 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
                     // Similar check and implementation for group join requests
                     if (notification.status === 'accepted') {
                         return (
-                            <div style={parentContainerStyle}>
+                            <div className="flex">
                                 <p className="createdAtWave">You have accepted the group request!</p>
                             </div>
                         );
                     } else if (notification.status === 'declined') {
                         return (
-                            <div style={parentContainerStyle}>
+                            <div className="flex">
                                 <p className="createdAtWave">You have declined the group request!</p>
                             </div>
                         );
                     }
                     return (
-                        <div style={parentContainerStyle}>
-                            <button style={acceptButtonStyle} onClick={() => handleButtonClick(notification.sender_id, 'accept-group', notification.id)}>
+                        <div className="flex">
+                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-green-500 text-white" onClick={() => handleButtonClick(notification.sender_id, 'accept-group', notification.id)}>
                                 Accept
                             </button>
-                            <button style={declineButtonStyle} onClick={() => handleButtonClick(notification.sender_id, 'decline-group', notification.id)}>
+                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-red-500 text-white" onClick={() => handleButtonClick(notification.sender_id, 'decline-group', notification.id)}>
                                 Decline
                             </button>
                         </div>
@@ -278,28 +213,27 @@ const NotificationComponent: React.FC<NotificationComponentProps> = ({ notificat
         }
     };
 
-    return (
-        <div>
-            {notifications.map((notification) => {
+
+
                 return (
-                    <div style={containerStyle} key={notification.id}>
-                        <div style={notificationStyle} onClick={() => {
+                    <div className="bg-gray-100 p-5 rounded-lg shadow-sm m-2" key={notification.id}>
+                        <div className="p-2 border-b border-gray-200 mb-2 cursor-pointer" onClick={() => {
                             if (!notification.is_read) {
                                 markNotificationAsRead(notification.id);
                             }
                         }}>
-                            <div style={{ position: 'relative' }}>
-                                {!notification.is_read && <span style={dotStyle}></span>}
-                                <h2 style={messageTypeStyle}>{notificationTypes(notification)}</h2>
-                                <p style={messageStyle}>{notification.message}</p>
+                            <div className="relative">
+                                {!notification.is_read && <span
+                                    className="absolute top-2.5 right-2.5 h-2.5 w-2.5 bg-red-500 rounded-full"></span>}
+                                <h2 className="font-bold text-gray-800">{notificationTypes(notification)}</h2>
+                                <p className="text-gray-800">{notification.message}</p>
                                 {notificationActions(notification)}
                             </div>
                         </div>
                     </div>
                 );
-            })}
-        </div>
-    );
+
+
 };
 
-export default NotificationComponent;
+export default Notification;

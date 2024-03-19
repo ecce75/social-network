@@ -12,6 +12,6 @@ export async function useAuth() {
 }
 
 export function formatDate(string: string) {
-    var options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric'};
+    var options: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: 'numeric'};
     return new Date(string).toLocaleDateString([], options);
 }

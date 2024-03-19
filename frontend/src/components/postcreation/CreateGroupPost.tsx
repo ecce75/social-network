@@ -12,10 +12,11 @@ const CreateGroupPost: React.FC<CreatePostGroupProps> = ({ groupId , onNewPost, 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [title, setTitle] = useState<string>('');
     const [message, setMessage] = useState<string>('');
-
+    console.log(typeof parseInt(groupId));
 
     const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(event.target.value);
+
     };
 
     const handleMessageChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -52,18 +53,12 @@ const CreateGroupPost: React.FC<CreatePostGroupProps> = ({ groupId , onNewPost, 
             if (!response.ok) {
                 throw new Error(`Error: ${response.statusText}`);
             }
-            // type CreatePostRequest struct {
-            //     PostID         int    `json:"id"`
-            //     Title          string `json:"title"`
-            //     Content        string `json:"content,omitempty"`
-            //     GroupID        int    `json:"group_id,omitempty"`
-            //     ImageURL       string `json:"image_url,omitempty"`
-            //     PrivacySetting string `json:"privacy_setting"`
-            // }
+
             const data = await response.json();
             console.log('Group post created:', data.data);
             const newPost: PostProps = {
                 id: data.data.id,
+                creator: data.data.user_id,
                 userId: data.data.user_id,
                 groupId: data.data.group_id,
                 title: data.data.title,
@@ -76,6 +71,10 @@ const CreateGroupPost: React.FC<CreatePostGroupProps> = ({ groupId , onNewPost, 
                 setComments: setComments,
             }
             onNewPost && onNewPost(newPost);
+            const modal = document.getElementById('Modal_Post_Group') as HTMLDialogElement | null;
+            if (modal) {
+                modal.close();
+            }
             // Handle success (e.g., clear form, show success message)
         } catch (error) {
             console.error('Error submitting post:', error);

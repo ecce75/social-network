@@ -74,9 +74,15 @@ func (r *NotificationRepository) CreateNotification(notification model.Notificat
 	return lastInsertID, nil
 }
 
+func (r *NotificationRepository) EditFriendNotificationMessage(userID, senderID int, message string) error {
+	query := `UPDATE notifications SET message = ?, is_read = false WHERE user_id = ? AND sender_id = ? AND type = 'friend'`
+	_, err := r.db.Exec(query, message, userID, senderID)
+	return err
+}
+
 // GetNotificationByID retrieves a specific notification by its ID from the database.
 func (r *NotificationRepository) GetNotificationByID(id int) (model.Notification, error) {
-	query := `SELECT * FROM notification WHERE id = ?`
+	query := `SELECT * FROM notifications WHERE id = ?`
 	row := r.db.QueryRow(query, id)
 	var notification model.Notification
 	err := row.Scan(&notification.Id, &notification.Type, &notification.Message, &notification.IsRead)
@@ -95,7 +101,6 @@ func (r *NotificationRepository) MarkNotificationAsRead(id int) error {
 	_, err := r.db.Exec(query, id)
 	return err
 }
-
 
 func (r *NotificationRepository) DeleteNotification(id int) error {
 	query := `DELETE FROM notifications WHERE id = ?`

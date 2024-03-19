@@ -12,10 +12,10 @@ import (
 )
 
 type EventHandler struct {
-	eventRepo   *repository.EventRepository
-	groupMemberRepo *repository.GroupMemberRepository
-	sessionRepo *repository.SessionRepository
-	userRepo *repository.UserRepository
+	eventRepo           *repository.EventRepository
+	groupMemberRepo     *repository.GroupMemberRepository
+	sessionRepo         *repository.SessionRepository
+	userRepo            *repository.UserRepository
 	notificationHandler *NotificationHandler
 }
 
@@ -24,8 +24,10 @@ func NewEventHandler(eventRepo *repository.EventRepository, sessionRepo *reposit
 }
 
 // Event Handlers
-func (h *EventHandler) GetAllEventsHandler(w http.ResponseWriter, r *http.Request) {
-	events, err := h.eventRepo.GetAllEvents()
+func (h *EventHandler) GetAllGroupEventsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	groupID, _ := strconv.Atoi(vars["groupId"])
+	events, err := h.eventRepo.GetAllGroupEvents(groupID)
 	if err != nil {
 		http.Error(w, "Failed to get events: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -60,17 +62,19 @@ func (h *EventHandler) CreateEventHandler(w http.ResponseWriter, r *http.Request
 	// creating the event in db
 	eventID, err := h.eventRepo.CreateEvent(newEvent)
 	if err != nil {
-		http.Error(w, "Failed to create group: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Failed to create event: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
+	newEvent.Id = int(eventID)
 	// notify group members of new event
 	err = h.notificationHandler.NotifyGroupOfEvent(newEvent.GroupId, int(eventID))
 	if err != nil {
 		http.Error(w, "Failed to notify group members of new event: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(newEvent)
 }
 
 func (h *EventHandler) GetEventByIDHandler(w http.ResponseWriter, r *http.Request) {
