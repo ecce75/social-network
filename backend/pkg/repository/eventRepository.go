@@ -116,49 +116,27 @@ func (r *EventRepository) GetEventsByGroupID(groupID int) ([]model.Event, error)
 
 // AddOrUpdateAttendance adds or updates attendance status for an event and a user.
 // It returns the ID of the attendance record and an error if any.
-func (r *EventRepository) AddOrUpdateAttendance(eventID, userID int, status string) (int64, error) {
-	// Check if the attendance record already exists
+func (r *EventRepository) AddOrUpdateAttendance(eventID, userID int, status string) error {
+	// Attendance record exists, update the status
 	query := `
-		SELECT id FROM event_attendance
-		WHERE event_id = ? AND user_id = ?
-	`
-
-	row := r.db.QueryRow(query, eventID, userID)
-	var attendanceID int64
-	err := row.Scan(&attendanceID)
-
-	if err == nil {
-		// Attendance record exists, update the status
-		updateQuery := `
-			UPDATE event_attendance
-			SET status = ?
-			WHERE id = ?
-		`
-
-		_, err := r.db.Exec(updateQuery, status, attendanceID)
-		return attendanceID, err
-	}
-
-	// Attendance record doesn't exist, insert a new record
-	insertQuery := `
-		INSERT INTO event_attendance (event_id, user_id, status)
-		VALUES (?, ?, ?)
-	`
-
-	result, err := r.db.Exec(insertQuery, eventID, userID, status)
+   		INSERT OR REPLACE INTO event_attending (event_id, user_id, status)
+   		VALUES (?, ?, ?)
+  	`
+	_, err := r.db.Exec(query, eventID, userID, status)
 	if err != nil {
-		return 0, err
+		return err
 	}
-
-	attendanceID, err = result.LastInsertId()
-	return attendanceID, err
+	return nil
 }
 
 // GetAttendanceByEventID retrieves attendance records for a specific event from the database.
-func (r *EventRepository) GetAttendanceByEventID(eventID int) ([]model.EventAttendance, error) {
+func (r *EventRepository) GetAttendanceByEventID(eventID int) ([]model.Attendance, error) {
 	query := `
-		SELECT * FROM event_attendance
-		WHERE event_id = ?
+		SELECT id, username, avatar_url FROM users 
+		WHERE id IN (
+			SELECT user_id FROM event_attending
+			WHERE event_id = ? AND status = 'going'
+		)
 	`
 
 	rows, err := r.db.Query(query, eventID)
@@ -167,10 +145,10 @@ func (r *EventRepository) GetAttendanceByEventID(eventID int) ([]model.EventAtte
 	}
 	defer rows.Close()
 
-	var attendanceList []model.EventAttendance
+	var attendanceList []model.Attendance
 	for rows.Next() {
-		var attendance model.EventAttendance
-		if err := rows.Scan(&attendance.Id, &attendance.EventId, &attendance.UserId, &attendance.Status, &attendance.CreatedAt); err != nil {
+		var attendance model.Attendance
+		if err := rows.Scan(&attendance.Id, &attendance.Username, &attendance.AvatarURL); err != nil {
 			return nil, err
 		}
 		attendanceList = append(attendanceList, attendance)

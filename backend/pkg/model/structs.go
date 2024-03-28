@@ -27,8 +27,14 @@ type UserList struct {
 	Username  string `json:"username"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
-	Status    string `json:"status"`
 	AvatarURL string `json:"avatar_url"`
+}
+
+type Attendance struct {
+	Id        int    `json:"id"`
+	Username  string `json:"username"`
+	AvatarURL string `json:"avatar_url"`
+	Status    string `json:"status"`
 }
 
 type Profile struct {
@@ -204,14 +210,14 @@ type FriendList struct {
 }
 
 type Notification struct {
-	Id        int           `json:"id"`
-	UserId    int           `json:"user_id"`
-	GroupId   sql.NullInt64 `json:"group_id,omitempty"`
-	SenderId  sql.NullInt64 `json:"sender_id,omitempty"`
-	Type      string        `json:"type"`
-	Message   string        `json:"message"`
-	IsRead    bool          `json:"is_read"`
-	CreatedAt time.Time     `json:"created_at"`
+	Id        int       `json:"id"`
+	UserId    int       `json:"user_id"`
+	GroupId   int       `json:"group_id,omitempty"`
+	SenderId  int       `json:"sender_id,omitempty"`
+	Type      string    `json:"type"`
+	Message   string    `json:"message"`
+	IsRead    bool      `json:"is_read"`
+	CreatedAt time.Time `json:"created_at"`
 }
 
 type GroupInvitation struct {

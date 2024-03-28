@@ -45,3 +45,12 @@ func (r *SessionRepository) GetUserIDFromSessionToken(sessionToken string) (int,
 	}
 	return userID, nil
 }
+
+func (r *SessionRepository) UpdateSessionExpiration(token string) error {
+	_, err := r.db.Exec(`UPDATE sessions SET expiresAt = ? WHERE sessionToken = ?`, time.Now().Add(30*time.Minute), token)
+	if err != nil {
+		fmt.Println("Error updating session expiration: ", err)
+		return err
+	}
+	return nil
+}

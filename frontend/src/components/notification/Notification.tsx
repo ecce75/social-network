@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { FriendStatus } from "../buttons/AddFriendsButton";
+import {useRouter} from "next/navigation";
 
 export interface NotificationProp {
     id: number;
     user_id: number;
     group_id?: number;
-    sender_id?: { Int64: number, Valid: boolean };
+    sender_id?: number;
     type: string;
     message: string;
     is_read: boolean;
@@ -20,41 +21,20 @@ export interface NotificationProps {
 }
 
 const Notification: React.FC<NotificationProps> = ({ notification, setNotifications, updateNotificationStatus }) => {
+    const router = useRouter();
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
     const [friendStatuses, setFriendStatuses] = useState<FriendStatus>({});
+    const [groupStatuses, setGroupStatuses] = useState<FriendStatus>({});
     // Styles
 
+    console.log(notification)
 
 
-    const handleButtonClick = (
-        senderId: { Int64: number, Valid: boolean } | undefined,
-        action: 'accept' | 'decline' | 'accept-group' | 'decline-group',
-        notificationId: number
-    ) => {
-        // Ensure senderId is valid before proceeding
-        if (!senderId?.Valid) {
-            console.error('Sender ID is invalid or undefined.');
-            return;
-        }
-
-        const userId = senderId.Int64;
-
-        // Proceed with the action now that userId is confirmed to be a number
-        if (action === 'accept') {
-            handleAcceptFriendRequest(userId, notificationId);
-        } else if (action === 'decline') {
-            handleDeclineFriendRequest(userId);
-        } else if (action === 'accept-group') {
-            handleAcceptGroupJoinRequest(userId);
-        } else if (action === 'decline-group') {
-            handleDeclineGroupJoinRequest(userId);
-        }
-    };
-
-    const handleAcceptFriendRequest = (userId: number, notificationId: number) => { // sender id
+    // handles requests for friend requests, group join requests and invitations
+    const handleRequest = (id: number, request: string , requestType: string) => { // sender id
         // Implement friend request acceptance logic
-        fetch(`${FE_URL}:${BE_PORT}/friends/accept/${userId}`, {
+        fetch(`${FE_URL}:${BE_PORT}/${request}/${requestType}/${id}`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -65,47 +45,28 @@ const Notification: React.FC<NotificationProps> = ({ notification, setNotificati
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
-                updateNotificationStatus(notificationId, 'accepted');
-                console.log('Friend request accepted:', response);
-                // Update the friend status for this user
-                setFriendStatuses(prevStatuses => ({
-                    ...prevStatuses,
-                    [userId]: 'accepted',
-                }));
-            })
-            .catch(error => console.error('Error:', error));
-    };
-
-    const handleDeclineFriendRequest = (userId: number) => {
-        // Implement friend request decline logic
-        fetch(`${FE_URL}:${BE_PORT}/friends/decline/${userId}`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                if (request == 'friends') {
+                    // Update the friend status for this user
+                    setFriendStatuses(prevStatuses => ({
+                        ...prevStatuses,
+                        [id]: requestType == 'accept' ? 'accepted' : 'declined',
+                    }));
+                }else if (request == 'invitations') {
+                    // Update the friend status for this user
+                    setGroupStatuses(prevStatuses => ({
+                        ...prevStatuses,
+                        [id]: requestType == 'accept' ? 'accepted' : 'declined',
+                    }));
                 }
-                setFriendStatuses(prevStatuses => ({
-                    ...prevStatuses,
-                    [userId]: 'declined',
-                }));
             })
             .catch(error => console.error('Error:', error));
     };
 
-    const handleAcceptGroupJoinRequest = (senderId: number) => {
-        // Implement group join request acceptance logic
-        console.log('THIS SHOULD ACCEPT GROUP JOIN REQUEST VIA SENDERID')
-    };
+    const handleEventClick = () => {
+        router.push(`/groups/${notification.group_id}`)
+    }
 
-    const handleDeclineGroupJoinRequest = (senderId: number) => {
-        // Implement group join request decline logic
-        console.log('THIS SHOULD DECLINE GROUP JOIN REQUEST VIA SENDERID')
-    };
+
 
     const markNotificationAsRead = (id: number) => {
         // This function should make a request to the backend to mark the notification as read
@@ -147,37 +108,54 @@ const Notification: React.FC<NotificationProps> = ({ notification, setNotificati
                     }
                     return (
                         <div className="flex">
-                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-green-500 text-white" onClick={() => handleButtonClick(notification.sender_id, 'accept', notification.id)}>
+                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-green-500 text-white" onClick={() => handleRequest(notification.sender_id ? notification.sender_id : 0, 'friends', 'accept')}>
                                 Accept
                             </button>
-                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-red-500 text-white" onClick={() => handleButtonClick(notification.sender_id, 'decline', notification.id)}>
+                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-red-500 text-white" onClick={() => handleRequest(notification.sender_id ? notification.sender_id : 0, 'friends', 'decline')}>
                                 Decline
                             </button>
                         </div>
                     );
                 case 'group':
                     // Similar check and implementation for group join requests
-                    if (notification.status === 'accepted') {
+                    if (notification.message.includes("has requested")) {
+                        if (notification.status === 'accepted') {
+                            return (
+                                <div className="flex">
+                                    <p className="createdAtWave">You have accepted the group request!</p>
+                                </div>
+                            );
+                        } else if (notification.status === 'declined') {
+                            return (
+                                <div className="flex">
+                                    <p className="createdAtWave">You have declined the group request!</p>
+                                </div>
+                            );
+                        }
+                    }else if (notification.message.includes("event")) {
                         return (
-                            <div className="flex">
-                                <p className="createdAtWave">You have accepted the group request!</p>
+                            <div className="flex justify-center mt-1">
+                                <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-slate-400 text-white" onClick={() => handleEventClick()}>
+                                    View Event in Group
+                                </button>
                             </div>
                         );
-                    } else if (notification.status === 'declined') {
+                    }else if (notification.message.includes("has invited")) {
                         return (
                             <div className="flex">
-                                <p className="createdAtWave">You have declined the group request!</p>
+                                <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-green-500 text-white" onClick={() => handleRequest(notification.sender_id ? notification.sender_id : 0, 'invitations', 'accept')}>
+                                    Accept
+                                </button>
+                                <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-red-500 text-white" onClick={() => handleRequest(notification.sender_id ? notification.sender_id : 0, 'invitations', 'decline')}>
+                                    Decline
+                                </button>
                             </div>
                         );
                     }
                     return (
-                        <div className="flex">
-                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-green-500 text-white" onClick={() => handleButtonClick(notification.sender_id, 'accept-group', notification.id)}>
-                                Accept
-                            </button>
-                            <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-red-500 text-white" onClick={() => handleButtonClick(notification.sender_id, 'decline-group', notification.id)}>
-                                Decline
-                            </button>
+                        <div className="flex justify-center mt-1">
+
+
                         </div>
                     );
                 // Add more cases as needed
@@ -199,9 +177,15 @@ const Notification: React.FC<NotificationProps> = ({ notification, setNotificati
                     <p>Friend request</p>
                 );
             case 'group':
-                return (
-                    <p>Group request</p>
-                );
+                    if (notification.message.includes("has requested")) {
+                        return (
+                            <p>Group request</p>
+                        );
+                    }else if (notification.message.includes("event")) {
+                        return (
+                            <p>New group event</p>
+                        );
+                    }
             case 'post':
                 return (
                     <p>New comment</p>

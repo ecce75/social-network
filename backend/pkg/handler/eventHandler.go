@@ -187,35 +187,25 @@ func (h *EventHandler) GetEventsByGroupIDHandler(w http.ResponseWriter, r *http.
 // AddOrUpdateAttendanceHandler handles the HTTP POST request to add or update attendance status for a specific event and user.
 func (h *EventHandler) AddOrUpdateAttendanceHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	eventIDStr, ok1 := vars["eventID"]
-	userIDStr, ok2 := vars["userID"]
-	status, ok3 := vars["status"]
-	if !ok1 || !ok2 || !ok3 {
-		http.Error(w, "Parameters missing in request", http.StatusBadRequest)
-		return
-	}
+	eventID, _ := strconv.Atoi(vars["eventId"])
+	statusInt, _ := strconv.Atoi(vars["status"])
 
-	eventID, err := strconv.Atoi(eventIDStr)
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
 	if err != nil {
-		http.Error(w, "Failed to parse event ID: "+err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error confirming authentication: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil {
-		http.Error(w, "Failed to parse user ID: "+err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	attendanceID, err := h.eventRepo.AddOrUpdateAttendance(eventID, userID, status)
+	status := map[bool]string{true: "going", false: "not going"}[statusInt == 1]
+	err = h.eventRepo.AddOrUpdateAttendance(eventID, userID, status)
 	if err != nil {
 		http.Error(w, "Failed to add or update attendance: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-
-	response := map[string]int64{
-		"attendanceID": attendanceID,
-	}
+	username, avatar, _ := h.userRepo.GetUsernameAndAvatarByID(userID)
+	response := map[string]any{
+		"id":         userID,
+		"username":   username,
+		"avatar_url": avatar}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
@@ -224,9 +214,15 @@ func (h *EventHandler) AddOrUpdateAttendanceHandler(w http.ResponseWriter, r *ht
 // GetAttendanceByEventIDHandler handles the HTTP GET request to retrieve attendance records for a specific event.
 func (h *EventHandler) GetAttendanceByEventIDHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	eventIDStr, ok := vars["eventID"]
+	eventIDStr, ok := vars["eventId"]
 	if !ok {
 		http.Error(w, "Event ID is missing in parameters", http.StatusBadRequest)
+		return
+	}
+
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error confirming authentication: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
@@ -240,6 +236,12 @@ func (h *EventHandler) GetAttendanceByEventIDHandler(w http.ResponseWriter, r *h
 	if err != nil {
 		http.Error(w, "Failed to retrieve attendance: "+err.Error(), http.StatusInternalServerError)
 		return
+	}
+
+	for i := range attendanceList {
+		if attendanceList[i].Id == userID {
+			attendanceList[i].Status = "current_user"
+		}
 	}
 
 	w.Header().Set("Content-Type", "application/json")

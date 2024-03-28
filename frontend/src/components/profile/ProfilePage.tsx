@@ -140,15 +140,7 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, user
                             posts.map(post =>
                                 <Post
                                     key={post.id}
-                                    id={post.id}
-                                    userId={post.userId}
-                                    title={post.title}
-                                    content={post.content}
-                                    image_url={post.image_url}
-                                    privacySetting={post.privacySetting}
-                                    created_at={post.created_at}
-                                    likes={post.likes}
-                                    dislikes={post.dislikes}
+                                    {...post}
                                     comments={comments[post.id]}
                                     setComments={setComments}
                                 />

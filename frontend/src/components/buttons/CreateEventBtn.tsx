@@ -17,7 +17,7 @@ function CreateEventButton({groupId, setEvents}: {
                     onClick={() =>{setIsModalOpen(true)}}>Create Event
             </button>
             <dialog open={isModalOpen} onClose={() =>{setIsModalOpen(false)}} id="Modal_Create_Event" className="modal">
-                <div className="modal-box" style={{maxWidth: 'none', width: '50%', height: '50%'}}>
+                <div className="modal-box" style={{maxWidth: 'none', width: '50%', height: '65%'}}>
                     <h3 className="font-bold text-black text-lg">Create an Event</h3>
                     <CreateEvent groupId={groupId}
                                  setEvents={setEvents}

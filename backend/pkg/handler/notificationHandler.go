@@ -4,7 +4,6 @@ import (
 	"backend/pkg/model"
 	"backend/pkg/repository"
 	"backend/util"
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -34,7 +33,7 @@ func NewNotificationHandler(notificationRepo *repository.NotificationRepository,
 func (h *NotificationHandler) CreateNotification(userID, senderID int, messageType, message string) error {
 	notification := model.Notification{
 		UserId:   userID,
-		SenderId: sql.NullInt64{Int64: int64(senderID), Valid: true},
+		SenderId: senderID,
 		Type:     messageType,
 		Message:  message,
 	}
@@ -47,7 +46,7 @@ func (h *NotificationHandler) EditFriendRequestNotification(userID, senderID int
 func (h *NotificationHandler) CreateGroupNotification(userID, groupID int, message string) error {
 	notification := model.Notification{
 		UserId:  userID,
-		GroupId: sql.NullInt64{Int64: int64(groupID), Valid: true},
+		GroupId: groupID,
 		Type:    "group",
 		Message: message,
 	}
@@ -92,17 +91,6 @@ func (h *NotificationHandler) GetAllNotificationsForUserHandler(w http.ResponseW
 	notifications, err := h.notificationRepo.GetNotificationsByUserId(userID)
 	if err != nil {
 		http.Error(w, "Error fetching notifications: "+err.Error(), http.StatusInternalServerError)
-	}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(notifications)
-}
-
-// GetAllNotificationsHandler retrieves all notifications and responds
-func (h *NotificationHandler) GetAllNotificationsHandler(w http.ResponseWriter, r *http.Request) {
-	notifications, err := h.notificationRepo.GetAllNotifications()
-	if err != nil {
-		http.Error(w, "Failed to get notifications: "+err.Error(), http.StatusInternalServerError)
-		return
 	}
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(notifications)
@@ -212,7 +200,14 @@ func (h *NotificationHandler) NotifyUserRequestApproved(userID, groupID int) err
 	if err != nil {
 		return err
 	}
-	message := fmt.Sprintf("Your request to join the group %s has been approved.", groupTitle)
+	username, _ := h.userRepo.GetUsernameByID(userID)
+	message := fmt.Sprintf("You approved ", username, "'s request to join ", groupTitle)
+	err = h.notificationRepo.EditGroupNotificationMessage(userID, groupID, message)
+	if err != nil {
+		return err
+	}
+
+	message = fmt.Sprintf("Your request to join the group %s has been approved.", groupTitle)
 	return h.CreateNotification(userID, 0, "group", message)
 }
 
@@ -223,7 +218,14 @@ func (h *NotificationHandler) NotifyUserDecline(userID, groupID int) error {
 	if err != nil {
 		return err
 	}
-	message := fmt.Sprintf("Your request to join the group %s has been declined.", groupTitle)
+	username, _ := h.userRepo.GetUsernameByID(userID)
+	message := fmt.Sprintf("You declined ", username, "'s request to join ", groupTitle)
+	err = h.notificationRepo.EditGroupNotificationMessage(userID, groupID, message)
+	if err != nil {
+		return err
+	}
+
+	message = fmt.Sprintf("Your request to join the group %s has been declined.", groupTitle)
 	return h.CreateNotification(userID, 0, "group", message)
 }
 

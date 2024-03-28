@@ -131,3 +131,22 @@ func (h *UserHandler) CheckAuth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(jsonResponse)
 }
+
+func (h *UserHandler) UpdateAuth(w http.ResponseWriter, r *http.Request) {
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		if err == http.ErrNoCookie {
+			return
+		}
+	}
+
+	sessionToken := cookie.Value
+
+	err = h.sessionRepo.UpdateSessionExpiration(sessionToken)
+	if err != nil {
+		http.Error(w, "Error updating session expiration: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+}

@@ -44,6 +44,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/api/users/logout", handler.LogoutHandler).Methods("POST")
 	mux.HandleFunc("/api/users/login", userHandler.LoginHandler).Methods("POST")
 	mux.HandleFunc("/api/users/check-auth", userHandler.CheckAuth)
+	mux.HandleFunc("/api/users/auth-update", userHandler.UpdateAuth).Methods("PUT")
 	mux.HandleFunc("/api/users/list", userHandler.ListUsersHandler).Methods("GET")
 
 	// Posts
@@ -101,12 +102,11 @@ func Router(mux *mux.Router, db *sql.DB) {
 	eventHandler := handler.NewEventHandler(eventRepository, sessionRepository, groupMemberRepository, userRepository, notificationHandler)
 	mux.HandleFunc("/events/group/{groupId}", eventHandler.GetAllGroupEventsHandler).Methods("GET")
 	mux.HandleFunc("/events", eventHandler.CreateEventHandler).Methods("POST")
-	mux.HandleFunc("/events/{id}", eventHandler.GetEventByIDHandler).Methods("GET")
 	mux.HandleFunc("/events/{id}", eventHandler.EditEventHandler).Methods("PUT")
 	mux.HandleFunc("/events/{id}", eventHandler.DeleteEventHandler).Methods("DELETE")
 	mux.HandleFunc("/events/{id}", eventHandler.GetEventsByGroupIDHandler).Methods("GET")
-	mux.HandleFunc("/events/{id}", eventHandler.AddOrUpdateAttendanceHandler).Methods("PUT")
-	mux.HandleFunc("/events/{id}", eventHandler.GetAttendanceByEventIDHandler).Methods("GET")
+	mux.HandleFunc("/events/{eventId}/{status}", eventHandler.AddOrUpdateAttendanceHandler).Methods("PUT")
+	mux.HandleFunc("/events/attendance/{eventId}", eventHandler.GetAttendanceByEventIDHandler).Methods("GET")
 
 	// Notifications
 	mux.HandleFunc("/notifications", notificationHandler.GetAllNotificationsForUserHandler).Methods("GET")

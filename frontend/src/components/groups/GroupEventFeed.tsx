@@ -2,6 +2,13 @@ import React, {useEffect} from 'react';
 import CreateEventButton from '../buttons/CreateEventBtn';
 import EventTab from "@/components/events/EventTab";
 
+interface User {
+    id: string;
+    username: string;
+    avatar_url: string;
+    status?: string;
+}
+
 export interface EventProps {
     id: string;
     creator_id: string;
@@ -12,6 +19,7 @@ export interface EventProps {
     start_time: string;
     end_time: string;
     created_at: string;
+    attendance?: User[]
 }
 
 interface GroupEventFeedProps {
@@ -30,15 +38,31 @@ const GroupEventFeed: React.FC<GroupEventFeedProps> = ({groupId}) => {
                 credentials: 'include'
             })
                 .then(response => response.json())
-                .then(data => {
+                .then(async (data) => {
                     if (data != null) {
-                        setEvents(data);
+                        // Fetch attendance for each event
+                        const eventsWithAttendance = await Promise.all(data.map(async (event: EventProps) => {
+                            const attendanceResponse = await fetch(`http://localhost:8080/events/attendance/${event.id}`, {
+                                method: 'GET',
+                                credentials: 'include'
+                            });
+                            const attendanceData = await attendanceResponse.json();
+                            if (attendanceData != null) {
+                                return {...event, attendance: attendanceData};
+                            }
+                            return {...event, attendance: null};
+                        }));
+                        console.log('Events with attendance:', eventsWithAttendance)
+                        setEvents(eventsWithAttendance);
                     }
                 })
         } catch (error) {
             console.error('Error:', error);
         }
     }, [])
+
+
+
     return (
         <div>
 
@@ -74,7 +98,8 @@ const GroupEventFeed: React.FC<GroupEventFeedProps> = ({groupId}) => {
                         return (
                             <EventTab
                                 key={event.id}
-                                {...event}
+                                event={event}
+                                setEvents={setEvents}
                             />
                         )
                     }) : (

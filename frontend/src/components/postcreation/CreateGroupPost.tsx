@@ -12,7 +12,6 @@ const CreateGroupPost: React.FC<CreatePostGroupProps> = ({ groupId , onNewPost, 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [title, setTitle] = useState<string>('');
     const [message, setMessage] = useState<string>('');
-    console.log(typeof parseInt(groupId));
 
     const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(event.target.value);

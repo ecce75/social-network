@@ -15,29 +15,6 @@ func NewNotificationRepository(db *sql.DB) *NotificationRepository {
 	return &NotificationRepository{db: db}
 }
 
-// GetAllNotifications retrieves all notifications from the database.
-func (r *NotificationRepository) GetAllNotifications() ([]model.Notification, error) {
-	query := `SELECT * FROM notifications`
-	rows, err := r.db.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var notifications []model.Notification
-	for rows.Next() {
-		var notification model.Notification
-		if err := rows.Scan(&notification.Id, &notification.Type, &notification.Message); err != nil {
-			return nil, err
-		}
-		notifications = append(notifications, notification)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return notifications, nil
-}
-
 func (r *NotificationRepository) GetNotificationsByUserId(id int) ([]model.Notification, error) {
 	query := `SELECT * FROM notifications WHERE user_id = ?`
 	rows, err := r.db.Query(query, id)
@@ -62,8 +39,21 @@ func (r *NotificationRepository) GetNotificationsByUserId(id int) ([]model.Notif
 
 // CreateNotification adds a new notification to the database.
 func (r *NotificationRepository) CreateNotification(notification model.Notification) (int64, error) {
-	query := `INSERT INTO notifications (user_id, group_id, sender_id, type, message) VALUES (?, ?, ?, ?, ?)`
-	result, err := r.db.Exec(query, notification.UserId, notification.GroupId, notification.SenderId, notification.Type, notification.Message)
+	baseQuery := `INSERT ` + `INTO notifications (user_id, type, message`
+	valuesQuery := `VALUES (?, ?, ?, ?)`
+	args := []interface{}{notification.UserId, notification.Type, notification.Message}
+
+	if notification.GroupId != 0 {
+		baseQuery += `, group_id) `
+		args = append(args, notification.GroupId)
+	} else if notification.SenderId != 0 {
+		baseQuery += `, sender_id) `
+		args = append(args, notification.SenderId)
+	}
+
+	query := baseQuery + valuesQuery
+
+	result, err := r.db.Exec(query, args...)
 	if err != nil {
 		return 0, err
 	}
@@ -77,6 +67,12 @@ func (r *NotificationRepository) CreateNotification(notification model.Notificat
 func (r *NotificationRepository) EditFriendNotificationMessage(userID, senderID int, message string) error {
 	query := `UPDATE notifications SET message = ?, is_read = false WHERE user_id = ? AND sender_id = ? AND type = 'friend'`
 	_, err := r.db.Exec(query, message, userID, senderID)
+	return err
+}
+
+func (r *NotificationRepository) EditGroupNotificationMessage(userID, groupID int, message string) error {
+	query := `UPDATE notifications SET message = ?, is_read = false WHERE user_id = ? AND group_id = ? AND type = 'group'`
+	_, err := r.db.Exec(query, message, userID, groupID)
 	return err
 }
 
