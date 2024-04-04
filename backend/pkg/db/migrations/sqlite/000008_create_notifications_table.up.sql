@@ -5,7 +5,6 @@ CREATE TABLE notifications (
     sender_id INTEGER,
     type TEXT NOT NULL CHECK(type IN ('group', 'friend', 'post')),
     message TEXT NOT NULL,
-    status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'accepted', 'declined')),
     is_read BOOLEAN DEFAULT FALSE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id),
