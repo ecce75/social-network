@@ -26,9 +26,25 @@ func (r *NotificationRepository) GetNotificationsByUserId(id int) ([]model.Notif
 	var notifications []model.Notification
 	for rows.Next() {
 		var notification model.Notification
-		if err := rows.Scan(&notification.Id, &notification.UserId, &notification.GroupId, &notification.SenderId, &notification.Type, &notification.Message, &notification.IsRead, &notification.CreatedAt); err != nil {
+		var groupId, senderId sql.NullInt64 // Use sql.NullInt64 for nullable integers
+
+		// Scan the row with sql.NullInt64 variables for nullable columns
+		if err := rows.Scan(&notification.Id, &notification.UserId, &groupId, &senderId, &notification.Type, &notification.Message, &notification.IsRead, &notification.CreatedAt); err != nil {
 			return nil, err
 		}
+
+		// Check if groupId is valid, then assign its value to the Notification struct
+		if groupId.Valid {
+			val := int(groupId.Int64) // Convert sql.NullInt64 to int
+			notification.GroupId = val
+		}
+
+		// Check if senderId is valid, then assign its value to the Notification struct
+		if senderId.Valid {
+			val := int(senderId.Int64) // Convert sql.NullInt64 to int
+			notification.SenderId = val
+		}
+
 		notifications = append(notifications, notification)
 	}
 	if err := rows.Err(); err != nil {

@@ -122,7 +122,6 @@ func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter
 	groupID, _ := strconv.Atoi(vars["groupId"])
 	// Retrieve the user ID from the session token
 	userID, _ := strconv.Atoi(vars["userId"])
-	// userID := r.Context().Value("AuthUserID").(int)
 	// Update the status of the membership request to "approved"
 	err := h.groupMemberRepo.AcceptGroupInvitationAndRequest(userID, groupID)
 	if err != nil {
@@ -252,6 +251,14 @@ func (h *GroupMemberHandler) AcceptGroupInvitationHandler(w http.ResponseWriter,
 	err = h.groupMemberRepo.AddMemberToGroup(groupInvitation.GroupId, groupInvitation.JoinUserId)
 	if err != nil {
 		http.Error(w, "Error adding member to the group: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	groupName, _ := h.groupRepo.GetGroupTitleByID(groupID)
+
+	message := "You joined the group " + groupName
+	err = h.notificationHandler.EditGroupRequestNotification(userID, groupID, message)
+	if err != nil {
+		http.Error(w, "Error sending notification "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
