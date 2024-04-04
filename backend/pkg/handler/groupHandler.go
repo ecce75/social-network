@@ -31,6 +31,27 @@ func (h *GroupHandler) GetAllGroupsHandler(w http.ResponseWriter, r *http.Reques
 		http.Error(w, "Failed to get groups: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
+	// should add bool field to return data if user is group member
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error confirming authentication: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	for i, group := range groups {
+		isMember, err := h.groupMemberRepo.IsUserGroupMember(userID, group.Id)
+		if err != nil {
+			http.Error(w, "Failed to check group membership: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		isOwner, err := h.groupMemberRepo.IsUserGroupOwner(userID, group.Id)
+		if err != nil {
+			http.Error(w, "Failed to check group ownership: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		groups[i].IsUserMember = isMember
+		groups[i].IsUserCreator = isOwner
+	}
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(groups)
 }

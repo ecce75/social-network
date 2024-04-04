@@ -170,6 +170,7 @@ type Group struct {
 	UpdatedAt     time.Time     `json:"updated_at,omitempty"`
 	Members       []GroupMember `json:"members,omitempty"`
 	IsUserCreator bool          `json:"is_user_creator,omitempty"`
+	IsUserMember  bool          `json:"is_user_member,omitempty"`
 }
 
 type GroupMember struct {
