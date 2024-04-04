@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import GroupInformation from './GroupInformation';
 import GroupRequestsButton from '../buttons/GroupRequestsButton';
 import InviteGroupButton from '../buttons/InviteGroupButton';
@@ -17,9 +17,9 @@ interface GroupPageInfoProps {
     confirmInvite?: boolean;
 }
 
-const GroupPageInfo: React.FC<GroupPageInfoProps> = ({title, text, pictureUrl, isMember, groupId, invitationSent, isCreator, confirmInvite}) => {
+const GroupPageInfo: React.FC<GroupPageInfoProps> = ({ title, text, pictureUrl, isMember, groupId, invitationSent, isCreator, confirmInvite }) => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
 
     const [members, setMembers] = React.useState<{ id: number, username: string, image: string, status: string }[]>([]);
     useEffect(() => {
@@ -31,14 +31,14 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({title, text, pictureUrl, i
                 .then(response => response.json())
                 .then(data => {
                     data.map((user: any) => {
-                            const newUser = {
-                                id: user.id,
-                                username: user.username,
-                                image: user.avatar_url,
-                                status: user.status
-                            }
-                            setMembers(prevMembers => [...prevMembers, newUser])
+                        const newUser = {
+                            id: user.id,
+                            username: user.username,
+                            image: user.avatar_url,
+                            status: user.status
                         }
+                        setMembers(prevMembers => [...prevMembers, newUser])
+                    }
                     )
                 })
         } catch (error) {
@@ -66,30 +66,30 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({title, text, pictureUrl, i
                 {/* Invite People */}
                 {isMember ? (
                     <>
-                        <InviteGroupButton groupID={groupId}/>
+                        <InviteGroupButton groupID={groupId} />
 
                         {/* Requests */}
                         {isCreator && (
                             <GroupRequestsButton
-                                groupId={groupId}/>)}
+                                groupId={groupId} />)}
                     </>) : invitationSent && !confirmInvite ? (
-                    < ><p>Join Request sent</p>
+                        < ><p>Join Request sent</p>
 
-                    </>
-                ) : confirmInvite ? (
-                    <>
-                    <AcceptInvitationButton id={groupId}/>
-                    </>
-                ) :(
+                        </>
+                    ) : confirmInvite ? (
+                        <>
+                            <AcceptInvitationButton id={groupId} />
+                        </>
+                    ) : (
                     < >
-                        <SendGroupRequestButton id={groupId}/>
+                        <SendGroupRequestButton id={groupId} />
                     </>
                 )}
 
             </div>
 
-            <div style={{border: '2px solid #ccc', backgroundColor: '#4F7942', borderRadius: '8px', padding: '10px'}}>
-                <h3 style={{color: 'white', fontWeight: 'bold', fontSize: '20px'}}>People in Group</h3>
+            <div style={{ border: '2px solid #ccc', backgroundColor: '#4F7942', borderRadius: '8px', padding: '10px' }}>
+                <h3 style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>People in Group</h3>
             </div>
 
             {/* People in group list */}
@@ -103,7 +103,7 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({title, text, pictureUrl, i
                 overflowY: 'auto'
             }}>
                 {/* List */}
-                <ul style={{display: 'flex', flexDirection: 'column', marginBottom: '20px'}}>
+                <ul style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
                     {members.length > 0 && members.map((user: any) => {
                         return (
                             <UserTab
@@ -116,10 +116,10 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({title, text, pictureUrl, i
                     })
                     }
 
-                        </ul>
-                        </div>
-                        </div>
-                        );
-                    };
+                </ul>
+            </div>
+        </div>
+    );
+};
 
 export default GroupPageInfo;

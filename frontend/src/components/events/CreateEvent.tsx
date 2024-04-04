@@ -1,5 +1,5 @@
-import React, {useState} from "react";
-import {EventProps} from "@/components/groups/GroupEventFeed";
+import React, { useState } from "react";
+import { EventProps } from "@/components/groups/GroupEventFeed";
 
 interface CreateEventProps {
     groupId: string;
@@ -7,7 +7,7 @@ interface CreateEventProps {
     setIsModalOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const CreateEvent: React.FC<CreateEventProps> = ({groupId, setEvents, setIsModalOpen}) => {
+const CreateEvent: React.FC<CreateEventProps> = ({ groupId, setEvents, setIsModalOpen }) => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState('');
@@ -15,7 +15,7 @@ const CreateEvent: React.FC<CreateEventProps> = ({groupId, setEvents, setIsModal
     const [endDateTime, setEndDateTime] = useState('');
 
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
 
     const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(event.target.value);

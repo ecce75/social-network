@@ -131,7 +131,7 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	go hub.Run()
 
-	address := os.Getenv("NEXT_PUBLIC_BACKEND_URL")
+	address := os.Getenv("NEXT_PUBLIC_URL")
 	port := os.Getenv("NEXT_PUBLIC_HTTPS_PORT")
 	if address == "" {
 		address = "http://localhost" // fallback address

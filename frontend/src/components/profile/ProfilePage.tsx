@@ -34,10 +34,10 @@ export interface ProfileFeedProps {
 export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, userID }) => {
 
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [posts, setPosts] = useState<PostProps[]>([]);
     const [comments, setComments] = useState<{ [postId: number]: CommentProps[] }>([]);
-    
+
 
     useEffect(() => {
         // Fetch posts

@@ -12,7 +12,7 @@ const useAuthCheck = () => {
         if (!auth.is_authenticated) {
             router.push('/auth');
         }else {
-            fetch (`${process.env.NEXT_PUBLIC_FRONTEND_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api/users/auth-update`, {
+            fetch (`${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api/users/auth-update`, {
                 method: 'PUT',
                 credentials: 'include'
             })

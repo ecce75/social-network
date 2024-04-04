@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { FriendStatus } from "../buttons/AddFriendsButton";
-import {useRouter} from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export interface NotificationProp {
     id: number;
@@ -23,7 +23,7 @@ export interface NotificationProps {
 const Notification: React.FC<NotificationProps> = ({ notification, setNotifications, updateNotificationStatus }) => {
     const router = useRouter();
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [friendStatuses, setFriendStatuses] = useState<FriendStatus>({});
     const [groupStatuses, setGroupStatuses] = useState<FriendStatus>({});
     // Styles
@@ -32,7 +32,7 @@ const Notification: React.FC<NotificationProps> = ({ notification, setNotificati
 
 
     // handles requests for friend requests, group join requests and invitations
-    const handleRequest = (id: number, request: string , requestType: string) => { // sender id
+    const handleRequest = (id: number, request: string, requestType: string) => { // sender id
         // Implement friend request acceptance logic
         fetch(`${FE_URL}:${BE_PORT}/${request}/${requestType}/${id}`, {
             method: 'POST',
@@ -51,7 +51,7 @@ const Notification: React.FC<NotificationProps> = ({ notification, setNotificati
                         ...prevStatuses,
                         [id]: requestType == 'accept' ? 'accepted' : 'declined',
                     }));
-                }else if (request == 'invitations') {
+                } else if (request == 'invitations') {
                     // Update the friend status for this user
                     setGroupStatuses(prevStatuses => ({
                         ...prevStatuses,
@@ -132,7 +132,7 @@ const Notification: React.FC<NotificationProps> = ({ notification, setNotificati
                                 </div>
                             );
                         }
-                    }else if (notification.message.includes("event")) {
+                    } else if (notification.message.includes("event")) {
                         return (
                             <div className="flex justify-center mt-1">
                                 <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-slate-400 text-white" onClick={() => handleEventClick()}>
@@ -140,7 +140,7 @@ const Notification: React.FC<NotificationProps> = ({ notification, setNotificati
                                 </button>
                             </div>
                         );
-                    }else if (notification.message.includes("has invited")) {
+                    } else if (notification.message.includes("has invited")) {
                         return (
                             <div className="flex">
                                 <button className="px-2 py-1 m-1 rounded-lg border-none cursor-pointer font-bold bg-green-500 text-white" onClick={() => handleRequest(notification.sender_id ? notification.sender_id : 0, 'invitations', 'accept')}>
@@ -177,15 +177,15 @@ const Notification: React.FC<NotificationProps> = ({ notification, setNotificati
                     <p>Friend request</p>
                 );
             case 'group':
-                    if (notification.message.includes("has requested")) {
-                        return (
-                            <p>Group request</p>
-                        );
-                    }else if (notification.message.includes("event")) {
-                        return (
-                            <p>New group event</p>
-                        );
-                    }
+                if (notification.message.includes("has requested")) {
+                    return (
+                        <p>Group request</p>
+                    );
+                } else if (notification.message.includes("event")) {
+                    return (
+                        <p>New group event</p>
+                    );
+                }
             case 'post':
                 return (
                     <p>New comment</p>
@@ -199,23 +199,23 @@ const Notification: React.FC<NotificationProps> = ({ notification, setNotificati
 
 
 
-                return (
-                    <div className="bg-gray-100 p-5 rounded-lg shadow-sm m-2" key={notification.id}>
-                        <div className="p-2 border-b border-gray-200 mb-2 cursor-pointer" onClick={() => {
-                            if (!notification.is_read) {
-                                markNotificationAsRead(notification.id);
-                            }
-                        }}>
-                            <div className="relative">
-                                {!notification.is_read && <span
-                                    className="absolute top-2.5 right-2.5 h-2.5 w-2.5 bg-red-500 rounded-full"></span>}
-                                <h2 className="font-bold text-gray-800">{notificationTypes(notification)}</h2>
-                                <p className="text-gray-800">{notification.message}</p>
-                                {notificationActions(notification)}
-                            </div>
-                        </div>
-                    </div>
-                );
+    return (
+        <div className="bg-gray-100 p-5 rounded-lg shadow-sm m-2" key={notification.id}>
+            <div className="p-2 border-b border-gray-200 mb-2 cursor-pointer" onClick={() => {
+                if (!notification.is_read) {
+                    markNotificationAsRead(notification.id);
+                }
+            }}>
+                <div className="relative">
+                    {!notification.is_read && <span
+                        className="absolute top-2.5 right-2.5 h-2.5 w-2.5 bg-red-500 rounded-full"></span>}
+                    <h2 className="font-bold text-gray-800">{notificationTypes(notification)}</h2>
+                    <p className="text-gray-800">{notification.message}</p>
+                    {notificationActions(notification)}
+                </div>
+            </div>
+        </div>
+    );
 
 
 };
