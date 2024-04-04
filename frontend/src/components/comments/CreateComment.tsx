@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { CommentProps } from "./Comment";
+import { FaHeart, FaHeartBroken } from "react-icons/fa";
 
 interface CreateCommentProps {
     postId: number;
@@ -12,6 +13,10 @@ const CreateComment: React.FC<CreateCommentProps> = ({ postId, setComments }) =>
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [commentContent, setCommentContent] = useState<string>('');
+    const [likeCount, setLikeCount] = useState<number>(0);
+    const [dislikeCount, setDislikeCount] = useState<number>(0);
+    const [liked, setLiked] = useState<boolean>(false);
+    const [disliked, setDisliked] = useState<boolean>(false);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         if (event.target.files && event.target.files.length > 0) {
@@ -21,6 +26,34 @@ const CreateComment: React.FC<CreateCommentProps> = ({ postId, setComments }) =>
 
     const handleCommentContentChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
         setCommentContent(event.target.value);
+    }
+
+    const handleLike = () => {
+        if (!liked) {
+            setLikeCount(likeCount + 1);
+            setLiked(true);
+            if (disliked) {
+                setDislikeCount(dislikeCount - 1);
+                setDisliked(false);
+            }
+        } else {
+            setLikeCount(likeCount - 1);
+            setLiked(false);
+        }
+    }
+
+    const handleDislike = () => {
+        if (!disliked) {
+            setDislikeCount(dislikeCount + 1);
+            setDisliked(true);
+            if (liked) {
+                setLikeCount(likeCount - 1);
+                setLiked(false);
+            }
+        } else {
+            setDislikeCount(dislikeCount - 1);
+            setDisliked(false);
+        }
     }
 
     const handleSubmit = async (event: React.FormEvent) => {
@@ -125,10 +158,17 @@ const CreateComment: React.FC<CreateCommentProps> = ({ postId, setComments }) =>
                     <span className="sr-only">Send message</span>
                 </button>
             </div>
-            {/* Like Button */}
-            <button className="btn bg-primary ml-2">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-            </button>
+            {/* Like and Dislike Buttons */}
+            <div>
+                <button className={`btn bg-primary ml-2 text-xl ${liked ? 'text-blue-500' : ''}`} onClick={handleLike}>
+                    <FaHeart />
+                    {likeCount !== 0 && <span>{likeCount}</span>}
+                </button>
+                <button className={`btn bg-primary ml-2 text-xl ${disliked ? 'text-red-500' : ''}`} onClick={handleDislike}>
+                    <FaHeartBroken />
+                    {dislikeCount !== 0 && <span>{dislikeCount}</span>}
+                </button>
+            </div>
         </div>
     );
 }
