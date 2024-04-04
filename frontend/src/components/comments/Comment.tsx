@@ -1,5 +1,6 @@
-import { formatDate } from '@/hooks/utils'
+import { formatDate } from '@/hooks/utils';
 import { useState } from 'react';
+import { BiSolidLike, BiSolidDislike } from 'react-icons/bi'; // Import like and dislike icons
 
 export interface CommentProps {
     id: number;
@@ -27,7 +28,41 @@ const Comment: React.FC<CommentProps> = ({
     profile_image
 }) => {
     const formattedCreatedAt = formatDate(created_at);
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [likeCount, setLikeCount] = useState(likes);
+    const [dislikeCount, setDislikeCount] = useState(dislikes);
+    const [liked, setLiked] = useState(false);
+    const [disliked, setDisliked] = useState(false);
+
+    const handleLike = () => {
+        if (!liked) {
+            setLikeCount(likeCount + 1);
+            setLiked(true);
+            if (disliked) {
+                setDisliked(false);
+                setDislikeCount(dislikeCount - 1);
+            }
+        } else {
+            setLikeCount(likeCount - 1);
+            setLiked(false);
+        }
+        // TODO: Implement logic for sending like to the server
+    };
+
+    const handleDislike = () => {
+        if (!disliked) {
+            setDislikeCount(dislikeCount + 1);
+            setDisliked(true);
+            if (liked) {
+                setLiked(false);
+                setLikeCount(likeCount - 1);
+            }
+        } else {
+            setDislikeCount(dislikeCount - 1);
+            setDisliked(false);
+        }
+        // TODO: Implement logic for sending dislike to the server
+    };
+
     return (
         <div className="chat chat-start">
             {/* Comments inside the CommentsBox.tsx collapsing box*/}
@@ -43,16 +78,18 @@ const Comment: React.FC<CommentProps> = ({
             </div>
             <div className="chat-bubble chat-bubble-secondary">
                 {content}
-                <div style={{marginLeft: "5px"}}>
-                    {image && <img src={image} alt="" style={{ width: "100%", height: 'auto', cursor: 'pointer' }} onClick={() => setIsModalOpen(true)} />}
+                {image && <img src={image} alt="" style={{ width: "100%", height: 'auto', cursor: 'pointer' }} />}
+                <div style={{ marginLeft: "5px", display: "flex" }}>
+                    <button onClick={handleLike} style={{ display: "inline-flex", alignItems: "center" }}>
+                        <BiSolidLike style={{ color: liked ? "blue" : "black" }} />
+                        {likeCount > 0 && <span>{likeCount}</span>}
+                    </button>
+                    <button onClick={handleDislike} style={{ display: "inline-flex", alignItems: "center", marginLeft: "10px" }}>
+                        <BiSolidDislike style={{ color: disliked ? "red" : "black" }} />
+                        {dislikeCount > 0 && <span>{dislikeCount}</span>}
+                    </button>
                 </div>
             </div>
-            {/* TODO: comment uploaded images */}
-            {isModalOpen && (
-                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0, 0, 0, 0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center' }} onClick={() => setIsModalOpen(false)}>
-                    <img src={image} alt="" style={{ maxHeight: '80%', maxWidth: '80%' }} onClick={e => e.stopPropagation()} />
-                </div>
-            )}
         </div>
     );
 }
