@@ -4,12 +4,12 @@ import { FaHeart, FaHeartBroken } from "react-icons/fa";
 
 interface CreateCommentProps {
     postId: number;
-    setComments: React.Dispatch<React.SetStateAction<{[postId: number]: CommentProps[]}>>;
+    setComments: React.Dispatch<React.SetStateAction<{ [postId: number]: CommentProps[] }>>;
 }
 
 const CreateComment: React.FC<CreateCommentProps> = ({ postId, setComments }) => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [commentContent, setCommentContent] = useState<string>('');

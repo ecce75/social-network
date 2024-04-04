@@ -6,6 +6,7 @@ import (
 	"backend/util"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -56,7 +57,7 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	if err != nil {
 		newComment.Image.String = ""
 	} else {
-		newComment.Image.String = "localhost:8080/images/comments/brt"
+		newComment.Image.String = os.Getenv("NEXT_PUBLIC_URL") + ":" + os.Getenv("NEXT_PUBLIC_BACKEND_PORT") + "/images/comments/brt"
 	}
 
 	// Insert the comment into the database

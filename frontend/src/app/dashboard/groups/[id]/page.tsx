@@ -3,10 +3,10 @@
 import GroupPageInfo from "@/components/groups/GroupPageInfo";
 import CreateGroupPostButton from "@/components/buttons/CreateGroupPostButton";
 import GroupEventFeed from "@/components/groups/GroupEventFeed";
-import React, {useEffect, useState} from "react";
-import Post, {PostProps} from "@/components/postcreation/Post";
+import React, { useEffect, useState } from "react";
+import Post, { PostProps } from "@/components/postcreation/Post";
 import useAuthCheck from "@/hooks/authCheck";
-import {CommentProps} from "@/components/comments/Comment";
+import { CommentProps } from "@/components/comments/Comment";
 
 interface GroupProps {
     id: string
@@ -27,8 +27,8 @@ interface GroupMember {
 
 
 export default function Group({
-                                  params,
-                              }: {
+    params,
+}: {
     params: {
         id: string
     }
@@ -40,12 +40,12 @@ export default function Group({
     const [isMember, setMember] = React.useState<boolean>(true);
     const [isCreator, setCreator] = React.useState<boolean>(false);
     const [invitationSent, setInvitationSent] = React.useState<boolean>(false);
-    const [comments, setComments] = useState<{ [postId: number]:CommentProps[]}>([]);
+    const [comments, setComments] = useState<{ [postId: number]: CommentProps[] }>([]);
     const [confirmInvite, setConfirmInvite] = React.useState<boolean>(false);
 
 
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     useEffect(() => {
         try {
             fetch(`${FE_URL}:${BE_PORT}/groups/${params.id}`, {
@@ -83,7 +83,7 @@ export default function Group({
         }
     }, [])
 
-    useEffect (() => {
+    useEffect(() => {
         if (!isMember) {
             fetch(`${FE_URL}:${BE_PORT}/invitations/${params.id}`, {
                 method: 'GET',
@@ -94,7 +94,7 @@ export default function Group({
                     if (data.message != 'No group invitation found' && data.status == "pending") {
                         if (data.invite_user_id == data.join_user_id) {
                             setInvitationSent(true);
-                        }else if (data.invite_user_id != data.join_user_id) {
+                        } else if (data.invite_user_id != data.join_user_id) {
                             setConfirmInvite(true);
                         }
 
@@ -105,7 +105,7 @@ export default function Group({
 
     }, [isMember]);
 
-    const handleNewPost = (newPost : PostProps) => {
+    const handleNewPost = (newPost: PostProps) => {
         setPosts((prevPosts) => [...prevPosts, newPost]);
     };
 
@@ -114,7 +114,7 @@ export default function Group({
         <div>
             {/* Main Content */}
             <main>
-                <div style={{display: 'flex', justifyContent: 'center'}}> {/* Container for both sections */}
+                <div style={{ display: 'flex', justifyContent: 'center' }}> {/* Container for both sections */}
 
 
                     {/* Left section for displaying group information */}
@@ -139,7 +139,7 @@ export default function Group({
 
 
                     {/* Divider */}
-                    <div style={{flex: '0 0 5px', backgroundColor: '#B2BEB5', height: '100vh'}}></div>
+                    <div style={{ flex: '0 0 5px', backgroundColor: '#B2BEB5', height: '100vh' }}></div>
 
 
                     {/* Right section for post feed */}
@@ -150,14 +150,14 @@ export default function Group({
                         height: '100vh',
                         overflowY: 'auto'
                     }}>
-                        {isMember && <div style={{marginBottom: '20px'}}>
+                        {isMember && <div style={{ marginBottom: '20px' }}>
                             <CreateGroupPostButton
-                            groupId= {params.id}
-                            onNewPost={handleNewPost}
-                            setComments={setComments}
+                                groupId={params.id}
+                                onNewPost={handleNewPost}
+                                setComments={setComments}
                             />
                         </div>}
-                        <div style={{display: 'flex', flexDirection: 'column', marginBottom: '20px'}}>
+                        <div style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
                             {
                                 isMember ? (
                                     posts.length > 0 ?
@@ -184,7 +184,7 @@ export default function Group({
 
 
                     {/* Divider */}
-                    <div style={{flex: '0 0 5px', backgroundColor: '#B2BEB5', height: '100vh'}}></div>
+                    <div style={{ flex: '0 0 5px', backgroundColor: '#B2BEB5', height: '100vh' }}></div>
 
 
                     {/* Left section for displaying group information */}
@@ -195,7 +195,7 @@ export default function Group({
                         height: '100vh',
                         overflowY: 'auto',
                     }}>
-                        <GroupEventFeed groupId={params.id}/>
+                        <GroupEventFeed groupId={params.id} />
                     </div>}
                 </div>
             </main>

@@ -43,6 +43,11 @@ func (h *NotificationHandler) CreateNotification(userID, senderID int, messageTy
 func (h *NotificationHandler) EditFriendRequestNotification(userID, senderID int, message string) error {
 	return h.notificationRepo.EditFriendNotificationMessage(userID, senderID, message)
 }
+
+func (h *NotificationHandler) EditGroupRequestNotification(userID, groupID int, message string) error {
+	return h.notificationRepo.EditGroupNotificationMessage(userID, groupID, message)
+}
+
 func (h *NotificationHandler) CreateGroupNotification(userID, groupID int, message string) error {
 	notification := model.Notification{
 		UserId:  userID,

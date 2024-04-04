@@ -12,7 +12,7 @@ export interface FriendStatus {
 }
 
 const AddFriendsButton: React.FC = () => {
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
 
     const [users, setUsers] = useState<User[]>([]);
@@ -25,13 +25,13 @@ const AddFriendsButton: React.FC = () => {
         })
             .then(response => response.json())
             .then(data => {
-            if (data != null) {
-                setUsers(data as User[]);
-                // Fetch friend status for each user
-                data.forEach((user: User) => {
-                    checkFriendStatus(user.id);
-                });
-            }
+                if (data != null) {
+                    setUsers(data as User[]);
+                    // Fetch friend status for each user
+                    data.forEach((user: User) => {
+                        checkFriendStatus(user.id);
+                    });
+                }
             })
             .catch(error => console.error('Error fetching users:', error));
     }, []);
@@ -79,16 +79,16 @@ const AddFriendsButton: React.FC = () => {
                 'Content-Type': 'application/json',
             },
         })
-             .then(response => {
-                 if (!response.ok) {
-                     throw new Error('Network response was not ok');
-                 }
-                 // Update the friend status for this user
-                 setFriendStatuses(prevStatuses => ({
-                     ...prevStatuses,
-                     [userId]: 'accepted',
-                 }));
-             })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                // Update the friend status for this user
+                setFriendStatuses(prevStatuses => ({
+                    ...prevStatuses,
+                    [userId]: 'accepted',
+                }));
+            })
             .catch(error => console.error('Error:', error));
     };
 
@@ -122,30 +122,30 @@ const AddFriendsButton: React.FC = () => {
         <>
             {users && users.filter(user => friendStatuses[user.id] !== 'accepted').length > 0 ? (
                 <>
-            <button className="btn btn-secondary text-white mt-2 rounded-xl" onClick={openModal}>
-                Add Friends
-            </button>
+                    <button className="btn btn-secondary text-white mt-2 rounded-xl" onClick={openModal}>
+                        Add Friends
+                    </button>
 
-            <dialog id="addFriendsModal" className="modal">
-                <div className="modal-box" style={{ maxWidth: 'none', width: '50%', height: '50%', overflowY: 'auto' }}>
-                    <h3 className="font-bold text-lg">Choose friends to add</h3>
-                    {users.filter(user => friendStatuses[user.id] !== 'accepted').map((user) => (
-                        <UserTab
-                            key={user.id}
-                            userName={user.username}
-                            avatar={user.avatar_url}
-                            friendStatus={friendStatuses[user.id]}
-                            onAddFriend={() => handleAddFriend(user.id)}
-                            onAcceptRequest={() => handleAcceptRequest(user.id)}
-                            onDeclineRequest={() => handleDeclineRequest(user.id)}
-                        />
-                    ))}
-                </div>
-                <form method="dialog" className="modal-backdrop">
-                    <button>close</button>
-                </form>
-            </dialog>
-            </>
+                    <dialog id="addFriendsModal" className="modal">
+                        <div className="modal-box" style={{ maxWidth: 'none', width: '50%', height: '50%', overflowY: 'auto' }}>
+                            <h3 className="font-bold text-lg">Choose friends to add</h3>
+                            {users.filter(user => friendStatuses[user.id] !== 'accepted').map((user) => (
+                                <UserTab
+                                    key={user.id}
+                                    userName={user.username}
+                                    avatar={user.avatar_url}
+                                    friendStatus={friendStatuses[user.id]}
+                                    onAddFriend={() => handleAddFriend(user.id)}
+                                    onAcceptRequest={() => handleAcceptRequest(user.id)}
+                                    onDeclineRequest={() => handleDeclineRequest(user.id)}
+                                />
+                            ))}
+                        </div>
+                        <form method="dialog" className="modal-backdrop">
+                            <button>close</button>
+                        </form>
+                    </dialog>
+                </>
             ) : (
                 <h2 className="flex justify-center items-center font-semibold mt-2 text-base ">No new friends to add</h2>
             )}

@@ -4,13 +4,13 @@ interface AcceptInvitationProps {
     id?: string;
 }
 
-const AcceptInvitationButton: React.FC<AcceptInvitationProps> = ({id}) => {
+const AcceptInvitationButton: React.FC<AcceptInvitationProps> = ({ id }) => {
     const [status, setStatus] = React.useState<'accepted' | 'declined' | 'none'>("none");
 
     const acceptInvitation = () => {
         console.log('Accepting invitation to join group:', id);
         const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-        const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+        const FE_URL = process.env.NEXT_PUBLIC_URL;
         fetch(`${FE_URL}:${BE_PORT}/invitations/accept/${id}`, {
             method: 'PUT',
             credentials: 'include'
@@ -27,7 +27,7 @@ const AcceptInvitationButton: React.FC<AcceptInvitationProps> = ({id}) => {
     const declineInvitation = () => {
         console.log('Declining invitation to join group:', id);
         const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-        const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+        const FE_URL = process.env.NEXT_PUBLIC_URL;
         fetch(`${FE_URL}:${BE_PORT}/invitations/decline/${id}`, {
             method: 'PUT',
             credentials: 'include'

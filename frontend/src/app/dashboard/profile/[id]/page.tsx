@@ -14,12 +14,14 @@ export default function Profile({
 }) {
     useAuthCheck();
 
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [friends, setFriends] = useState<FriendProps[]>([]);
     const [profileData, setProfileData] = useState<ProfileProps | null>(null);
 
     useEffect(() => {
         const fetchData = async () => {
-            const url = `http://localhost:8080/profile/users/${params.id}`;
+            const url = `${FE_URL}:${BE_PORT}/profile/users/${params.id}`;
             const response = await fetch(url, {
                 method: 'GET',
                 credentials: 'include',
@@ -38,7 +40,7 @@ export default function Profile({
     }, [params.id]);
 
     useEffect(() => {
-        fetch(`http://localhost:8080/friends/${params.id}`, {
+        fetch(`${FE_URL}:${BE_PORT}/friends/${params.id}`, {
             method: 'GET',
             credentials: 'include' // Send cookies with the request
         })

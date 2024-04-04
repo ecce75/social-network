@@ -4,12 +4,12 @@ interface SendGroupRequestProps {
     id?: string;
 }
 
-const SendGroupRequestButton: React.FC<SendGroupRequestProps> = ({id}) => {
+const SendGroupRequestButton: React.FC<SendGroupRequestProps> = ({ id }) => {
     const [invitationSent, setInvitationSent] = React.useState<boolean>(false);
 
     const sendRequest = () => {
         const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-        const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+        const FE_URL = process.env.NEXT_PUBLIC_URL;
         fetch(`${FE_URL}:${BE_PORT}/invitations/request/${id}`, {
             method: 'POST',
             credentials: 'include'
@@ -31,7 +31,7 @@ const SendGroupRequestButton: React.FC<SendGroupRequestProps> = ({id}) => {
                 >
                     Request to join
                 </button>
-            ): (
+            ) : (
                 <button
                     className="btn btn-xs sm:btn-sm md:btn-md lg:btn-md btn-secondary text-white"
                     disabled
