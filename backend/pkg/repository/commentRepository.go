@@ -4,6 +4,7 @@ import (
 	"backend/pkg/model"
 	"database/sql"
 	"fmt"
+	"os"
 )
 
 type CommentRepository struct {
@@ -49,7 +50,7 @@ func (r *CommentRepository) CreateComment(comment *model.Comment) (int64, error)
 	if comment.Image.Valid && comment.Image.String == "" {
 		return lastInsertID, nil
 	}
-	comment.Image.String = "http://localhost:8080/images/comments/" + fmt.Sprint(lastInsertID) + ".jpg"
+	comment.Image.String = os.Getenv("NEXT_PUBLIC_URL") + ":" + os.Getenv("NEXT_PUBLIC_BACKEND_PORT") + "/images/comments/" + fmt.Sprint(lastInsertID) + ".jpg"
 	r.AddImageUrlToComment(int(lastInsertID), comment.Image.String)
 	if err != nil {
 		fmt.Println("Error getting last inserted comment id")

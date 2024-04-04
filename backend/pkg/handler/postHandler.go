@@ -49,10 +49,6 @@ func (h *PostHandler) CreatePostHandler(w http.ResponseWriter, r *http.Request) 
 		http.Error(w, "Failed to create the post: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// TODO: notify group members of new post
-	// if request.GroupID != 0 {
-
-	// }
 	util.ImageSave(w, r, strconv.Itoa(post.PostID), "post")
 	// Successful response
 	response := map[string]interface{}{
@@ -263,7 +259,6 @@ func (h *PostHandler) GetAllUserPostsHandler(w http.ResponseWriter, r *http.Requ
 // ------------ Group Posts Handlers ------------ //
 // ---------------------------------------------- //
 
-// TODO: check if user requesting is in group
 func (h *PostHandler) GetPostsByGroupIDHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	groupID, err := strconv.Atoi(vars["groupId"])

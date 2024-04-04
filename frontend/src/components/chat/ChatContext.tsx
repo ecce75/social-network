@@ -15,9 +15,13 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [activeChats, setActiveChats] = useState<any[]>([]);
     const [socket, setSocket] = useState<WebSocket | null>(null); // State to hold the WebSocket connection
 
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    // TODO: use the correct URL in prod
+    const WS_URL = "ws://iriesphere";
+
     useEffect(() => {
         // Initialize WebSocket connection
-        const newSocket = new WebSocket("ws://localhost:8080/ws");
+        const newSocket = new WebSocket(`ws://localhost:${BE_PORT}/ws`);
         setSocket(newSocket);
 
         // Clean up on unmount

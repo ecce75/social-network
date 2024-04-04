@@ -24,11 +24,13 @@ interface Profile {
 function ProfileIconDM() {
     const router = useRouter();
 
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [profileData, setProfileData] = useState<Profile | null>(null);
 
     useEffect(() => {
         const fetchProfile = async () => {
-            let url = 'http://localhost:8080/profile/users/me';
+            let url = `${FE_URL}:${BE_PORT}/profile/users/me`;
 
             const response = await fetch(url, {
                 method: 'GET',
@@ -47,7 +49,7 @@ function ProfileIconDM() {
         fetchProfile();
     }, []);
     const logout = async () => {
-        const response = await fetch('http://localhost:8080/api/users/logout', {
+        const response = await fetch(`${FE_URL}:${BE_PORT}/api/users/logout`, {
             method: 'POST',
             credentials: 'include',
         });

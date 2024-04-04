@@ -6,6 +6,7 @@ import (
 	"backend/util"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -49,7 +50,7 @@ func (h *UserHandler) UserRegisterHandler(w http.ResponseWriter, r *http.Request
 	regData.Password = string(hashedPassword)
 
 	util.ImageSave(w, r, regData.Username, "register") // parses image data from request to the variable
-	regData.AvatarURL = "http://localhost:8080/images/" + regData.Username + ".jpg"
+	regData.AvatarURL = os.Getenv("NEXT_PUBLIC_URL") + ":" + os.Getenv("NEXT_PUBLIC_BACKEND_PORT") + "/images/" + regData.Username + ".jpg"
 	// Store user in database
 	userID, err := h.userRepo.RegisterUser(regData)
 	if err != nil {

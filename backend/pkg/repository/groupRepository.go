@@ -6,6 +6,7 @@ import (
 	"backend/pkg/model"
 	"database/sql"
 	"fmt"
+	"os"
 	"time"
 )
 
@@ -65,7 +66,7 @@ func (r *GroupRepository) CreateGroup(group model.Group) (int64, error) {
 	}
 
 	// set group image URL
-	var ImageURL = "http://localhost:8080/images/groups/" + fmt.Sprint(groupID) + ".jpg"
+	var ImageURL = os.Getenv("NEXT_PUBLIC_URL") + ":" + os.Getenv("NEXT_PUBLIC_BACKEND_PORT") + "/images/groups/" + fmt.Sprint(groupID) + ".jpg"
 	query = `UPDATE groups SET image_url = ? WHERE id = ?`
 	_, err = r.db.Exec(query, ImageURL, groupID)
 	if err != nil {

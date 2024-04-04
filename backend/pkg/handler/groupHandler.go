@@ -182,7 +182,6 @@ func (h *GroupHandler) EditGroupHandler(w http.ResponseWriter, r *http.Request) 
 // It checks the user's authentication, verifies their authorization to delete the group,
 // and deletes the group from the repository if all conditions are met.
 // If any errors occur during the process, appropriate HTTP error responses are returned.
-// TODO: implement notification to all group members that the group has been deleted, and remove all group members;
 // implement logging of the deletion or add bool field "deleted"
 func (h *GroupHandler) DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
 	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))

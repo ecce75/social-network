@@ -14,9 +14,10 @@ const handleLogin = (
     formikHelpers: FormikHelpers<LoginValues>,
     router: any
 ) => {
-
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     // Form submission logic
-    fetch('http://localhost:8080/api/users/login', {
+    fetch(`${FE_URL}:${BE_PORT}/api/users/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
