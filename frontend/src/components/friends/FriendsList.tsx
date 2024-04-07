@@ -11,11 +11,13 @@ interface FriendProps {
 }
 
 export default function FriendsList() {
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [friends, setFriends] = useState<FriendProps[]>([]);
 
     useEffect(() => {
         // fetch(`${process.env.FRONTEND_URL}:${process.env.BACKEND_PORT}/friends`, {
-        fetch (`http://localhost:8080/friends/me`, {
+        fetch(`${FE_URL}:${BE_PORT}/friends/me`, {
             method: 'GET',
             credentials: 'include' // Send cookies with the request
         })

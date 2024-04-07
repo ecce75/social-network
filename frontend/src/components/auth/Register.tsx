@@ -40,7 +40,6 @@ const handleRegister = (
     });
 
     // Form submission logic
-    // TODO: change localhost to iriesphere url
     fetch(`${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api/users/register`, {
         method: 'POST',
         body: formData,

@@ -3,9 +3,11 @@ package ws
 import (
 	"backend/util"
 	"encoding/json"
-	"github.com/gorilla/websocket"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/gorilla/websocket"
 )
 
 var newline = []byte{'\n'}
@@ -16,7 +18,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool {
 		// TODO: Remove after development
 		// Check if the origin is allowed
-		return r.Header.Get("Origin") == "http://localhost:3000"
+		return r.Header.Get("Origin") == os.Getenv("NEXT_PUBLIC_URL") + ":" + os.Getenv("NEXT_PUBLIC_HTTPS_PORT")
 	},
 }
 

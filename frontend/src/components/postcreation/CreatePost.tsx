@@ -7,6 +7,9 @@ function CreatePost() {
     const [message, setMessage] = useState<string>('');
     const [privacy, setPrivacy] = useState<string>('public');
 
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
+
     const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(event.target.value);
     };
@@ -52,7 +55,7 @@ function CreatePost() {
             formData.append('group', "0")
         }
         try {
-            const response = await fetch('http://localhost:8080/post', {
+            const response = await fetch(`${FE_URL}:${BE_PORT}/post`, {
                 method: 'POST',
                 credentials: 'include', // If you're handling sessions
                 body: formData, // Send the form data
