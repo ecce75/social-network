@@ -67,7 +67,7 @@ const InviteGroupButton: React.FC<InviteGroupButtonProps> = ({ groupID }) => {
     return (
         <div>
             {/* Open the modal using document.getElementById('ID').showModal() method */}
-            <button className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-md btn-secondary text-white`} onClick={openModal}>Invite People</button>
+            <button className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-md btn-secondary text-white mr-2`} onClick={openModal}>Invite People</button>
             <dialog id="Modal_Invite_Group" className="modal">
                 <div className="modal-box" style={{ maxWidth: 'none', width: '50%', height: '50%' }}>
                     <h3 className="font-bold text-black text-lg">Invite people to your group</h3>

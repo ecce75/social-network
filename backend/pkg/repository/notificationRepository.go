@@ -56,15 +56,23 @@ func (r *NotificationRepository) GetNotificationsByUserId(id int) ([]model.Notif
 // CreateNotification adds a new notification to the database.
 func (r *NotificationRepository) CreateNotification(notification model.Notification) (int64, error) {
 	baseQuery := `INSERT ` + `INTO notifications (user_id, type, message`
-	valuesQuery := `VALUES (?, ?, ?, ?)`
+	valuesQuery := `VALUES (?, ?, ?`
 	args := []interface{}{notification.UserId, notification.Type, notification.Message}
-
-	if notification.GroupId != 0 {
+	if notification.GroupId != 0 && notification.SenderId != 0 {
+		baseQuery += `, group_id, sender_id) `
+		valuesQuery += `, ?, ?)`
+		args = append(args, notification.GroupId, notification.SenderId)
+	} else if notification.GroupId != 0 {
 		baseQuery += `, group_id) `
+		valuesQuery += `, ?)`
 		args = append(args, notification.GroupId)
 	} else if notification.SenderId != 0 {
 		baseQuery += `, sender_id) `
+		valuesQuery += `, ?)`
 		args = append(args, notification.SenderId)
+	} else {
+		baseQuery += `)`
+		valuesQuery += `)`
 	}
 
 	query := baseQuery + valuesQuery

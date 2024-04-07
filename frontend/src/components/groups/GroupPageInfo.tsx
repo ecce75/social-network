@@ -30,6 +30,7 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({ title, text, pictureUrl, 
             })
                 .then(response => response.json())
                 .then(data => {
+                    if (data !== null) {
                     data.map((user: any) => {
                         const newUser = {
                             id: user.id,
@@ -39,8 +40,9 @@ const GroupPageInfo: React.FC<GroupPageInfoProps> = ({ title, text, pictureUrl, 
                         }
                         setMembers(prevMembers => [...prevMembers, newUser])
                     }
-                    )
+                    )}
                 })
+
         } catch (error) {
             console.log('Error fetching group members:', error)
         }

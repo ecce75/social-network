@@ -29,7 +29,7 @@ function NotificationButton() {
             }
         };
         fetchNotifications();
-    }, []);
+    }, [showDropdown]);
 
     const updateNotificationStatus = (notificationId: number, newStatus: any) => {
         setNotifications(prevNotifications =>

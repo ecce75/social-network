@@ -55,6 +55,21 @@ func (h *NotificationHandler) CreateGroupNotification(userID, groupID int, messa
 		Type:    "group",
 		Message: message,
 	}
+
+	_, err := h.notificationRepo.CreateNotification(notification)
+	return err
+}
+
+func (h *NotificationHandler) CreateGroupAdminNotification(userID, groupID, senderID int, message string) error {
+	fmt.Println("CreateGroupAdminNotification", userID, groupID, senderID, message)
+	notification := model.Notification{
+		UserId:   userID,
+		GroupId:  groupID,
+		SenderId: senderID,
+		Type:     "group",
+		Message:  message,
+	}
+
 	_, err := h.notificationRepo.CreateNotification(notification)
 	return err
 }
@@ -196,18 +211,18 @@ func (h *NotificationHandler) NotifyGroupAdmin(groupID, userID int) error {
 	if err != nil {
 		return err
 	}
-	return h.CreateNotification(adminID, userID, "group", message)
+	return h.CreateGroupAdminNotification(adminID, groupID, userID, message)
 }
 
 // notifyUserRequestApproved notifies the user that their request was approved.
-func (h *NotificationHandler) NotifyUserRequestApproved(userID, groupID int) error {
+func (h *NotificationHandler) NotifyUserRequestApproved(adminID, userID, groupID int) error {
 	groupTitle, err := h.groupRepo.GetGroupTitleByID(groupID)
 	if err != nil {
 		return err
 	}
 	username, _ := h.userRepo.GetUsernameByID(userID)
-	message := fmt.Sprintf("You approved ", username, "'s request to join ", groupTitle)
-	err = h.notificationRepo.EditGroupNotificationMessage(userID, groupID, message)
+	message := "You approved " + username + "'s request to join " + groupTitle
+	err = h.notificationRepo.EditGroupNotificationMessage(adminID, groupID, message)
 	if err != nil {
 		return err
 	}
@@ -217,15 +232,15 @@ func (h *NotificationHandler) NotifyUserRequestApproved(userID, groupID int) err
 }
 
 // Function to notify the user about the declined request.
-func (h *NotificationHandler) NotifyUserDecline(userID, groupID int) error {
-	// message
+func (h *NotificationHandler) NotifyUserRequestDecline(adminID, userID, groupID int) error {
 	groupTitle, err := h.groupRepo.GetGroupTitleByID(groupID)
 	if err != nil {
 		return err
 	}
 	username, _ := h.userRepo.GetUsernameByID(userID)
-	message := fmt.Sprintf("You declined ", username, "'s request to join ", groupTitle)
-	err = h.notificationRepo.EditGroupNotificationMessage(userID, groupID, message)
+	message := "You declined " + username + "'s request to join " + groupTitle
+	fmt.Println("NotifyUserRequestDecline", adminID, groupID, message)
+	err = h.notificationRepo.EditGroupNotificationMessage(adminID, groupID, message)
 	if err != nil {
 		return err
 	}

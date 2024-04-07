@@ -7,7 +7,7 @@ interface User {
     avatar_url: string;
 }
 
-export interface FriendStatus {
+export interface Status {
     [key: string]: 'pending' | 'pending_confirmation' | 'accepted' | 'declined' | 'none'; // Possible friend statuses
 }
 
@@ -16,7 +16,7 @@ const AddFriendsButton: React.FC = () => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
 
     const [users, setUsers] = useState<User[]>([]);
-    const [friendStatuses, setFriendStatuses] = useState<FriendStatus>({});
+    const [friendStatuses, setFriendStatuses] = useState<Status>({});
 
     useEffect(() => {
         fetch(`${FE_URL}:${BE_PORT}/api/users/list`, {

@@ -117,32 +117,33 @@ func (h *GroupMemberHandler) RequestGroupMembershipHandler(w http.ResponseWriter
 
 // logic for setting the player as group member
 func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
+	adminID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
 	// Parse the request URL to get the invitation ID
 	vars := mux.Vars(r)
 	groupID, _ := strconv.Atoi(vars["groupId"])
 	// Retrieve the user ID from the session token
 	userID, _ := strconv.Atoi(vars["userId"])
 	// Update the status of the membership request to "approved"
-	err := h.groupMemberRepo.AcceptGroupInvitationAndRequest(userID, groupID)
+	err = h.groupMemberRepo.AcceptGroupInvitationAndRequest(userID, groupID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	// get groupId from the request invitation that was accepted
-	groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(userID, groupID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	// this should add player to group
-	err = h.groupMemberRepo.AddMemberToGroup(groupInvitation.GroupId, groupInvitation.JoinUserId)
+
+	// this should add user to group
+	err = h.groupMemberRepo.AddMemberToGroup(groupID, userID)
 	if err != nil {
 		http.Error(w, "Error adding member to the group: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Notify the user that their request was approved
-	err = h.notificationHandler.NotifyUserRequestApproved(groupInvitation.JoinUserId, groupInvitation.GroupId)
+	err = h.notificationHandler.NotifyUserRequestApproved(adminID, userID, groupID)
 	if err != nil {
 		http.Error(w, "Failed to notify user about request approval: "+err.Error(), http.StatusInternalServerError)
 		return
@@ -155,6 +156,11 @@ func (h *GroupMemberHandler) ApproveGroupMembershipHandler(w http.ResponseWriter
 
 // Allows user to decline membership.
 func (h *GroupMemberHandler) DeclineGroupMembershipHandler(w http.ResponseWriter, r *http.Request) {
+	adminID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Failed to get user id from session token: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
 	// Parse the request URL to get the invitation ID
 	vars := mux.Vars(r)
 	groupID, _ := strconv.Atoi(vars["groupId"])
@@ -162,21 +168,14 @@ func (h *GroupMemberHandler) DeclineGroupMembershipHandler(w http.ResponseWriter
 	// Retrieve the user ID from URL
 	userID, _ := strconv.Atoi(vars["userId"])
 	// Update the status of the membership request to "declined"
-	err := h.invitationRepo.DeclineGroupInvitation(userID, groupID)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	// get groupId from the request invitation that was accepted
-	groupInvitation, err := h.invitationRepo.GetGroupInvitationByID(userID, groupID)
+	err = h.invitationRepo.DeclineGroupInvitation(userID, groupID)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Notify the user that their request was declined
-	err = h.notificationHandler.NotifyUserDecline(groupInvitation.JoinUserId, groupInvitation.GroupId)
+	err = h.notificationHandler.NotifyUserRequestDecline(adminID, userID, groupID)
 	if err != nil {
 		http.Error(w, "Failed to notify user about request decline: "+err.Error(), http.StatusInternalServerError)
 		return
