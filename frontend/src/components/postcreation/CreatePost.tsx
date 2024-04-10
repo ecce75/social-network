@@ -66,7 +66,8 @@ function CreatePost() {
             }
 
             const data = await response.json();
-            console.log('Post created:', data.id);
+            console.log('Post submitted:', data);
+            window.location.reload();
             // Handle success (e.g., clear form, show success message)
         } catch (error) {
             console.error('Error submitting post:', error);

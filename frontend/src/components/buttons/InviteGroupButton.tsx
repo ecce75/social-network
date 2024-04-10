@@ -18,7 +18,9 @@ const InviteGroupButton: React.FC<InviteGroupButtonProps> = ({ groupID }) => {
                 credentials: 'include'
             })
                 .then(response => response.json())
-                .then(data => data.map((user: any) => {
+                .then(data => {
+                    if (data !== null) {
+                    data.map((user: any) => {
                     const newUser = {
                         id: user.id,
                         username: user.username,
@@ -26,9 +28,7 @@ const InviteGroupButton: React.FC<InviteGroupButtonProps> = ({ groupID }) => {
                     }
                     setNonMembers(prevNonMembers => [...prevNonMembers, newUser])
                 }
-
-
-                ))
+                )}})
         }
         catch (error) {
             console.error('Error fetching non-members:', error);

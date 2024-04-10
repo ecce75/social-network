@@ -18,16 +18,17 @@ export interface NotificationProps {
     notification: NotificationProp;
     setNotifications: React.Dispatch<React.SetStateAction<NotificationProp[]>>;
     updateNotificationStatus: (notificationId: number, newStatus: any) => void;
+    setFriendsListToggle: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Notification: React.FC<NotificationProps> = ({notification, setNotifications, updateNotificationStatus}) => {
+const Notification: React.FC<NotificationProps> = ({notification, setNotifications, setFriendsListToggle}) => {
     const router = useRouter();
+
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
     const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [status, setStatus] = useState<Status>({});
     // Styles
 
-    console.log(notification)
 
     useEffect(() => {
         console.log(status)
@@ -54,6 +55,11 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
                     ...prevStatuses,
                     [id]: requestType == 'accept' ? 'accepted' : 'declined',
                 }));
+
+                if (request == 'friends' && requestType == 'accept') {
+                    console.log("Accepted friend request")
+                    setFriendsListToggle((prev) => !prev);
+                }
 
             })
             .catch(error => console.error('Error:', error));
@@ -86,7 +92,7 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
     }
 
     const handleEventClick = () => {
-        router.push(`/groups/${notification.group_id}`)
+        router.push(`/dashboard/groups/${notification.group_id}`)
     }
 
 
@@ -225,7 +231,6 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
 
 
     const notificationTypes = (notification: NotificationProp) => {
-        console.log(notification.type, notification.message)
         switch (notification.type) {
             default:
                 return (
