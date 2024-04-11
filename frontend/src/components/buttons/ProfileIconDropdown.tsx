@@ -2,7 +2,7 @@
 
 import {useRouter} from 'next/navigation';
 import FriendsList from '../friends/FriendsList';
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import AddFriendsButton from "@/components/buttons/AddFriendsButton";
 
 
@@ -20,8 +20,11 @@ interface Profile {
     created_at: string;
 }
 
+interface ProfileIconDMProps {
+    friendsListToggle: boolean;
+}
 
-function ProfileIconDM() {
+function ProfileIconDM({friendsListToggle}: ProfileIconDMProps) {
     const router = useRouter();
 
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
