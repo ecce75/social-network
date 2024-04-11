@@ -261,4 +261,5 @@ type VoteData struct {
 	Item   string `json:"item"`    // 'comment' or 'post'
 	ItemID int    `json:"item_id"` // comment or post id
 	Action string `json:"action"`  // 'like' or 'dislike'
+	UserId int    `json:"user_id"`
 }
