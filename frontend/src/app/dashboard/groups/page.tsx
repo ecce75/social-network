@@ -20,7 +20,7 @@ interface GroupProps {
 export default function Groups() {
     useAuthCheck();
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [groups, setGroups] = useState<GroupProps[]>([]); // Initialize groups state as an empty array
     const [myGroups, setMyGroups] = useState<GroupProps[]>([]); // Initialize myGroups state as an empty array
 
@@ -64,8 +64,8 @@ export default function Groups() {
                                 {/* Map through the list of groups and render each item */}
                                 {/* My Groups Section */}
                                 {myGroups.length > 0 ? <h2 className="createdAtWave" style={{ textAlign: 'center', fontSize: '24px', fontWeight: 'bold' }}>My Groups</h2> : null}
-                                {myGroups.length > 0 ? 
-                                    myGroups.map(group => 
+                                {myGroups.length > 0 ?
+                                    myGroups.map(group =>
                                         <GroupTab
                                             key={group.id}
                                             id={group.id}

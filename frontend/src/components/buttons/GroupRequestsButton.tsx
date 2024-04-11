@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import UserTab from "@/components/friends/UserTab";
 
 interface GroupRequestsButtonProps {
@@ -7,14 +7,14 @@ interface GroupRequestsButtonProps {
 interface User {
     id: number;
     username: string;
-    image : string;
+    image: string;
 }
 
-const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
+const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({ groupId }) => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [users, setUsers] = React.useState<User[]>([]);
-    const [groupStatuses, setGroupStatuses] = React.useState<{[key: string]: 'approved' | 'declined' | 'pending' }>({});
+    const [groupStatuses, setGroupStatuses] = React.useState<{ [key: string]: 'approved' | 'declined' | 'pending' }>({});
 
     useEffect(() => {
         try {
@@ -35,7 +35,7 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
                                 ...prevStatuses,
                                 [request.join_user_id]: request.status
                             }));
-                            if (!users.some(user => user.id === newUser.id)){
+                            if (!users.some(user => user.id === newUser.id)) {
                                 setUsers([...users, newUser]);
                             }
                         })
@@ -44,12 +44,12 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
         } catch (error) {
             console.error('Error fetching groups join requests:', error);
         }
-    },[]);
+    }, []);
 
 
 
     const onAcceptRequest = (userId: number) => {
-            try {
+        try {
             fetch(`${FE_URL}:${BE_PORT}/invitations/approve/${groupId}/${userId}`, {
                 method: 'PUT',
                 credentials: 'include'
@@ -58,13 +58,15 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
                     if (response.status === 200) {
                         setGroupStatuses(prevStatuses => ({
                             ...prevStatuses,
-                            [userId]: "approved"}));
+                            [userId]: "approved"
+                        }));
                     }
                 })
 
         } catch (error) {
             console.error('Error accepting request:', error);
-        } }
+        }
+    }
 
     const onDeclineRequest = (userId: number) => {
         try {
@@ -76,13 +78,15 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
                     if (response.status === 200) {
                         setGroupStatuses(prevStatuses => ({
                             ...prevStatuses,
-                            [userId]: "declined"}));
+                            [userId]: "declined"
+                        }));
                     }
                 })
 
         } catch (error) {
             console.error('Error accepting request:', error);
-        } }
+        }
+    }
 
 
     const openModal = () => {
@@ -97,22 +101,23 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({groupId}) => {
             {/* Open the modal using document.getElementById('ID').showModal() method */}
             <button className={`btn btn-xs sm:btn-sm md:btn-md lg:btn-md btn-secondary text-white `} onClick={openModal}>Requests</button>
             <dialog id="Modal_Join_Request" className="modal">
-                <div className="modal-box" style={{maxWidth:'none', width: '50%', height: '50%'}}>
+                <div className="modal-box" style={{ maxWidth: 'none', width: '50%', height: '50%' }}>
                     <h3 className="font-bold text-black text-lg">Incoming join requests</h3>
                     {users.length > 0 ? users.map((user: User) => {
                         return (
                             <UserTab
                                 key={user.id}
-                            userName={user.username}
-                            avatar={user.image}
-                            groupStatus={groupStatuses[user.id]}
-                            onAcceptRequest={() => {onAcceptRequest(user.id)}}
-                            onDeclineRequest={() => {onDeclineRequest(user.id)}}
+                                userName={user.username}
+                                avatar={user.image}
+                                groupStatus={groupStatuses[user.id]}
+                                onAcceptRequest={() => { onAcceptRequest(user.id) }}
+                                onDeclineRequest={() => { onDeclineRequest(user.id) }}
                             />
-                        )}): (
-                            <h2 className="text-xl mt-3 font-semibold text-green-800">No requests yet.</h2>
                         )
-                     }
+                    }) : (
+                        <h2 className="text-xl mt-3 font-semibold text-green-800">No requests yet.</h2>
+                    )
+                    }
 
                 </div>
                 <form method="dialog" className="modal-backdrop">

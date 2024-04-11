@@ -3,77 +3,76 @@
 import React from "react";
 import { Formik, Field, Form, FormikHelpers, FieldProps } from "formik";
 import "../../../styles/styles.css";
-import { useRouter} from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 
 interface RegisterValues {
-	[key: string]: any;
-	email: string;
-	password: string;
-	first_name: string;
-	last_name: string;
-	dob: string;
-	image: File | null;
-	username: string;
-	about: string;
+    [key: string]: any;
+    email: string;
+    password: string;
+    first_name: string;
+    last_name: string;
+    dob: string;
+    image: File | null;
+    username: string;
+    about: string;
 }
 
 
 
 const handleRegister = (
-	values: RegisterValues,
-	formikHelpers: FormikHelpers<RegisterValues>,
-	router: any
-  ) => {
-	// Check if all fields are filled
-	for (let key in values) {
-		if (values[key] === '' || values[key] === null) {
-			alert(`Please fill in the ${key} field.`);
-			return;
-		}
-	}
-	const formData = new FormData();
+    values: RegisterValues,
+    formikHelpers: FormikHelpers<RegisterValues>,
+    router: any
+) => {
+    // Check if all fields are filled
+    for (let key in values) {
+        if (values[key] === '' || values[key] === null) {
+            alert(`Please fill in the ${key} field.`);
+            return;
+        }
+    }
+    const formData = new FormData();
 
-	// Append all form fields to formData
-	Object.keys(values).forEach((key) => {
-	formData.append(key, values[key]);
-	});
+    // Append all form fields to formData
+    Object.keys(values).forEach((key) => {
+        formData.append(key, values[key]);
+    });
 
-	// Form submission logic
-	// TODO: change localhost to iriesphere url
-	fetch(`${process.env.NEXT_PUBLIC_FRONTEND_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api/users/register`, {
-	  method: 'POST',
-	  body: formData,
-	  credentials: 'include' // Send cookies with the request
-	})
-	.then(response => {
-		if (!response.ok) {
-			return response.text().then(text => {
-				throw new Error(text);
-			  });
-		  }
-		formikHelpers.setSubmitting(false);
-		router.push('/');
-	})
-	// .then(data => {
-	//   formikHelpers.setSubmitting(false);
-	//   router.push('/');
-	// })
-	.catch(error => {
-		formikHelpers.setSubmitting(false);
-		console.error('Catch Error:', error);
-		console.log(error.message)
-		if (error.message.startsWith("Error registering user: UNIQUE constraint failed: users.")) {
-			const fieldName = error.message.split("Error registering user: UNIQUE constraint failed: users.")[1];
-			alert(`${fieldName} already taken`);
-		} else {
-			alert("Invalid username or password");
-		}
-	});
+    // Form submission logic
+    fetch(`${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api/users/register`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include' // Send cookies with the request
+    })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => {
+                    throw new Error(text);
+                });
+            }
+            formikHelpers.setSubmitting(false);
+            router.push('/');
+        })
+        // .then(data => {
+        //   formikHelpers.setSubmitting(false);
+        //   router.push('/');
+        // })
+        .catch(error => {
+            formikHelpers.setSubmitting(false);
+            console.error('Catch Error:', error);
+            console.log(error.message)
+            if (error.message.startsWith("Error registering user: UNIQUE constraint failed: users.")) {
+                const fieldName = error.message.split("Error registering user: UNIQUE constraint failed: users.")[1];
+                alert(`${fieldName} already taken`);
+            } else {
+                alert("Invalid username or password");
+            }
+        });
 }
 
-  
-  const RegisterForm = () => {
+
+const RegisterForm = () => {
     const router = useRouter();
     return (
         <Formik
@@ -196,7 +195,7 @@ const handleRegister = (
 };
 export default RegisterForm;
 
-	
+
 
 
 

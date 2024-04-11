@@ -184,9 +184,18 @@ func (h *FriendHandler) DeclineFriendRequestHandler(w http.ResponseWriter, r *ht
 		return
 	}
 
-	username, err := h.userRepository.GetUsernameByID(userID)
-	message := username + " declined your friend request"
+	username, err := h.userRepository.GetUsernameByID(friendRequestID)
+
+	message := "You declined the friend request from " + username
 	err = h.notificationHandler.EditFriendRequestNotification(userID, friendRequestID, message)
+	if err != nil {
+		http.Error(w, "Error changing notification message"+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	username, err = h.userRepository.GetUsernameByID(userID)
+	message = username + " declined your friend request"
+	err = h.notificationHandler.CreateNotification(friendRequestID, userID, "friend", message)
 	if err != nil {
 		http.Error(w, "Error changing notification message"+err.Error(), http.StatusInternalServerError)
 		return

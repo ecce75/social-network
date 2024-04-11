@@ -6,9 +6,9 @@ import { CommentProps } from '../comments/Comment';
 
 const PostFeed: React.FC = () => {
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [posts, setPosts] = useState<PostProps[]>([]);
-    const [comments, setComments] = useState<{ [postId: number]:CommentProps[]}>([]);
+    const [comments, setComments] = useState<{ [postId: number]: CommentProps[] }>([]);
 
     useEffect(() => {
         // Fetch posts
@@ -39,15 +39,16 @@ const PostFeed: React.FC = () => {
                     }
                 })
                 .catch(error => console.error('Error fetching comments: ', error));
-            })}, [posts]);
-    
+        })
+    }, [posts]);
+
     return (
         /* Change % for post feed width*/
         <section style={{ width: '45%', margin: 'auto', backgroundColor: '#e5e7eb', padding: '20px', height: '100vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', flexDirection: 'column' }}>
                 {/* Post Creation Form */}
                 <div style={{ marginBottom: '20px' }}>
-                    <CreatePostButton/>
+                    <CreatePostButton />
                 </div>
                 {/* Posts */}
                 <div style={{ marginBottom: '20px' }}>

@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import React, {Dispatch, SetStateAction, useEffect, useState} from 'react';
 import Notification, { NotificationProp } from '../notification/Notification';
 
-function NotificationButton() {
-    
+interface NotificationButtonProps {
+    setFriendsListToggle: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+function NotificationButton({setFriendsListToggle}: NotificationButtonProps) {
+
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [notifications, setNotifications] = useState<NotificationProp[]>([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const hasUnread = notifications?.some(notification => !notification.is_read);
@@ -29,7 +33,7 @@ function NotificationButton() {
             }
         };
         fetchNotifications();
-    }, []);
+    }, [showDropdown]);
 
     const updateNotificationStatus = (notificationId: number, newStatus: any) => {
         setNotifications(prevNotifications =>
@@ -64,6 +68,7 @@ function NotificationButton() {
                             notification={notification}
                             setNotifications={setNotifications}
                             updateNotificationStatus={updateNotificationStatus}
+                            setFriendsListToggle={setFriendsListToggle}
                         />
                     ))}
                 </div>

@@ -26,9 +26,25 @@ func (r *NotificationRepository) GetNotificationsByUserId(id int) ([]model.Notif
 	var notifications []model.Notification
 	for rows.Next() {
 		var notification model.Notification
-		if err := rows.Scan(&notification.Id, &notification.UserId, &notification.GroupId, &notification.SenderId, &notification.Type, &notification.Message, &notification.IsRead, &notification.CreatedAt); err != nil {
+		var groupId, senderId sql.NullInt64 // Use sql.NullInt64 for nullable integers
+
+		// Scan the row with sql.NullInt64 variables for nullable columns
+		if err := rows.Scan(&notification.Id, &notification.UserId, &groupId, &senderId, &notification.Type, &notification.Message, &notification.IsRead, &notification.CreatedAt); err != nil {
 			return nil, err
 		}
+
+		// Check if groupId is valid, then assign its value to the Notification struct
+		if groupId.Valid {
+			val := int(groupId.Int64) // Convert sql.NullInt64 to int
+			notification.GroupId = val
+		}
+
+		// Check if senderId is valid, then assign its value to the Notification struct
+		if senderId.Valid {
+			val := int(senderId.Int64) // Convert sql.NullInt64 to int
+			notification.SenderId = val
+		}
+
 		notifications = append(notifications, notification)
 	}
 	if err := rows.Err(); err != nil {
@@ -40,15 +56,23 @@ func (r *NotificationRepository) GetNotificationsByUserId(id int) ([]model.Notif
 // CreateNotification adds a new notification to the database.
 func (r *NotificationRepository) CreateNotification(notification model.Notification) (int64, error) {
 	baseQuery := `INSERT ` + `INTO notifications (user_id, type, message`
-	valuesQuery := `VALUES (?, ?, ?, ?)`
+	valuesQuery := `VALUES (?, ?, ?`
 	args := []interface{}{notification.UserId, notification.Type, notification.Message}
-
-	if notification.GroupId != 0 {
+	if notification.GroupId != 0 && notification.SenderId != 0 {
+		baseQuery += `, group_id, sender_id) `
+		valuesQuery += `, ?, ?)`
+		args = append(args, notification.GroupId, notification.SenderId)
+	} else if notification.GroupId != 0 {
 		baseQuery += `, group_id) `
+		valuesQuery += `, ?)`
 		args = append(args, notification.GroupId)
 	} else if notification.SenderId != 0 {
 		baseQuery += `, sender_id) `
+		valuesQuery += `, ?)`
 		args = append(args, notification.SenderId)
+	} else {
+		baseQuery += `)`
+		valuesQuery += `)`
 	}
 
 	query := baseQuery + valuesQuery

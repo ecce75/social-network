@@ -29,11 +29,13 @@ interface GroupEventFeedProps {
 
 
 const GroupEventFeed: React.FC<GroupEventFeedProps> = ({groupId}) => {
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [events, setEvents] = React.useState<EventProps[]>([]);
 
     useEffect(() => {
         try {
-            fetch(`http://localhost:8080/events/group/${groupId}`, {
+            fetch(`${FE_URL}:${BE_PORT}/events/group/${groupId}`, {
                 method: 'GET',
                 credentials: 'include'
             })
@@ -42,7 +44,7 @@ const GroupEventFeed: React.FC<GroupEventFeedProps> = ({groupId}) => {
                     if (data != null) {
                         // Fetch attendance for each event
                         const eventsWithAttendance = await Promise.all(data.map(async (event: EventProps) => {
-                            const attendanceResponse = await fetch(`http://localhost:8080/events/attendance/${event.id}`, {
+                            const attendanceResponse = await fetch(`${FE_URL}:${BE_PORT}/events/attendance/${event.id}`, {
                                 method: 'GET',
                                 credentials: 'include'
                             });

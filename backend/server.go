@@ -4,11 +4,12 @@ import (
 	"backend/api"
 	"backend/pkg/db/sqlite"
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -33,7 +34,7 @@ func main() {
 	if port == "" {
 		port = "empty"
 	}
-	address := os.Getenv("NEXT_PUBLIC_BACKEND_URL")
+	address := os.Getenv("NEXT_PUBLIC_URL")
 	if address == "" {
 		address = "empty"
 	}
@@ -42,5 +43,5 @@ func main() {
 	api.Router(mux, db)
 
 	fmt.Println("Server is running on " + address + ":" + port)
-	http.ListenAndServe(":" + port, nil)
+	http.ListenAndServe(":"+port, nil)
 }

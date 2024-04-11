@@ -1,5 +1,5 @@
 export async function useAuth() {
-    const FE_URL = process.env.NEXT_PUBLIC_FRONTEND_URL;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
   try {
       const res = await fetch(`${FE_URL}:${BE_PORT}/api/users/check-auth`, {
