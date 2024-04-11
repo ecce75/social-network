@@ -71,6 +71,8 @@ func Router(mux *mux.Router, db *sql.DB) {
 
 	// Likes & dislikes for comments and posts ... the getPosts and getComments methods return the number of likes and dislikes with each post/comment
 	mux.HandleFunc("/vote", voteHandler.VotePostOrCommentHandler).Methods("POST")
+	mux.HandleFunc("/vote", voteHandler.GetItemVotesHandler).Methods("GET")
+	//mux.HandleFunc("/user/vote", voteHandler.GetUserVoteActionHandler).Methods("GET")
 
 	// Groups
 	groupHandler := handler.NewGroupHandler(groupRepository, sessionRepository, groupMemberRepository, notificationHandler, userRepository, friendsRepository)

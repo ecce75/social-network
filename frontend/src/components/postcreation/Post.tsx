@@ -23,6 +23,7 @@ export interface PostProps {
 }
 
 const Post: React.FC<PostProps> = ({ id, userId, groupId, title, content, image_url, privacySetting, created_at, likes, dislikes, creator, creator_avatar, comments, setComments }) => {
+    
     return (
         <div style={{ border: '1px solid #ccc', borderRadius: '8px', padding: '20px', marginBottom: '20px' }}>
             {/* Post Content */}
