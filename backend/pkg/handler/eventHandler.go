@@ -14,13 +14,14 @@ import (
 type EventHandler struct {
 	eventRepo           *repository.EventRepository
 	groupMemberRepo     *repository.GroupMemberRepository
+	groupRepo           *repository.GroupRepository
 	sessionRepo         *repository.SessionRepository
 	userRepo            *repository.UserRepository
 	notificationHandler *NotificationHandler
 }
 
-func NewEventHandler(eventRepo *repository.EventRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, userRepo *repository.UserRepository, notificationHandler *NotificationHandler) *EventHandler {
-	return &EventHandler{eventRepo: eventRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, userRepo: userRepo, notificationHandler: notificationHandler}
+func NewEventHandler(eventRepo *repository.EventRepository, sessionRepo *repository.SessionRepository, groupMemberRepo *repository.GroupMemberRepository, userRepo *repository.UserRepository, notificationHandler *NotificationHandler, groupRepo *repository.GroupRepository) *EventHandler {
+	return &EventHandler{eventRepo: eventRepo, sessionRepo: sessionRepo, groupMemberRepo: groupMemberRepo, groupRepo: groupRepo, userRepo: userRepo, notificationHandler: notificationHandler}
 }
 
 // Event Handlers
@@ -246,4 +247,36 @@ func (h *EventHandler) GetAttendanceByEventIDHandler(w http.ResponseWriter, r *h
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(attendanceList)
+}
+
+func (h *EventHandler) GetAllUserEvents(w http.ResponseWriter, r *http.Request) {
+	userID, err := h.sessionRepo.GetUserIDFromSessionToken(util.GetSessionToken(r))
+	if err != nil {
+		http.Error(w, "Error confirming authentication: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	type EventWithGroupName struct {
+		model.Event
+		GroupName string `json:"group_name"`
+	}
+
+	events, err := h.eventRepo.GetAllUserEvents(userID)
+	if err != nil {
+		http.Error(w, "Failed to get events: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	var eventsWithGroupName []EventWithGroupName
+	for _, event := range events {
+		groupName, err := h.groupRepo.GetGroupTitleByID(event.GroupId)
+		if err != nil {
+			http.Error(w, "Failed to get group: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		eventsWithGroupName = append(eventsWithGroupName, EventWithGroupName{Event: event, GroupName: groupName})
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(eventsWithGroupName)
 }

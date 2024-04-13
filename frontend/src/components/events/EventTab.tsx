@@ -12,8 +12,9 @@ const EventTab: React.FC<EventTabProps> = ({ event, setEvents }) => {
     const end = formatDate(event.end_time);
     const [isAttending, setIsAttending] = React.useState(false);
 
-    console.log('Event:', event);
-
+   useEffect(() => {
+       console.log("isAttending for event", event, isAttending)
+   }, [isAttending])
 
     useEffect(() => {
         // Check if the current user is attending the event
@@ -26,8 +27,8 @@ const EventTab: React.FC<EventTabProps> = ({ event, setEvents }) => {
         }
     }, []);
 
-    function handleAttend() {
-        console.log('Attend button clicked', isAttending);
+    function handleAttend(click_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+        click_event.stopPropagation();
         try {
             fetch(`${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/events/${event.id}/${isAttending ? '0' : '1'}`, {
                 method: 'PUT',
@@ -35,9 +36,7 @@ const EventTab: React.FC<EventTabProps> = ({ event, setEvents }) => {
             })
                 .then(res => res.json())
                 .then(data => {
-                    console.log('starting fetch', isAttending)
                     setEvents((prevEvents) => {
-                        console.log('Prev events', prevEvents)
                         return prevEvents.map((prevEvent) => {
                             console.log("Prevevent", prevEvent)
                             console.log("Event", event)
@@ -67,11 +66,9 @@ const EventTab: React.FC<EventTabProps> = ({ event, setEvents }) => {
                                     };
                                 }
                             }
-                            console.log('Prev event 2', prevEvent)
                             return prevEvent;
                         })
                     })
-                    console.log(setEvents((event) => { console.log(event); return event }))
                     setIsAttending(!isAttending);
                 })
         } catch (err) {
@@ -99,7 +96,7 @@ const EventTab: React.FC<EventTabProps> = ({ event, setEvents }) => {
                     <p className="justify-start">{event.description}</p>
                     <div className="card-actions justify-center">
                         <button className={`btn rounded-full ${!isAttending && 'btn-secondary'}`}
-                            onClick={handleAttend}>{isAttending ? 'Not Attend' : 'Attend'}</button>
+                            onClick={(click_event) => handleAttend(click_event)}>{isAttending ? 'Not Attend' : 'Attend'}</button>
 
                     </div>
                 </div>
@@ -126,6 +123,7 @@ const EventTab: React.FC<EventTabProps> = ({ event, setEvents }) => {
                         <h4 className="text-black text-xl underline">Attendees</h4>
                         <div className="flex flex-row">
                             {event.attendance != undefined && event.attendance.map((user) => {
+                                console.log("WE HERE")
                                 return (
                                     <div key={user.id} className="flex flex-col justify-center items-center">
                                         <img src={user.avatar_url} alt={user.username} className="w-12 h-12 rounded-full" />

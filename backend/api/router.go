@@ -99,9 +99,10 @@ func Router(mux *mux.Router, db *sql.DB) {
 	mux.HandleFunc("/groups/{groupId}/requests", groupMemberHandler.GetAllGroupRequestsHandler).Methods("GET")
 
 	// Events
-	eventHandler := handler.NewEventHandler(eventRepository, sessionRepository, groupMemberRepository, userRepository, notificationHandler)
+	eventHandler := handler.NewEventHandler(eventRepository, sessionRepository, groupMemberRepository, userRepository, notificationHandler, groupRepository)
 	mux.HandleFunc("/events/group/{groupId}", eventHandler.GetAllGroupEventsHandler).Methods("GET")
 	mux.HandleFunc("/events", eventHandler.CreateEventHandler).Methods("POST")
+	mux.HandleFunc("/events/me", eventHandler.GetAllUserEvents).Methods("GET")
 	mux.HandleFunc("/events/{id}", eventHandler.EditEventHandler).Methods("PUT")
 	mux.HandleFunc("/events/{id}", eventHandler.DeleteEventHandler).Methods("DELETE")
 	mux.HandleFunc("/events/{id}", eventHandler.GetEventsByGroupIDHandler).Methods("GET")

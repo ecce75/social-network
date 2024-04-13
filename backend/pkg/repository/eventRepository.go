@@ -158,3 +158,31 @@ func (r *EventRepository) GetAttendanceByEventID(eventID int) ([]model.Attendanc
 	}
 	return attendanceList, nil
 }
+
+func (r *EventRepository) GetAllUserEvents(id int) ([]model.Event, error) {
+	query := `
+		SELECT * FROM events 
+	 	WHERE group_id IN (
+	 	    SELECT group_id FROM group_members 
+			WHERE user_id = ?
+	 	    )`
+	rows, err := r.db.Query(query, id)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var events []model.Event
+	for rows.Next() {
+		var event model.Event
+		if err := rows.Scan(&event.Id, &event.CreatorId, &event.GroupId, &event.Title, &event.Description, &event.Location, &event.StartTime, &event.EndTime, &event.CreatedAt); err != nil {
+			return nil, err
+		}
+		events = append(events, event)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return events, nil
+}

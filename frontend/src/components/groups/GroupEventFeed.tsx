@@ -13,6 +13,7 @@ export interface EventProps {
     id: string;
     creator_id: string;
     group_id: string;
+    group_name?: string;
     title: string;
     description: string;
     location: string;
