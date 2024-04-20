@@ -18,29 +18,30 @@ interface GroupPageInfoProps {
 }
 
 const GroupPageInfo: React.FC<GroupPageInfoProps> = ({ title, text, pictureUrl, isMember, groupId, invitationSent, isCreator, confirmInvite }) => {
-    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_URL;
+    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    //const FE_URL = process.env.NEXT_PUBLIC_URL;
 
     const [members, setMembers] = React.useState<{ id: number, username: string, image: string, status: string }[]>([]);
     useEffect(() => {
         try {
-            fetch(`${FE_URL}:${BE_PORT}/groups/${groupId}/members`, {
+            fetch(`/api/groups/${groupId}/members`, {
                 method: 'GET',
                 credentials: 'include'
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data !== null) {
-                    data.map((user: any) => {
-                        const newUser = {
-                            id: user.id,
-                            username: user.username,
-                            image: user.avatar_url,
-                            status: user.status
+                        data.map((user: any) => {
+                            const newUser = {
+                                id: user.id,
+                                username: user.username,
+                                image: user.avatar_url,
+                                status: user.status
+                            }
+                            setMembers(prevMembers => [...prevMembers, newUser])
                         }
-                        setMembers(prevMembers => [...prevMembers, newUser])
+                        )
                     }
-                    )}
                 })
 
         } catch (error) {

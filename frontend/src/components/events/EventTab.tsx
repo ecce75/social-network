@@ -30,7 +30,7 @@ const EventTab: React.FC<EventTabProps> = ({ event, setEvents }) => {
     function handleAttend(click_event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
         click_event.stopPropagation();
         try {
-            fetch(`${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/events/${event.id}/${isAttending ? '0' : '1'}`, {
+            fetch(`/events/${event.id}/${isAttending ? '0' : '1'}`, {
                 method: 'PUT',
                 credentials: 'include'
             })

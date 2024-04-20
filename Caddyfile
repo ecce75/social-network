@@ -1,21 +1,18 @@
 # Use your domain
 iriesphere.eu {
-    # Serve static files from the Next.js build folder
-    root * /app/public
-    file_server
+    reverse_proxy frontend:3000
 
-    # Handle API requests
     route /api/* {
         reverse_proxy backend:8080
     }
 
-    # Let Caddy issue the HTTPS certificates
-    tls {
-        dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+    reverse_proxy /ws backend:8080 {
+        header_up Connection {http.request.header.Connection}
+        header_up Upgrade {http.request.header.Upgrade}
     }
 }
 
 # Redirect HTTP to HTTPS
-http://iriesphere.eu {
-    redir https://iriesphere.eu{uri}
-}
+# http://iriesphere.eu {
+#    redir https://iriesphere.eu{uri}
+#}

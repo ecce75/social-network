@@ -11,14 +11,14 @@ interface User {
 }
 
 const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({ groupId }) => {
-    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_URL;
+    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    //const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [users, setUsers] = React.useState<User[]>([]);
     const [groupStatuses, setGroupStatuses] = React.useState<{ [key: string]: 'approved' | 'declined' | 'pending' }>({});
 
     useEffect(() => {
         try {
-            fetch(`${FE_URL}:${BE_PORT}/groups/${groupId}/requests`, {
+            fetch(`/api/groups/${groupId}/requests`, {
                 method: 'GET',
                 credentials: 'include'
             })
@@ -50,7 +50,7 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({ groupId }) =>
 
     const onAcceptRequest = (userId: number) => {
         try {
-            fetch(`${FE_URL}:${BE_PORT}/invitations/approve/${groupId}/${userId}`, {
+            fetch(`/api/invitations/approve/${groupId}/${userId}`, {
                 method: 'PUT',
                 credentials: 'include'
             })
@@ -70,7 +70,7 @@ const GroupRequestsButton: React.FC<GroupRequestsButtonProps> = ({ groupId }) =>
 
     const onDeclineRequest = (userId: number) => {
         try {
-            fetch(`${FE_URL}:${BE_PORT}/invitations/decline/${groupId}/${userId}`, {
+            fetch(`/api/invitations/decline/${groupId}/${userId}`, {
                 method: 'PUT',
                 credentials: 'include'
             })

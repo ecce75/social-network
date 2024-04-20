@@ -1,6 +1,5 @@
-# Use the official lightweight Node.js 16 image.
-# https://hub.docker.com/_/node
-FROM node:16-alpine
+# Use the official lightweight Node.js 18 image for pi
+FROM arm64v8/node:18-alpine
 
 # Set the working directory
 WORKDIR /app
@@ -9,8 +8,8 @@ WORKDIR /app
 COPY frontend/package*.json ./
 COPY frontend/next.config.js ./
 
-# Install dependencies
-RUN npm install
+# Install dependencies including 'sharp' for image optimization
+RUN npm install && npm install sharp
 
 # Copy the local code to the container's working directory
 COPY frontend/ ./

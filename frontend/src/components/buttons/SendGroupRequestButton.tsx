@@ -8,9 +8,9 @@ const SendGroupRequestButton: React.FC<SendGroupRequestProps> = ({ id }) => {
     const [invitationSent, setInvitationSent] = React.useState<boolean>(false);
 
     const sendRequest = () => {
-        const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-        const FE_URL = process.env.NEXT_PUBLIC_URL;
-        fetch(`${FE_URL}:${BE_PORT}/invitations/request/${id}`, {
+        //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+        //const FE_URL = process.env.NEXT_PUBLIC_URL;
+        fetch(`/api/invitations/request/${id}`, {
             method: 'POST',
             credentials: 'include'
         })

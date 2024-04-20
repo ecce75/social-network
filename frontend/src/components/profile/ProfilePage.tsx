@@ -33,8 +33,8 @@ export interface ProfileFeedProps {
 
 export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, userID }) => {
 
-    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_URL;
+    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    //const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [posts, setPosts] = useState<PostProps[]>([]);
     const [comments, setComments] = useState<{ [postId: number]: CommentProps[] }>([]);
 
@@ -44,7 +44,7 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, user
         if (userID !== "me") {
             userID = parseInt(userID);
         }
-        fetch(`${FE_URL}:${BE_PORT}/profile/posts/${userID}`, {
+        fetch(`/api/profile/posts/${userID}`, {
             method: 'GET',
             credentials: 'include' // Send cookies with the request
         })
@@ -61,7 +61,7 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, user
 
     useEffect(() => {
         posts.forEach(post => {
-            fetch(`${FE_URL}:${BE_PORT}/post/${post.id}/comments`, {
+            fetch(`/api/post/${post.id}/comments`, {
                 method: 'GET',
                 credentials: 'include' // Send cookies with the request
             })
@@ -76,11 +76,11 @@ export const ProfileFeed: React.FC<ProfileFeedProps> = ({ profile, friends, user
     }, [posts]);
 
     return (
-        /* Group page with */
+        /* User page */
         <div style={{ display: 'flex', justifyContent: 'center' }}> {/* Container for both sections */}
 
 
-            {/* Left section for displaying group information */}
+            {/* Left section for displaying user information */}
             <div style={{
                 flex: '0 0 18%',
                 backgroundColor: '#e5e7eb',

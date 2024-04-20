@@ -23,6 +23,7 @@ func createURL(path, prefix string) string {
 
 func ConnectAndMigrate(dbPath string, migrationsPath string) (*sql.DB, error) {
 	fmt.Printf("Connecting to SQLite database at path: %s\n", dbPath)
+	fmt.Printf("Migrations path: %s\n", migrationsPath)
 
 	db, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
@@ -32,7 +33,7 @@ func ConnectAndMigrate(dbPath string, migrationsPath string) (*sql.DB, error) {
 
 	err = db.Ping()
 	if err != nil {
-		log.Fatal("Cannot ping db!")
+		log.Fatal("Cannot ping db!: ", err)
 	}
 
 	fmt.Println("Connected to SQLite database successfully.")

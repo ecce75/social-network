@@ -40,7 +40,7 @@ const handleRegister = (
     });
 
     // Form submission logic
-    fetch(`${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api/users/register`, {
+    fetch(`/api/users/register`, {
         method: 'POST',
         body: formData,
         credentials: 'include' // Send cookies with the request

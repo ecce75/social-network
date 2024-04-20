@@ -39,7 +39,7 @@ func (r *PostRepository) CreatePost(post *model.CreatePostRequest, userID int) (
 		fmt.Println("Error getting last inserted post id")
 	}
 
-	post.ImageURL = os.Getenv("NEXT_PUBLIC_URL")+ ":" + os.Getenv("NEXT_PUBLIC_BACKEND_PORT") + "/images/posts/" + fmt.Sprint(post.PostID) + ".jpg"
+	post.ImageURL = os.Getenv("EP") + "/posts/" + fmt.Sprint(post.PostID) + ".jpg"
 	query = `UPDATE posts SET image_url = ? WHERE id = ?`
 	_, err = r.db.Exec(query, post.ImageURL, post.PostID)
 	if err != nil {

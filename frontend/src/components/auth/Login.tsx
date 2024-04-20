@@ -1,12 +1,12 @@
 "use client";
 
-import {Field, Form, Formik, FormikHelpers} from "formik";
-import {useRouter} from "next/navigation";
+import { Field, Form, Formik, FormikHelpers } from "formik";
+import { useRouter } from "next/navigation";
 import React from "react";
 
 interface LoginValues {
-username: string;
-password: string;
+    username: string;
+    password: string;
 }
 
 const handleLogin = (
@@ -14,10 +14,11 @@ const handleLogin = (
     formikHelpers: FormikHelpers<LoginValues>,
     router: any
 ) => {
-    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_URL;
+    // //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    //const FE_URL = process.env.NEXT_PUBLIC_URL;
+
     // Form submission logic
-    fetch(`${FE_URL}:${BE_PORT}/api/users/login`, {
+    fetch(`/api/users/login`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -43,7 +44,7 @@ const handleLogin = (
 };
 
 
-const LoginForm = (({}) => {
+const LoginForm = (({ }) => {
     const router = useRouter();
     return (
         <Formik

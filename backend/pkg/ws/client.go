@@ -5,20 +5,25 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
-
 	"github.com/gorilla/websocket"
 )
 
 var newline = []byte{'\n'}
 
+var allowedOrigins = map[string]bool{
+	"https://iriesphere.eu": true,
+	"wss://iriesphere.eu":  true,
+	"http://localhost:3000": true,
+	"ws://localhost:3000":    true,
+	"https://localhost:3000": true,
+}
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
-		// TODO: Remove after development
-		// Check if the origin is allowed
-		return r.Header.Get("Origin") == os.Getenv("NEXT_PUBLIC_URL") + ":" + os.Getenv("NEXT_PUBLIC_HTTPS_PORT")
+		origin := r.Header.Get("Origin")
+		return allowedOrigins[origin]
 	},
 }
 

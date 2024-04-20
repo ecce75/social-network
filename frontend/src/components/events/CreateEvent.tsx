@@ -14,8 +14,8 @@ const CreateEvent: React.FC<CreateEventProps> = ({ groupId, setEvents, setIsModa
     const [startDateTime, setStartDateTime] = useState('');
     const [endDateTime, setEndDateTime] = useState('');
 
-    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_URL;
+    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    //const FE_URL = process.env.NEXT_PUBLIC_URL;
 
     const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(event.target.value);
@@ -57,7 +57,7 @@ const CreateEvent: React.FC<CreateEventProps> = ({ groupId, setEvents, setIsModa
             eventRequest.end_time = new Date(endDateTime).toISOString();
         }
 
-        fetch(`${FE_URL}:${BE_PORT}/events`, {
+        fetch(`/api/events`, {
             method: 'POST',
             credentials: 'include',
             headers: {

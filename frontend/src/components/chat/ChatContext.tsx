@@ -1,6 +1,6 @@
 // ChatContext.tsx
-import React, {createContext, useContext, useState, ReactNode, useEffect} from 'react';
-import {ChatBox} from "@/components/chat/ChatBox";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { ChatBox } from "@/components/chat/ChatBox";
 
 interface ChatContextType {
     activeChats: any[];
@@ -15,13 +15,9 @@ export const ChatProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     const [activeChats, setActiveChats] = useState<any[]>([]);
     const [socket, setSocket] = useState<WebSocket | null>(null); // State to hold the WebSocket connection
 
-    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    // TODO: use the correct URL in prod
-    const WS_URL = "ws://iriesphere";
-
     useEffect(() => {
         // Initialize WebSocket connection
-        const newSocket = new WebSocket(`ws://localhost:${BE_PORT}/ws`);
+        const newSocket = new WebSocket(`/ws`);
         setSocket(newSocket);
 
         // Clean up on unmount
@@ -66,7 +62,7 @@ export const useChat = () => {
 };
 
 export const ChatManager = () => {
-    const {activeChats, closeChat, socket} = useChat(); // Assuming useChat is a hook to access your chat context
+    const { activeChats, closeChat, socket } = useChat(); // Assuming useChat is a hook to access your chat context
     return (
         <div className="chat-manager">
             {activeChats.map((chatBox: { userID: number; userName: string; avatar: string }) => {

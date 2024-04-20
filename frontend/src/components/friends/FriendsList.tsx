@@ -11,13 +11,12 @@ interface FriendProps {
 }
 
 export default function FriendsList() {
-    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_URL;
+    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    //const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [friends, setFriends] = useState<FriendProps[]>([]);
 
     useEffect(() => {
-        // fetch(`${process.env.FRONTEND_URL}:${process.env.BACKEND_PORT}/friends`, {
-        fetch(`${FE_URL}:${BE_PORT}/friends/me`, {
+        fetch(`/api/friends/me`, {
             method: 'GET',
             credentials: 'include' // Send cookies with the request
         })
@@ -35,29 +34,29 @@ export default function FriendsList() {
     return (
         <>
             {
-                friends.length > 0 ? 
-                friends.map(friend =>
-                    <UserTab
-                        key={friend.id}
-                        userID={friend.id}
-                        userName={friend.username}
-                        friendStatus={'accepted'}
-                        avatar={friend.avatar_url}
-                    />
-                    // <FriendsListContent
-                    //     key={friend.id}
-                    //     id={friend.id}
-                    //     firstName={friend.firstName}
-                    //     lastName={friend.lastName}
-                    //     avatar={friend.avatar}
-                    //     username={friend.username}
-                    // />
-                )
-                :
-                //TODO; Add a button to add friends
-                <div>
-                    <p>No friends found</p>
-                </div>
+                friends.length > 0 ?
+                    friends.map(friend =>
+                        <UserTab
+                            key={friend.id}
+                            userID={friend.id}
+                            userName={friend.username}
+                            friendStatus={'accepted'}
+                            avatar={friend.avatar_url}
+                        />
+                        // <FriendsListContent
+                        //     key={friend.id}
+                        //     id={friend.id}
+                        //     firstName={friend.firstName}
+                        //     lastName={friend.lastName}
+                        //     avatar={friend.avatar}
+                        //     username={friend.username}
+                        // />
+                    )
+                    :
+                    //TODO; Add a button to add friends
+                    <div>
+                        <p>No friends found</p>
+                    </div>
             }
         </>
     );

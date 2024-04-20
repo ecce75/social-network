@@ -3,19 +3,20 @@
 import { useEffect} from 'react';
 import { useRouter } from 'next/navigation';
 // Your authentication hook or context
-import {useAuth}  from '@/hooks/utils';
+import {UseAuth}  from '@/hooks/utils';
 
 
 export default function Home() {
     const router = useRouter();
     useEffect(() => {
         (async () => {
-            const auth = await useAuth();
+            // eslint-disable-next-line react-hooks/rules-of-hooks
+            const auth = await UseAuth();
             if (!auth.is_authenticated) {
                 router.push('/auth');
             }
             else{
-                router.push('dashboard');
+                router.push('/dashboard');
             }
         })();
     }, []); // Empty dependency array to run only once on mount

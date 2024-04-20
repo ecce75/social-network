@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from "react";
-import {Status} from "../buttons/AddFriendsButton";
-import {useRouter} from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { Status } from "../buttons/AddFriendsButton";
+import { useRouter } from "next/navigation";
 
 export interface NotificationProp {
     id: number;
@@ -21,11 +21,11 @@ export interface NotificationProps {
     setFriendsListToggle: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const Notification: React.FC<NotificationProps> = ({notification, setNotifications, setFriendsListToggle}) => {
+const Notification: React.FC<NotificationProps> = ({ notification, setNotifications, setFriendsListToggle }) => {
     const router = useRouter();
 
-    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    const FE_URL = process.env.NEXT_PUBLIC_URL;
+    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    //const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [status, setStatus] = useState<Status>({});
     // Styles
 
@@ -38,8 +38,8 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
     // handles requests for friend requests, group invitations
     const handleRequest = (id: number, request: string, requestType: string) => { // sender id
         // Implement friend request acceptance logic
-        console.log(`${FE_URL}:${BE_PORT}/${request}/${requestType}/${id}`)
-        fetch(`${FE_URL}:${BE_PORT}/${request}/${requestType}/${id}`, {
+        console.log(`/api/${request}/${requestType}/${id}`)
+        fetch(`/api/${request}/${requestType}/${id}`, {
             method: 'POST',
             credentials: 'include',
             headers: {
@@ -71,7 +71,7 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
             userID = notification.sender_id;
         }
 
-        fetch(`${FE_URL}:${BE_PORT}/invitations/${requestType}/${notification.group_id}/${userID}`, {
+        fetch(`/api/invitations/${requestType}/${notification.group_id}/${userID}`, {
             method: 'PUT',
             credentials: 'include',
             headers: {
@@ -99,14 +99,14 @@ const Notification: React.FC<NotificationProps> = ({notification, setNotificatio
     const markNotificationAsRead = (id: number) => {
         // This function should make a request to the backend to mark the notification as read
         // The request should include the notification ID
-        fetch(`${FE_URL}:${BE_PORT}/notifications/${id}`, {
+        fetch(`/api/notifications/${id}`, {
             method: 'PUT',
             credentials: 'include',
         }).then(response => {
             if (response.ok) {
                 // If the request is successful, update the state of the notifications to mark the notification as read
                 setNotifications(prevNotifications => prevNotifications.map(notification =>
-                    notification.id === id ? {...notification, is_read: true} : notification
+                    notification.id === id ? { ...notification, is_read: true } : notification
                 ));
             } else {
                 console.error('Failed to mark notification as read');
