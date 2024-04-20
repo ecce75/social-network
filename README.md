@@ -80,4 +80,6 @@ make docker-remove
 ## Authors
 - Andrei Tuhkru
 - Robin Rattasepp
-- 
+- Anton Urb
+- Ekke Tristan Uibo
+- Joosep Purde-Prits
