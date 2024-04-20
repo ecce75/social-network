@@ -23,7 +23,7 @@ function MainHeader() {
                 </div>
                 <div>
                     <ProfileIconDM
-                        key = {friendsListToggle.toString()}
+                        key={friendsListToggle.toString()}
                         friendsListToggle={friendsListToggle}
                     />
                 </div>

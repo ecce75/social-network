@@ -27,9 +27,11 @@ function EventsButton() {
         }).then(async (response) => {
             if (response.ok) {
                 console.log('Events fetched successfully');
-                const data = await response.json();
-                console.log(data)
-                setEvents(data);
+                if (response.bodyUsed === true) {
+                    const data = await response.json();
+                    console.log(data)
+                    setEvents(data);
+                }
             } else {
                 console.error('Failed to fetch events');
             }

@@ -19,7 +19,7 @@ function LeftNavBar() {
         <ul className="menu p-4 w-80 min-h-full bg-primary text-base-content">
           {/* Sidebar buttons here */}
           <li><NavGroupsButton /></li>
-          <li><EventsButton /></li>
+          <EventsButton />
         </ul>
       </div>
     </div>
