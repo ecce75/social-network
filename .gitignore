@@ -2,8 +2,3 @@
 .vscode
 .DS_Store
 CHANGELOG.md
-Caddyfile
-.env
-docker-compose.yml
-/backend/pkg/db/images
-/backend/pkg/db/database.db

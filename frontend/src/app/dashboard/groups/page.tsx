@@ -19,14 +19,14 @@ interface GroupProps {
 
 export default function Groups() {
     useAuthCheck();
-    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    //const FE_URL = process.env.NEXT_PUBLIC_URL;
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [groups, setGroups] = useState<GroupProps[]>([]); // Initialize groups state as an empty array
     const [myGroups, setMyGroups] = useState<GroupProps[]>([]); // Initialize myGroups state as an empty array
 
     useEffect(() => {
         // Fetch groups
-        fetch(`/api/groups`, {
+        fetch(`${FE_URL}:${BE_PORT}/groups`, {
             method: 'GET',
             credentials: 'include' // Send cookies with the request
         })

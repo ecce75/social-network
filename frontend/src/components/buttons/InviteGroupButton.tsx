@@ -6,31 +6,29 @@ interface InviteGroupButtonProps {
 }
 
 const InviteGroupButton: React.FC<InviteGroupButtonProps> = ({ groupID }) => {
-    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    //const FE_URL = process.env.NEXT_PUBLIC_URL;
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [nonMembers, setNonMembers] = React.useState<{ id: number, username: string, image: string }[]>([]);
     const [invited, setInvited] = React.useState<{ [key: string]: boolean }>({});
 
     useEffect(() => {
         try {
-            fetch(`/api/groups/${groupID}/non-members`, {
+            fetch(`${FE_URL}:${BE_PORT}/groups/${groupID}/non-members`, {
                 method: 'GET',
                 credentials: 'include'
             })
                 .then(response => response.json())
                 .then(data => {
                     if (data !== null) {
-                        data.map((user: any) => {
-                            const newUser = {
-                                id: user.id,
-                                username: user.username,
-                                image: user.avatar_url
-                            }
-                            setNonMembers(prevNonMembers => [...prevNonMembers, newUser])
-                        }
-                        )
+                    data.map((user: any) => {
+                    const newUser = {
+                        id: user.id,
+                        username: user.username,
+                        image: user.avatar_url
                     }
-                })
+                    setNonMembers(prevNonMembers => [...prevNonMembers, newUser])
+                }
+                )}})
         }
         catch (error) {
             console.error('Error fetching non-members:', error);
@@ -48,7 +46,7 @@ const InviteGroupButton: React.FC<InviteGroupButtonProps> = ({ groupID }) => {
 
     function handleInviteToGroup(id: number) {
         try {
-            fetch(`/api/invitations/invite/${groupID}/${id}`, {
+            fetch(`${FE_URL}:${BE_PORT}/invitations/invite/${groupID}/${id}`, {
                 method: 'POST',
                 credentials: 'include'
             })

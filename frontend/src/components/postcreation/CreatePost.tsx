@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 
 function CreatePost() {
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -7,8 +7,8 @@ function CreatePost() {
     const [message, setMessage] = useState<string>('');
     const [privacy, setPrivacy] = useState<string>('public');
 
-    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    //const FE_URL = process.env.NEXT_PUBLIC_URL;
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
 
     const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setTitle(event.target.value);
@@ -55,7 +55,7 @@ function CreatePost() {
             formData.append('group', "0")
         }
         try {
-            const response = await fetch(`/api/post`, {
+            const response = await fetch(`${FE_URL}:${BE_PORT}/post`, {
                 method: 'POST',
                 credentials: 'include', // If you're handling sessions
                 body: formData, // Send the form data
@@ -77,51 +77,51 @@ function CreatePost() {
     return (
         <div>
             <div className="flex justify-between">
-                <div>
+                    <div>
                     {/* Top message box */}
                     <input type="text" placeholder="Title" className="input mt-2 w-full max-w-sm" onChange={handleTitleChange} />
-                </div>
-
-                <div>
+                    </div>
 
                     <div>
-                        {/* Selected Group button*/}
-                        {selectedGroup && (
-                            <div className="mt-2 btn btn-ghost text-black" onClick={handleDeselectGroup}>
-                                {selectedGroup} X
+
+                        <div>
+                                {/* Selected Group button*/}
+                                {selectedGroup && (
+                                <div className="mt-2 btn btn-ghost text-black" onClick={handleDeselectGroup}>
+                                    {selectedGroup} X
+                                </div>
+                                )}
+
+                            <div className="join mt-2">
+                                <div className="privacy">
+                                    <input className="privacy-item btn" type="radio" name="privacy" value="public"
+                                           checked={privacy === 'public'} onChange={handlePrivacyChange}
+                                           aria-label="Public"/>
+                                    <input className="privacy-item btn" type="radio" name="privacy" value="private"
+                                           checked={privacy === 'private'} onChange={handlePrivacyChange}
+                                           aria-label="Private"/>
+                                    <input className="privacy-item btn" type="radio" name="privacy" value="semi-private"
+                                           checked={privacy === 'semi-private'} onChange={handlePrivacyChange}
+                                           aria-label="Semi-Private"/>
+                                </div>
+                                <div className="dropdown dropdown-end ">
+                                    <input className="join-item btn " type="radio" name="options" aria-label="Groups"/>
+                                    <ul tabIndex={0}
+                                        className="dropdown-content z-[1] menu p-2 shadow bg-gray-400  w-52">
+                                        <li>
+                                            <a onClick={() => handleGroupSelect('Group1')}>Group1</a>
+                                        </li>
+                                        <li>
+                                            <a onClick={() => handleGroupSelect('Group2')}>Group2</a>
+                                        </li>
+                                    </ul>
+
+                                </div>
+
+
                             </div>
-                        )}
-
-                        <div className="join mt-2">
-                            <div className="privacy">
-                                <input className="privacy-item btn" type="radio" name="privacy" value="public"
-                                    checked={privacy === 'public'} onChange={handlePrivacyChange}
-                                    aria-label="Public" />
-                                <input className="privacy-item btn" type="radio" name="privacy" value="private"
-                                    checked={privacy === 'private'} onChange={handlePrivacyChange}
-                                    aria-label="Private" />
-                                <input className="privacy-item btn" type="radio" name="privacy" value="semi-private"
-                                    checked={privacy === 'semi-private'} onChange={handlePrivacyChange}
-                                    aria-label="Semi-Private" />
-                            </div>
-                            <div className="dropdown dropdown-end ">
-                                <input className="join-item btn " type="radio" name="options" aria-label="Groups" />
-                                <ul tabIndex={0}
-                                    className="dropdown-content z-[1] menu p-2 shadow bg-gray-400  w-52">
-                                    <li>
-                                        <a onClick={() => handleGroupSelect('Group1')}>Group1</a>
-                                    </li>
-                                    <li>
-                                        <a onClick={() => handleGroupSelect('Group2')}>Group2</a>
-                                    </li>
-                                </ul>
-
-                            </div>
-
-
                         </div>
                     </div>
-                </div>
             </div>
             {/* Main message box */}
             <div className="relative w-full min-w-[200px] mt-2">

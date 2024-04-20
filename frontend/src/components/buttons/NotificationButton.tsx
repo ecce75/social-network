@@ -1,23 +1,23 @@
 "use client";
 
-import React, { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import React, {Dispatch, SetStateAction, useEffect, useState} from 'react';
 import Notification, { NotificationProp } from '../notification/Notification';
 
 interface NotificationButtonProps {
     setFriendsListToggle: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-function NotificationButton({ setFriendsListToggle }: NotificationButtonProps) {
+function NotificationButton({setFriendsListToggle}: NotificationButtonProps) {
 
-    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    //const FE_URL = process.env.NEXT_PUBLIC_URL;
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [notifications, setNotifications] = useState<NotificationProp[]>([]);
     const [showDropdown, setShowDropdown] = useState(false);
     const hasUnread = notifications?.some(notification => !notification.is_read);
 
     useEffect(() => {
         const fetchNotifications = async () => {
-            let url = `/api/notifications`;
+            let url = `${FE_URL}:${BE_PORT}/notifications`;
             const response = await fetch(url, {
                 method: 'GET',
                 credentials: 'include',

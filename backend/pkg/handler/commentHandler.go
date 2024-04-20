@@ -6,6 +6,7 @@ import (
 	"backend/util"
 	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -51,6 +52,13 @@ func (h *CommentHandler) CreateCommentHandler(w http.ResponseWriter, r *http.Req
 	newComment.Content = r.FormValue("content")
 	newComment.PostID = intPostId
 	newComment.UserID = userID
+
+	_, _, err = r.FormFile("image")
+	if err != nil {
+		newComment.Image.String = ""
+	} else {
+		newComment.Image.String = os.Getenv("NEXT_PUBLIC_URL") + ":" + os.Getenv("NEXT_PUBLIC_BACKEND_PORT") + "/images/comments/brt"
+	}
 
 	// Insert the comment into the database
 	commentID, err := h.commentRepo.CreateComment(&newComment)

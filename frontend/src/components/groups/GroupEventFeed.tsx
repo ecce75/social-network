@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, {useEffect} from 'react';
 import CreateEventButton from '../buttons/CreateEventBtn';
 import EventTab from "@/components/events/EventTab";
 
@@ -29,14 +29,14 @@ interface GroupEventFeedProps {
 }
 
 
-const GroupEventFeed: React.FC<GroupEventFeedProps> = ({ groupId }) => {
-    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    //const FE_URL = process.env.NEXT_PUBLIC_URL;
+const GroupEventFeed: React.FC<GroupEventFeedProps> = ({groupId}) => {
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [events, setEvents] = React.useState<EventProps[]>([]);
 
     useEffect(() => {
         try {
-            fetch(`/api/events/group/${groupId}`, {
+            fetch(`${FE_URL}:${BE_PORT}/events/group/${groupId}`, {
                 method: 'GET',
                 credentials: 'include'
             })
@@ -45,15 +45,15 @@ const GroupEventFeed: React.FC<GroupEventFeedProps> = ({ groupId }) => {
                     if (data != null) {
                         // Fetch attendance for each event
                         const eventsWithAttendance = await Promise.all(data.map(async (event: EventProps) => {
-                            const attendanceResponse = await fetch(`/api/events/attendance/${event.id}`, {
+                            const attendanceResponse = await fetch(`${FE_URL}:${BE_PORT}/events/attendance/${event.id}`, {
                                 method: 'GET',
                                 credentials: 'include'
                             });
                             const attendanceData = await attendanceResponse.json();
                             if (attendanceData != null) {
-                                return { ...event, attendance: attendanceData };
+                                return {...event, attendance: attendanceData};
                             }
-                            return { ...event, attendance: null };
+                            return {...event, attendance: null};
                         }));
                         console.log('Events with attendance:', eventsWithAttendance)
                         setEvents(eventsWithAttendance);
@@ -81,7 +81,7 @@ const GroupEventFeed: React.FC<GroupEventFeedProps> = ({ groupId }) => {
                 padding: '10px',
                 marginTop: '10px'
             }}>
-                <h3 style={{ color: 'white', fontWeight: 'bold', fontSize: '20px' }}>Events</h3>
+                <h3 style={{color: 'white', fontWeight: 'bold', fontSize: '20px'}}>Events</h3>
             </div>
 
             {/* Events list */}
@@ -95,7 +95,7 @@ const GroupEventFeed: React.FC<GroupEventFeedProps> = ({ groupId }) => {
                 overflowY: 'auto'
             }}>
                 {/* List */}
-                <ul style={{ display: 'flex', flexDirection: 'column', marginBottom: '20px' }}>
+                <ul style={{display: 'flex', flexDirection: 'column', marginBottom: '20px'}}>
                     {/* Map through the list of events and render each item */}
                     {events.length > 0 ? events.map((event) => {
                         return (

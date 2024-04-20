@@ -1,8 +1,10 @@
 import Image from "next/image"
+import rastaLionImage from '../../../public/assets/rasta_lion.png';
+function RastaIcon (){
 
-function RastaIcon() {
     return (
-        <Image src={"/assets/rasta_lion.png"} priority={true} alt="Rasta lion" width={55} />
+
+        <Image src={rastaLionImage} priority={true} alt="Rasta lion" width={55} />
     )
 }
 

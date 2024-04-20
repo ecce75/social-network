@@ -1,13 +1,13 @@
-export async function UseAuth() {
-    //const FE_URL = process.env.NEXT_PUBLIC_URL;
-    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+export async function useAuth() {
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
   try {
-      const res = await fetch(`/api/users/check-auth`, {
+      const res = await fetch(`${FE_URL}:${BE_PORT}/api/users/check-auth`, {
           credentials: 'include'
       }), data = await res.json();
       return data; // Return the data received from the fetch call
   } catch (error) {
-      return { is_authenticated: false }; // Return a default value in case of error
+      return { isAuthenticated: false }; // Return a default value in case of error
   }
 }
 

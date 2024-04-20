@@ -5,14 +5,14 @@ import { PostProps } from '../postcreation/Post';
 import { CommentProps } from '../comments/Comment';
 
 const PostFeed: React.FC = () => {
-    // //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    //const FE_URL = process.env.NEXT_PUBLIC_URL;
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     const [posts, setPosts] = useState<PostProps[]>([]);
     const [comments, setComments] = useState<{ [postId: number]: CommentProps[] }>([]);
 
     useEffect(() => {
         // Fetch posts
-        fetch(`/api/posts`, {
+        fetch(`${FE_URL}:${BE_PORT}/posts`, {
             method: 'GET',
             credentials: 'include' // Send cookies with the request
         })
@@ -28,7 +28,7 @@ const PostFeed: React.FC = () => {
 
     useEffect(() => {
         posts.forEach(post => {
-            fetch(`/api/post/${post.id}/comments`, {
+            fetch(`${FE_URL}:${BE_PORT}/post/${post.id}/comments`, {
                 method: 'GET',
                 credentials: 'include' // Send cookies with the request
             })

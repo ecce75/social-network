@@ -1,8 +1,4 @@
 version: '3.8'
-networks:
-  app-network:
-    driver: bridge
-
 services:
   frontend:
     build:
@@ -13,49 +9,30 @@ services:
     environment:
       - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
       - NEXT_PUBLIC_BACKEND_PORT=${NEXT_PUBLIC_BACKEND_PORT}
-    networks:
-      - app-network
 
   backend:
-#    image: social-network_backend:latest
     build:
-      context: ./backend
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: backend/Dockerfile
     ports:
       - '8080:8080'
     volumes:
-      - backend-db:/app/pkg/db/database.db
-      - backend-images:/app/pkg/db/images
+      - ./backend:/app
     environment:
       - NEXT_PUBLIC_URL=${NEXT_PUBLIC_URL}
       - NEXT_PUBLIC_HTTPS_PORT=${NEXT_PUBLIC_HTTPS_PORT}
       - NEXT_PUBLIC_BACKEND_PORT=${NEXT_PUBLIC_BACKEND_PORT}
-      - DB_PATH=${DB_PATH}
-      - IMAGE_PATH=${IMAGE_PATH}
-      - IMAGE_EP=${IMAGE_EP}
-    networks:
-      - app-network
 
   caddy:
-    build:
-      context: .
-      dockerfile: Dockerfile.caddy
+    image: caddy:2-alpine
     ports:
       - '80:80'
       - '443:443'
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile:z
+      - ./Caddyfile:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
-    depends_on:
-      - backend
-    networks:
-      - app-network
 
 volumes:
   caddy_data:
   caddy_config:
-  backend-db:
-    driver: local
-  backend-images:
-    driver: local

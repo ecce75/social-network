@@ -28,27 +28,21 @@ func ImageSave(w http.ResponseWriter, r *http.Request, key string, action string
 		return
 	}
 	defer file.Close()
-
-	imageBasePath := os.Getenv("IMAGE_PATH")
-	if imageBasePath == "" {
-		log.Fatal("IMAGE_PATH environment variable not set")
-	}
-
 	var imagePath string
 	switch action {
 	case "register":
-		imagePath = filepath.Join(imageBasePath, key+".jpg")
+		imagePath = filepath.Join(".", "pkg", "db", "images", key+".jpg")
 		// v is now of type *model.RegistrationData
 	case "post":
-		imagePath = filepath.Join(imageBasePath, "posts", key+".jpg")
+		imagePath = filepath.Join(".", "pkg", "db", "images", "posts", key+".jpg")
 		// Handle PostData
 		// v is now of type *model.PostData
 	case "comment":
-		imagePath = filepath.Join(imageBasePath, "comments", key+".jpg")
+		imagePath = filepath.Join(".", "pkg", "db", "images", "comments", key+".jpg")
 	// Handle CommentData
 	// v is now of type *model.CommentData
 	case "group":
-		imagePath = filepath.Join(imageBasePath, "groups", key+".jpg")
+		imagePath = filepath.Join(".", "pkg", "db", "images", "groups", key+".jpg")
 	default:
 		// Handle other types
 	}

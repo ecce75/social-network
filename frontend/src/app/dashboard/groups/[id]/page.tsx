@@ -44,11 +44,11 @@ export default function Group({
     const [confirmInvite, setConfirmInvite] = React.useState<boolean>(false);
 
 
-    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    //const FE_URL = process.env.NEXT_PUBLIC_URL;
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
     useEffect(() => {
         try {
-            fetch(`/api/groups/${params.id}`, {
+            fetch(`${FE_URL}:${BE_PORT}/groups/${params.id}`, {
                 method: 'GET',
                 credentials: 'include'
             })
@@ -66,7 +66,7 @@ export default function Group({
 
     useEffect(() => {
         try {
-            fetch(`/api/groups/${params.id}/posts`, {
+            fetch(`${FE_URL}:${BE_PORT}/groups/${params.id}/posts`, {
                 method: 'GET',
                 credentials: 'include'
             })
@@ -85,7 +85,7 @@ export default function Group({
 
     useEffect(() => {
         if (!isMember) {
-            fetch(`/api/invitations/${params.id}`, {
+            fetch(`${FE_URL}:${BE_PORT}/invitations/${params.id}`, {
                 method: 'GET',
                 credentials: 'include'
             })

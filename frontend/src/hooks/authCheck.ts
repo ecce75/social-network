@@ -2,23 +2,21 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { UseAuth } from '@/hooks/utils';
+import { useAuth } from '@/hooks/utils';
 
 const useAuthCheck = () => {
     const router = useRouter();
     const checkAuth = async () => {
-        const auth = await UseAuth();
+        // eslint-disable-next-line react-hooks/rules-of-hooks
+        const auth = await useAuth();
         if (!auth.is_authenticated) {
-            console.log('User not authenticated');
             router.push('/auth');
         }else {
-            console.log('User authenticated, updating session.');
-            fetch (`/api/users/auth-update`, {
+            fetch (`${process.env.NEXT_PUBLIC_URL}:${process.env.NEXT_PUBLIC_BACKEND_PORT}/api/users/auth-update`, {
                 method: 'PUT',
                 credentials: 'include'
             })
             .then(response => {
-                console.log("auth-update response: " + response);
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
                 }
@@ -31,7 +29,7 @@ const useAuthCheck = () => {
         // Optionally set up a recurring check
         const intervalId = setInterval(checkAuth, 1800000); // 30 minutes
         return () => clearInterval(intervalId);
-    }, []);
+    }, [router]);
 };
 
 export default useAuthCheck;

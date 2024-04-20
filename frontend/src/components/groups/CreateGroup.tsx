@@ -4,8 +4,8 @@ import { useRouter } from "next/navigation";
 
 function CreateGroup() {
     const router = useRouter();
-    //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-    //const FE_URL = process.env.NEXT_PUBLIC_URL;
+    const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+    const FE_URL = process.env.NEXT_PUBLIC_URL;
 
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [groupName, setGroupName] = useState<string>('');
@@ -34,7 +34,7 @@ function CreateGroup() {
             formData.append('image', selectedFile);
         }
         try {
-            const response = await fetch(`/api/groups`, {
+            const response = await fetch(`${FE_URL}:${BE_PORT}/groups`, {
                 method: 'POST',
                 body: formData,
                 credentials: 'include' // Send cookies with the request

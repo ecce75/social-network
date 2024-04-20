@@ -9,9 +9,9 @@ const AcceptInvitationButton: React.FC<AcceptInvitationProps> = ({ id }) => {
 
     const acceptInvitation = () => {
         console.log('Accepting invitation to join group:', id);
-        //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-        //const FE_URL = process.env.NEXT_PUBLIC_URL;
-        fetch(`/api/invitations/accept/${id}`, {
+        const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+        const FE_URL = process.env.NEXT_PUBLIC_URL;
+        fetch(`${FE_URL}:${BE_PORT}/invitations/accept/${id}`, {
             method: 'POST',
             credentials: 'include'
         })
@@ -26,9 +26,9 @@ const AcceptInvitationButton: React.FC<AcceptInvitationProps> = ({ id }) => {
 
     const declineInvitation = () => {
         console.log('Declining invitation to join group:', id);
-        //const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
-        //const FE_URL = process.env.NEXT_PUBLIC_URL;
-        fetch(`/api/invitations/decline/${id}`, {
+        const BE_PORT = process.env.NEXT_PUBLIC_BACKEND_PORT;
+        const FE_URL = process.env.NEXT_PUBLIC_URL;
+        fetch(`${FE_URL}:${BE_PORT}/invitations/decline/${id}`, {
             method: 'POST',
             credentials: 'include'
         })
